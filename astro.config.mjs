@@ -4,8 +4,7 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://mrmistermistermister.github.io',
-	base: '/MFM-docs',
+	site: 'https://malendemolens.com',
 	integrations: [
 		starlight({
 			title: 'Multiflexmeter V3.7.0',
