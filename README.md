@@ -38,43 +38,76 @@ The static site will be generated in the `dist/` directory. -->
 
 ```
 MFM-docs/
+├── .github/                  # GitHub configuration
+├── .vscode/                  # VS Code settings
+├── dist/                     # Built site output (generated)
+├── node_modules/             # Dependencies (generated)
 ├── public/
-│   ├── favicon.svg
-│   └── diagrams/              # Exported diagram assets
+│   └── favicon.svg           # Site favicon
 ├── src/
-│   ├── assets/               # Images and media
+│   ├── assets/               # Images and media files
 │   ├── likec4/               # LikeC4 architecture models
 │   │   └── model.c4          # C4 architecture definition
 │   ├── content/
-│   │   └── docs/             # Documentation content
-│   │       ├── index.mdx     # Landing page
-│   │       ├── guides/       # Tutorial and guide content
-│   │       │   ├── getting-started.md
-│   │       │   ├── architecture.md
-│   │       │   └── configuration.md
-│   │       └── reference/    # Reference documentation
-│   │           ├── protocol.md
-│   │           ├── hardware.md
-│   │           └── api.md
-│   └── content.config.ts
-├── astro.config.mjs          # Astro configuration
-├── package.json
-├── DOCUMENTATION_SUMMARY.md  # Maintainer reference
-└── README.md                 # This file
+│   │   ├── docs/             # Documentation content
+│   │   │   ├── index.mdx     # Landing page
+│   │   │   ├── overview/     # Project overview
+│   │   │   ├── hardware/     # Hardware documentation
+│   │   │   ├── firmware/     # Firmware documentation
+│   │   │   ├── deployment/   # Deployment guides
+│   │   │   ├── development/  # Development guides
+│   │   │   ├── guides/       # Tutorial content
+│   │   │   ├── reference/    # Reference documentation
+│   │   │   └── troubleshooting/ # Troubleshooting guides
+│   │   └── config.ts         # Content configuration
+│   └── content.config.ts     # Content type definitions
+├── test/                     # Test files
+├── .gitignore               # Git ignore rules
+├── .gitmessage              # Git commit template
+├── astro.config.mjs         # Astro configuration
+├── likec4.config.ts         # LikeC4 configuration
+├── netlify.toml             # Netlify deployment config
+├── package.json             # Dependencies and scripts
+├── package-lock.json        # Dependency lock file
+├── tsconfig.json            # TypeScript configuration
+├── vitest.config.ts         # Vitest testing configuration
+└── README.md                # This file
 ```
 
 ## 🧞 Commands
 
 All commands are run from the root of the project:
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+| Command | Description |
+| :--- | :--- |
+| `npm install` | Install project dependencies |
+| `npm run dev` / `npm start` | Start Astro dev server (default port) |
+| `npm run dev:astro` | Start Astro dev on `localhost:4321` |
+| `npm run dev:likec4` | Start LikeC4 dev server on `localhost:5173` |
+| `npm run dev:both` | Run Astro + LikeC4 concurrently (uses `concurrently`) |
+| `npm run build` | Build production site (alias for `build:all`) |
+| `npm run build:astro` | Run `astro build` — generates `./dist/` |
+| `npm run build:diagrams` | Build LikeC4 diagrams to `dist/diagrams` with base `/diagrams/` |
+| `npm run build:all` | Run `build:astro` then `build:diagrams` |
+| `npm run preview` | Preview the built site locally (`astro preview`) |
+| `npm run astro` | Invoke the Astro CLI |
+| `npm run likec4:start` | Start LikeC4 dev server |
+| `npm run likec4:build` | Build LikeC4 diagrams to `dist/diagrams` |
+| `npm run likec4:export` | Export LikeC4 diagrams as PNG to `public/diagrams` |
+| `npm run generate:model` | Generate TypeScript model from LikeC4 (`likec4 codegen typescript`) |
+| `npm run generate:docs` | Run LikeC4 docs integration codegen |
+| `npm run test` | Run tests (`vitest`) |
+
+Examples
+```bash
+# Start both dev servers (Astro + LikeC4)
+npm run dev:both
+
+# Build site + diagrams for production
+npm run build
+```
+
+Tip: If you only need interactive diagrams while authoring docs, run `npm run dev:likec4`. For full local site preview including docs, run `npm run dev:astro` (or `npm run dev`).
 
 ## 🎨 Architecture Diagrams
 
