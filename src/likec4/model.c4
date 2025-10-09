@@ -1,0 +1,150 @@
+specification {
+  element person
+  element system  
+  element external
+  element container
+  element component
+
+  relationship async
+  relationship sync
+}
+
+model {
+  // People
+  admin = person 'System Administrator' {
+    description 'Person responsible for configuring and maintaining the MFM IoT system'
+  }
+
+  // External Systems  
+  lorawan = external 'LoRaWAN Network' {
+    description 'LoRaWAN infrastructure for long-range, low-power communication'
+    technology 'LoRaWAN 1.0.3'
+  }
+
+  // Main System
+  mfm = system 'MFM IoT System' {
+    description 'Sensor monitoring system for industrial equipment'
+    
+    // Application Container
+    application = container 'MFM Application' {
+      description 'Main firmware application running on the IoT device'
+      technology 'C/C++, Arduino Framework'
+      
+      // Application Components
+      eventHandler = component 'Event Handler' {
+        description 'Central event processing component that coordinates all system operations including setup, main loop, and event-driven tasks'
+        technology 'C++'
+      }
+      
+      measurementMgr = component 'Measurement Manager' {
+        description 'Manages sensor data collection, processing, and scheduling of measurement cycles'
+        technology 'C++'
+      }
+      
+      configMgr = component 'Configuration Manager' {
+        description 'Handles device configuration, settings management, and parameter storage'
+        technology 'C++'
+      }
+      
+      sensorInterface = component 'Sensor Interface' {
+        description 'Low-level interface for communicating with connected sensors and reading measurement data'
+        technology 'C++'
+      }
+    }
+    
+    // LoRaWAN Container
+    lmic = container 'LoRaWAN Stack' {
+      description 'LoRaWAN protocol implementation for communication'
+      technology 'LMIC Library'
+    }
+    
+    // Configuration Storage
+    config = container 'Configuration Storage' {
+      description 'Persistent storage for device configuration and settings'
+      technology 'EEPROM/Flash'
+    }
+    
+    // External Sensor
+    sensor = container 'External Sensor' {
+      description 'Physical sensor hardware connected to the IoT device'
+      technology 'Analog/Digital Sensors'
+    }
+  }
+
+  // Relationships
+  admin -> mfm 'configures and monitors'
+  
+  mfm.application -> mfm.lmic 'sends data via'
+  mfm.application -> mfm.sensor 'reads measurements from'
+  mfm.application -> mfm.config 'stores/retrieves settings'
+  
+  mfm.lmic -> lorawan 'transmits to'
+  
+  // Internal application relationships
+  mfm.application.eventHandler -> mfm.lmic 'sends data via'
+  mfm.application.eventHandler -> mfm.application.measurementMgr 'triggers measurements'
+  mfm.application.measurementMgr -> mfm.application.sensorInterface 'requests data from'
+  mfm.application.sensorInterface -> mfm.sensor 'interfaces with'
+  mfm.application.configMgr -> mfm.config 'manages'
+  mfm.application.measurementMgr -> mfm.lmic 'sends data via'
+}
+
+views {
+  view index {
+    title 'MFM IoT System - Overview'
+    description 'High-level overview of the MFM IoT monitoring system'
+    
+    include *
+    
+    style mfm.application {
+      color primary
+    }
+    style lorawan {
+      color secondary  
+    }
+  }
+  
+  view system {
+    title 'System Context'
+    description 'System context showing external actors and systems'
+    
+    include 
+      admin,
+      mfm,
+      lorawan,
+      admin -> mfm,
+      mfm -> lorawan
+  }
+  
+  view containers {
+    title 'Container View'
+    description 'Container-level architecture of the MFM system'
+    
+    include 
+      admin,
+      mfm.*,
+      lorawan,
+      admin -> mfm.application,
+      mfm.application -> mfm.lmic,
+      mfm.application -> mfm.sensor,
+      mfm.application -> mfm.config,
+      mfm.lmic -> lorawan
+  }
+  
+  view components {
+    title 'Component View'  
+    description 'Component-level architecture of the application'
+    
+    include
+      mfm.application.*,
+      mfm.lmic,
+      mfm.config,
+      mfm.sensor,
+      mfm.application.eventHandler -> mfm.lmic,
+      mfm.application.eventHandler -> mfm.application.measurementMgr,
+      mfm.application.measurementMgr -> mfm.application.sensorInterface,
+      mfm.application.sensorInterface -> mfm.sensor,
+      mfm.application.configMgr -> mfm.config,
+      mfm.application.measurementMgr -> mfm.lmic
+  }
+}

@@ -5,13 +5,30 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro build",
+    "build": "npm run build:all",
+    "build:astro": "astro build",
+    "build:diagrams": "likec4 build -o dist/diagrams --base /diagrams/",
+    "build:all": "npm run build:astro && npm run build:diagrams",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "likec4:start": "likec4 start",
+    "likec4:build": "likec4 build -o dist/diagrams --base /diagrams/",
+    "likec4:export": "likec4 export png -o public/diagrams",
+    "generate:model": "likec4 codegen typescript -o test/likec4-model.ts",
+    "generate:docs": "likec4 codegen docs-integration",
+    "test": "vitest",
+    "dev:astro": "astro dev --port 4321",
+    "dev:likec4": "likec4 start --port 5173",
+    "dev:both": "concurrently \"npm run dev:astro\" \"npm run dev:likec4\" --names \"astro,likec4\" --prefix-colors \"blue,green\""
   },
   "dependencies": {
     "@astrojs/starlight": "^0.36.0",
     "astro": "^5.6.1",
     "sharp": "^0.34.2"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "likec4": "latest",
+    "vitest": "^2.0.0"
   }
 }

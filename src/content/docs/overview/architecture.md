@@ -16,7 +16,7 @@ The Multiflexmeter V3.7.0 architecture is documented using the C4 model at four 
 
 All diagrams are available in two formats:
 - **PlantUML** (`.puml`) - For rendering with PlantUML tools
-- **LikeC4** (`.likec4`) - For rendering with LikeC4 tools
+- **LikeC4** (`.c4`) - For rendering with LikeC4 tools
 
 See the [Diagram Rendering Guide](/diagrams/README.md) for setup instructions.
 
@@ -26,7 +26,7 @@ The Multiflexmeter V3.7.0 operates within a larger IoT ecosystem:
 
 **View Diagrams:**
 - [PlantUML Version](/diagrams/system_context.puml)
-- [LikeC4 Version](/diagrams/system_context.likec4)
+- [LikeC4 Version](/diagrams/system_context.c4)
 
 ### External Systems
 
@@ -59,7 +59,7 @@ The device consists of several key containers working together:
 
 **View Diagrams:**
 - [PlantUML Version](/diagrams/container_context.puml)
-- [LikeC4 Version](/diagrams/container_context.likec4)
+- [LikeC4 Version](/diagrams/container_context.c4)
 
 ### Main Containers
 
@@ -123,7 +123,7 @@ The firmware is organized into logical components:
 
 **View Diagrams:**
 - [PlantUML Version](/diagrams/component_context.puml)
-- [LikeC4 Version](/diagrams/component_context.likec4)
+- [LikeC4 Version](/diagrams/component_context.c4)
 
 ### Firmware Components
 
@@ -235,7 +235,7 @@ The operational flow follows this sequence:
 
 **View Diagrams:**
 - [PlantUML Version](/diagrams/code_context.puml)
-- [LikeC4 Version](/diagrams/code_context.likec4)
+- [LikeC4 Version](/diagrams/code_context.c4)
 
 ### Startup Sequence
 

@@ -1,0 +1,31 @@
+[build]
+  publish = "dist"
+  command = "npm run build:all"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+# Redirect rules for SPA-like behavior in diagrams
+[[redirects]]
+  from = "/diagrams/*"
+  to = "/diagrams/index.html"
+  status = 200
+
+# Optional: Force HTTPS
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+
+# Cache static assets
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/diagrams/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
