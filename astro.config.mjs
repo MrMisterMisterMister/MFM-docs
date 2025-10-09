@@ -4,7 +4,8 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://vermillion-starlight-acb7fc.netlify.app', // Update this with your actual Netlify URL
+	site: 'https://mrmistermistermister.github.io',
+	base: '/MFM-docs',
 	integrations: [
 		starlight({
 			title: 'Multiflexmeter V3.7.0',
