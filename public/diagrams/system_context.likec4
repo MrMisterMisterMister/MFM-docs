@@ -1,0 +1,66 @@
+specification {
+  element person
+  element system
+  element external
+}
+
+model {
+  // People
+  operator = person 'System Operator' {
+    description 'Manages and monitors sensor deployments'
+  }
+  
+  admin = person 'Administrator' {
+    description 'Configures devices and manages infrastructure'
+  }
+  
+  // Main System
+  mfm = system 'MultiFlexMeter V3' {
+    description 'Open-source IoT sensor platform for environmental monitoring using LoRaWAN'
+  }
+  
+  // External Systems
+  ttn = external 'The Things Network' {
+    description 'LoRaWAN network server providing connectivity'
+  }
+  
+  integration = external 'Integration Platform' {
+    description 'Data processing and visualization platform'
+  }
+  
+  programmer = external 'AVRISP Programmer' {
+    description 'Programming device for firmware and EEPROM flashing'
+  }
+  
+  // Relationships
+  operator -> mfm 'Views measurements from' {
+    technology 'Serial/Debug'
+  }
+  
+  admin -> mfm 'Configures and programs' {
+    technology 'AVRISP/FTDI'
+  }
+  
+  mfm -> ttn 'Sends sensor data via' {
+    technology 'LoRaWAN OTAA'
+  }
+  
+  ttn -> integration 'Forwards messages to' {
+    technology 'MQTT/HTTP'
+  }
+  
+  integration -> operator 'Provides dashboards to' {
+    technology 'Web'
+  }
+  
+  ttn -> mfm 'Sends downlink commands' {
+    technology 'LoRaWAN'
+  }
+}
+
+views {
+  view index {
+    title 'MultiFlexMeter V3 - System Context'
+    include *
+  }
+}

@@ -1,0 +1,24 @@
+@startuml MultiFlexMeter_System_Context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+
+title System Context Diagram - MultiFlexMeter V3
+
+Person(operator, "System Operator", "Manages and monitors sensor deployments")
+Person(admin, "Administrator", "Configures devices and manages infrastructure")
+
+System(mfm, "MultiFlexMeter V3", "Open-source IoT sensor platform for environmental monitoring using LoRaWAN")
+
+System_Ext(ttn, "The Things Network", "LoRaWAN network server providing connectivity")
+System_Ext(integration, "Integration Platform", "Data processing and visualization platform")
+System_Ext(programmer, "AVRISP Programmer", "Programming device for firmware and EEPROM flashing")
+
+Rel(operator, mfm, "Views measurements from", "Serial/Debug")
+Rel(admin, mfm, "Configures and programs", "AVRISP/FTDI")
+Rel(mfm, ttn, "Sends sensor data via", "LoRaWAN OTAA")
+Rel(ttn, integration, "Forwards messages to", "MQTT/HTTP")
+Rel(integration, operator, "Provides dashboards to", "Web")
+Rel(ttn, mfm, "Sends downlink commands", "LoRaWAN")
+
+@enduml

@@ -1,0 +1,83 @@
+@startuml MultiFlexMeter_Code_Context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_TOP_DOWN()
+
+title Code Context Diagram - MultiFlexMeter V3 Execution Flow
+
+note as FlowNote
+  **Main Execution Flow:**
+  1. Device powers on → setup()
+  2. Loads config from EEPROM
+  3. Initializes LMIC and starts joining
+  4. On EV_JOINED → job_pingVersion
+  5. After ping → job_performMeasurements
+  6. After delay → job_fetchAndSend
+  7. On EV_TXCOMPLETE → scheduleNextMeasurement
+  8. Repeat from step 5
+end note
+
+package "Initialization" {
+    [setup()] as setup
+    [board_setup()] as board_setup
+    [sensors_init()] as sensors_init
+    [conf_load()] as conf_load
+    [os_init()] as os_init
+    [LMIC_reset()] as lmic_reset
+}
+
+package "Job Execution" {
+    [job_pingVersion] as ping
+    [job_performMeasurements] as perform
+    [job_fetchAndSend] as fetch
+    [scheduleNextMeasurement] as schedule
+}
+
+package "Event Handlers" {
+    [onEvent(EV_JOINED)] as ev_joined
+    [onEvent(EV_TXCOMPLETE)] as ev_txcomplete
+    [onEvent(EV_JOINING)] as ev_joining
+    [processDownlink()] as downlink
+}
+
+package "Sensor Operations" {
+    [sensors_performMeasurement()] as sensor_perform
+    [sensors_readMeasurement()] as sensor_read
+    [smbus_sendByte()] as smbus_send
+    [smbus_blockRead()] as smbus_read
+}
+
+package "Configuration" {
+    [conf_getMeasurementInterval()] as get_interval
+    [conf_setMeasurementInterval()] as set_interval
+    [conf_getAppEui()] as get_appeui
+    [conf_save()] as save_conf
+}
+
+setup --> board_setup
+setup --> sensors_init
+setup --> conf_load
+setup --> os_init
+setup --> lmic_reset
+
+ev_joined --> ping
+ping --> perform
+perform --> sensor_perform
+sensor_perform --> smbus_send
+perform --> fetch
+
+fetch --> sensor_read
+sensor_read --> smbus_read
+fetch --> schedule
+fetch ..> ev_txcomplete : triggers
+
+ev_txcomplete --> downlink : if data received
+ev_txcomplete --> schedule
+schedule --> get_interval
+schedule --> perform : next cycle
+
+downlink --> set_interval : CMD_INTERVAL
+downlink --> save_conf
+downlink ..> schedule : reschedule
+
+@enduml

@@ -1,0 +1,28 @@
+@startuml MultiFlexMeter_Container_Context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Container Context Diagram - MultiFlexMeter V3
+
+Person(admin, "Administrator", "Configures and manages devices")
+
+System_Boundary(mfm_device, "MultiFlexMeter V3 Device") {
+    Container(firmware, "Firmware", "C/C++, Arduino", "Main control logic, LoRaWAN communication, and sensor orchestration")
+    Container(lmic, "LMIC Library", "C++", "LoRaWAN MAC layer implementation")
+    Container(eeprom, "EEPROM Storage", "Non-volatile memory", "Stores device credentials and configuration")
+    ContainerDb(sensor_module, "Sensor Module", "I2C/SMBus", "External sensor module for measurements")
+    Container(rfm95, "RFM95 Radio", "LoRa Transceiver", "868MHz LoRa radio module")
+}
+
+System_Ext(ttn, "The Things Network", "LoRaWAN network server")
+
+Rel(admin, eeprom, "Programs credentials", "AVRISP")
+Rel(admin, firmware, "Uploads firmware", "AVRISP")
+Rel(firmware, eeprom, "Reads configuration", "I2C")
+Rel(firmware, lmic, "Sends/receives packets", "Function calls")
+Rel(firmware, sensor_module, "Commands & reads data", "SMBus/I2C")
+Rel(lmic, rfm95, "Controls radio", "SPI")
+Rel(rfm95, ttn, "LoRaWAN communication", "868MHz RF")
+
+@enduml

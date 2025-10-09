@@ -1,0 +1,85 @@
+specification {
+  element person
+  element system
+  element container
+  element database
+  element external
+}
+
+model {
+  // People
+  admin = person 'Administrator' {
+    description 'Configures and manages devices'
+  }
+  
+  // Main System
+  mfm = system 'MultiFlexMeter V3 Device' {
+    
+    // Containers within the device
+    firmware = container 'Firmware' {
+      description 'Main control logic, LoRaWAN communication, and sensor orchestration'
+      technology 'C/C++, Arduino'
+    }
+    
+    lmic = container 'LMIC Library' {
+      description 'LoRaWAN MAC layer implementation'
+      technology 'C++'
+    }
+    
+    eeprom = database 'EEPROM Storage' {
+      description 'Stores device credentials and configuration'
+      technology 'Non-volatile memory'
+    }
+    
+    sensor_module = database 'Sensor Module' {
+      description 'External sensor module for measurements'
+      technology 'I2C/SMBus'
+    }
+    
+    rfm95 = container 'RFM95 Radio' {
+      description '868MHz LoRa radio module'
+      technology 'LoRa Transceiver'
+    }
+  }
+  
+  // External System
+  ttn = external 'The Things Network' {
+    description 'LoRaWAN network server'
+  }
+  
+  // Relationships
+  admin -> mfm.eeprom 'Programs credentials' {
+    technology 'AVRISP'
+  }
+  
+  admin -> mfm.firmware 'Uploads firmware' {
+    technology 'AVRISP'
+  }
+  
+  mfm.firmware -> mfm.eeprom 'Reads configuration' {
+    technology 'I2C'
+  }
+  
+  mfm.firmware -> mfm.lmic 'Sends/receives packets' {
+    technology 'Function calls'
+  }
+  
+  mfm.firmware -> mfm.sensor_module 'Commands & reads data' {
+    technology 'SMBus/I2C'
+  }
+  
+  mfm.lmic -> mfm.rfm95 'Controls radio' {
+    technology 'SPI'
+  }
+  
+  mfm.rfm95 -> ttn 'LoRaWAN communication' {
+    technology '868MHz RF'
+  }
+}
+
+views {
+  view index {
+    title 'MultiFlexMeter V3 - Container Context'
+    include *
+  }
+}

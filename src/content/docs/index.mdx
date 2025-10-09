@@ -1,0 +1,92 @@
+---
+title: MultiFlexMeter V3 Documentation
+description: Comprehensive documentation for the MultiFlexMeter V3 - an open-source IoT sensor platform for environmental monitoring using LoRaWAN.
+template: splash
+hero:
+  tagline: Open-source IoT sensor platform for flexible, low-cost, and frequent environmental measurements using LoRaWAN.
+  image:
+    file: ../../assets/houston.webp
+  actions:
+    - text: Getting Started
+      link: /guides/getting-started/
+      icon: right-arrow
+      variant: primary
+    - text: View Architecture
+      link: /guides/architecture/
+      icon: open-book
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## What is MultiFlexMeter?
+
+MultiFlexMeter V3 (MFM) is an open-source sensor platform designed for **frequent, low-cost, and flexible environmental measurements**. Built on the ATmega1284P microcontroller, it provides a robust foundation for IoT deployments using **LoRaWAN** connectivity.
+
+### Key Features
+
+<CardGrid stagger>
+	<Card title="LoRaWAN Connectivity" icon="rocket">
+		Built-in support for LoRaWAN OTAA with the RFM95 868MHz radio module, enabling long-range wireless communication.
+	</Card>
+	<Card title="Flexible Sensor Integration" icon="puzzle">
+		SMBus/I2C interface for connecting external sensor modules, supporting various measurement types.
+	</Card>
+	<Card title="Low Power Design" icon="star">
+		Optimized for battery-powered deployments with efficient power management and configurable measurement intervals.
+	</Card>
+	<Card title="Open Source Hardware & Firmware" icon="open-book">
+		Complete hardware designs (KiCad) and firmware source code (PlatformIO/Arduino) available under MIT license.
+	</Card>
+</CardGrid>
+
+## Technical Specifications
+
+- **Microcontroller:** ATmega1284P (128KB Flash, 16KB SRAM, 4KB EEPROM)
+- **Radio:** RFM95 LoRa transceiver (868MHz)
+- **Connectivity:** LoRaWAN 1.0.x with OTAA
+- **Sensor Interface:** SMBus/I2C for external modules
+- **Programming:** AVRISP-compatible ISP interface
+- **Debug:** FTDI-compatible UART header
+- **Framework:** Arduino with LMIC library
+
+## Quick Links
+
+<CardGrid>
+	<Card title="Getting Started" icon="document">
+		Set up your development environment and flash your first firmware.
+		[Read the guide →](/guides/getting-started/)
+	</Card>
+	<Card title="Configuration" icon="setting">
+		Learn how to configure EEPROM settings and LoRaWAN credentials.
+		[Configure device →](/guides/configuration/)
+	</Card>
+	<Card title="Architecture" icon="puzzle">
+		Understand the system design and component interactions.
+		[Explore architecture →](/guides/architecture/)
+	</Card>
+	<Card title="Protocol Reference" icon="information">
+		Details on uplink/downlink messages and communication protocols.
+		[View protocol →](/reference/protocol/)
+	</Card>
+</CardGrid>
+
+## Use Cases
+
+The MultiFlexMeter platform is ideal for:
+
+- **Environmental Monitoring:** Water level, temperature, air quality measurements
+- **Smart Agriculture:** Soil moisture, weather station data
+- **Infrastructure Monitoring:** Distance measurements, structural health
+- **Research Projects:** IoT experimentation and prototyping
+
+## Getting Help
+
+- **GitHub Repository:** [MultiFlexMeter V3](https://github.com/your-org/multiflexmeter)
+- **Issues & Discussion:** Use GitHub discussions for questions
+- **Documentation:** This site contains comprehensive guides and references
+
+---
+
+*MultiFlexMeter V3 is licensed under the MIT License.*
+

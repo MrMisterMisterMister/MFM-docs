@@ -1,0 +1,166 @@
+specification {
+  element function
+  element handler
+  element operation
+}
+
+model {
+  // Initialization Functions
+  init = function 'Initialization' {
+    
+    setup = operation 'setup()' {
+      description 'Main setup function called at startup'
+    }
+    
+    board_setup = operation 'board_setup()' {
+      description 'Board-specific hardware initialization'
+    }
+    
+    sensors_init = operation 'sensors_init()' {
+      description 'Initialize I2C bus and sensors'
+    }
+    
+    conf_load = operation 'conf_load()' {
+      description 'Load configuration from EEPROM'
+    }
+    
+    os_init = operation 'os_init()' {
+      description 'Initialize LMIC OS'
+    }
+    
+    lmic_reset = operation 'LMIC_reset()' {
+      description 'Reset LoRaWAN MAC state'
+    }
+  }
+  
+  // Job Execution Functions
+  jobs = function 'Job Execution' {
+    
+    ping = operation 'job_pingVersion' {
+      description 'Send firmware/hardware version'
+    }
+    
+    perform = operation 'job_performMeasurements' {
+      description 'Trigger sensor measurement'
+    }
+    
+    fetch = operation 'job_fetchAndSend' {
+      description 'Read sensor data and transmit'
+    }
+    
+    schedule = operation 'scheduleNextMeasurement' {
+      description 'Schedule next measurement cycle'
+    }
+  }
+  
+  // Event Handlers
+  events = handler 'Event Handlers' {
+    
+    ev_joined = operation 'onEvent(EV_JOINED)' {
+      description 'Device successfully joined network'
+    }
+    
+    ev_txcomplete = operation 'onEvent(EV_TXCOMPLETE)' {
+      description 'Transmission complete, process downlinks'
+    }
+    
+    ev_joining = operation 'onEvent(EV_JOINING)' {
+      description 'Join procedure started'
+    }
+    
+    downlink = operation 'processDownlink()' {
+      description 'Process downlink commands'
+    }
+  }
+  
+  // Sensor Operations
+  sensor_ops = function 'Sensor Operations' {
+    
+    sensor_perform = operation 'sensors_performMeasurement()' {
+      description 'Command sensor to start measurement'
+    }
+    
+    sensor_read = operation 'sensors_readMeasurement()' {
+      description 'Read measurement result from sensor'
+    }
+    
+    smbus_send = operation 'smbus_sendByte()' {
+      description 'Send I2C command byte'
+    }
+    
+    smbus_read = operation 'smbus_blockRead()' {
+      description 'Read I2C data block'
+    }
+  }
+  
+  // Configuration Operations
+  config = function 'Configuration' {
+    
+    get_interval = operation 'conf_getMeasurementInterval()' {
+      description 'Get measurement interval'
+    }
+    
+    set_interval = operation 'conf_setMeasurementInterval()' {
+      description 'Set measurement interval'
+    }
+    
+    get_appeui = operation 'conf_getAppEui()' {
+      description 'Get Application EUI'
+    }
+    
+    save_conf = operation 'conf_save()' {
+      description 'Save configuration to EEPROM'
+    }
+  }
+  
+  // Execution Flow Relationships
+  init.setup -> init.board_setup
+  init.setup -> init.sensors_init
+  init.setup -> init.conf_load
+  init.setup -> init.os_init
+  init.setup -> init.lmic_reset
+  
+  events.ev_joined -> jobs.ping
+  jobs.ping -> jobs.perform
+  
+  jobs.perform -> sensor_ops.sensor_perform
+  sensor_ops.sensor_perform -> sensor_ops.smbus_send
+  jobs.perform -> jobs.fetch
+  
+  jobs.fetch -> sensor_ops.sensor_read
+  sensor_ops.sensor_read -> sensor_ops.smbus_read
+  jobs.fetch -> jobs.schedule
+  jobs.fetch -> events.ev_txcomplete 'triggers'
+  
+  events.ev_txcomplete -> events.downlink 'if data received'
+  events.ev_txcomplete -> jobs.schedule
+  
+  jobs.schedule -> config.get_interval
+  jobs.schedule -> jobs.perform 'next cycle'
+  
+  events.downlink -> config.set_interval 'CMD_INTERVAL'
+  events.downlink -> config.save_conf
+  events.downlink -> jobs.schedule 'reschedule'
+}
+
+views {
+  view index {
+    title 'MultiFlexMeter V3 - Code Execution Flow'
+    include *
+  }
+  
+  view startup {
+    title 'Startup Sequence'
+    include init.*
+  }
+  
+  view measurement_cycle {
+    title 'Measurement Cycle'
+    include jobs.*, sensor_ops.*
+  }
+  
+  view downlink_processing {
+    title 'Downlink Processing'
+    include events.*, config.*
+  }
+}
