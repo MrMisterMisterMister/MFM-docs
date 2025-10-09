@@ -1,13 +1,13 @@
 ---
 title: Configuration Guide
-description: Configure EEPROM settings, LoRaWAN credentials, and device parameters for MultiFlexMeter V3.
+description: Configure EEPROM settings, LoRaWAN credentials, and device parameters for Multiflexmeter V3.
 ---
 
-This guide covers all configuration aspects of the MultiFlexMeter V3, including EEPROM programming, LoRaWAN setup, and runtime configuration.
+This guide covers all configuration aspects of the Multiflexmeter V3, including EEPROM programming, LoRaWAN setup, and runtime configuration.
 
 ## EEPROM Configuration
 
-The MultiFlexMeter stores persistent configuration in the ATmega1284P's EEPROM memory. This configuration **must** be programmed before the device can operate.
+The Multiflexmeter stores persistent configuration in the ATmega1284P's EEPROM memory. This configuration **must** be programmed before the device can operate.
 
 ### EEPROM Structure
 

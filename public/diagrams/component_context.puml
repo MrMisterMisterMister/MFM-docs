@@ -1,11 +1,11 @@
-@startuml MultiFlexMeter_Component_Context
+@startuml Multiflexmeter_Component_Context
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
 LAYOUT_WITH_LEGEND()
 
-title Component Context Diagram - MultiFlexMeter V3 Firmware
+title Component Context Diagram - Multiflexmeter V3 Firmware
 
-Container_Boundary(firmware, "MultiFlexMeter Firmware") {
+Container_Boundary(firmware, "Multiflexmeter Firmware") {
     Component(main, "Main Controller", "main.cpp", "Core event loop and orchestration")
     Component(lora_events, "LoRaWAN Event Handler", "onEvent()", "Handles LMIC events: join, TX complete, etc.")
     Component(job_scheduler, "Job Scheduler", "OS Jobs", "Schedules measurements and transmissions")

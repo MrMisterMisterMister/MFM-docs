@@ -1,9 +1,9 @@
-@startuml MultiFlexMeter_Code_Context
+@startuml Multiflexmeter_Code_Context
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
 LAYOUT_TOP_DOWN()
 
-title Code Context Diagram - MultiFlexMeter V3 Execution Flow
+title Code Context Diagram - Multiflexmeter V3 Execution Flow
 
 note as FlowNote
   **Main Execution Flow:**

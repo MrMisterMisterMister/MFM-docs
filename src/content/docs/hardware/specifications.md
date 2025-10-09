@@ -1,11 +1,11 @@
 ---
 title: Hardware Specifications
-description: Complete technical specifications for MultiFlexMeter V3 hardware
+description: Complete technical specifications for Multiflexmeter V3 hardware
 ---
 
 # Hardware Specifications
 
-Complete technical specifications for the MultiFlexMeter V3 hardware platform.
+Complete technical specifications for the Multiflexmeter V3 hardware platform.
 
 ## Microcontroller
 

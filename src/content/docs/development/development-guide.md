@@ -1,11 +1,11 @@
 ---
 title: Development Guide
-description: Complete guide to building, modifying, and debugging MultiFlexMeter V3 firmware
+description: Complete guide to building, modifying, and debugging Multiflexmeter V3 firmware
 ---
 
 # Firmware Development Guide
 
-This guide covers everything you need to know to build, modify, and debug the MultiFlexMeter V3 firmware.
+This guide covers everything you need to know to build, modify, and debug the Multiflexmeter V3 firmware.
 
 ## Development Environment
 
@@ -31,16 +31,14 @@ This guide covers everything you need to know to build, modify, and debug the Mu
 - AVR ISP programmer (USBasp, AVRISP mkII, or Arduino as ISP)
 - 6-pin ISP cable
 - FTDI USB-to-Serial adapter (for debugging)
-- MultiFlexMeter V3 hardware
+- Multiflexmeter V3 hardware
 
 ## Project Setup
 
-### 1. Clone the Repository
+### 1. Get the Source Code
 
-```bash
-git clone https://github.com/your-org/Multiflexmeter-3.7.0.git
-cd Multiflexmeter-3.7.0
-```
+1. Download V3.7.0 from the [GitHub Releases page](https://github.com/Multiflexmeter/Multiflexmeter/releases).4
+2. Extract the archive to a working directory.
 
 ### 2. Initialize LMIC Submodule
 

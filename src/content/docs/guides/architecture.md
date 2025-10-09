@@ -1,13 +1,13 @@
 ---
 title: Architecture Overview
-description: Understanding the MultiFlexMeter V3 system architecture, components, and data flow.
+description: Understanding the Multiflexmeter V3 system architecture, components, and data flow.
 ---
 
-This document provides a comprehensive overview of the MultiFlexMeter V3 architecture, including system design, component interactions, and operational workflows.
+This document provides a comprehensive overview of the Multiflexmeter V3 architecture, including system design, component interactions, and operational workflows.
 
 ## System Context
 
-The MultiFlexMeter V3 operates within a larger IoT ecosystem:
+The Multiflexmeter V3 operates within a larger IoT ecosystem:
 
 **Diagrams:**
 - [PlantUML Version](/diagrams/system_context.puml)

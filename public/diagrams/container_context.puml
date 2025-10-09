@@ -1,13 +1,13 @@
-@startuml MultiFlexMeter_Container_Context
+@startuml Multiflexmeter_Container_Context
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 
 LAYOUT_WITH_LEGEND()
 
-title Container Context Diagram - MultiFlexMeter V3
+title Container Context Diagram - Multiflexmeter V3
 
 Person(admin, "Administrator", "Configures and manages devices")
 
-System_Boundary(mfm_device, "MultiFlexMeter V3 Device") {
+System_Boundary(mfm_device, "Multiflexmeter V3 Device") {
     Container(firmware, "Firmware", "C/C++, Arduino", "Main control logic, LoRaWAN communication, and sensor orchestration")
     Container(lmic, "LMIC Library", "C++", "LoRaWAN MAC layer implementation")
     Container(eeprom, "EEPROM Storage", "Non-volatile memory", "Stores device credentials and configuration")

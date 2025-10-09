@@ -1,15 +1,15 @@
 ---
 title: Getting Started
-description: Set up your development environment and build your first MultiFlexMeter firmware.
+description: Set up your development environment and build your first Multiflexmeter firmware.
 ---
 
-This guide will help you set up your development environment, build the firmware, and flash it to your MultiFlexMeter V3 device.
+This guide will help you set up your development environment, build the firmware, and flash it to your Multiflexmeter V3 device.
 
 ## Prerequisites
 
 ### Hardware Requirements
 
-- **MultiFlexMeter V3 board** (with ATmega1284P)
+- **Multiflexmeter V3 board** (with ATmega1284P)
 - **AVRISP programmer** (e.g., Atmel-ICE, USBasp, or Arduino as ISP)
 - **USB-to-FTDI adapter** (optional, for serial debugging)
 - **Sensor module** compatible with SMBus/I2C interface
@@ -24,12 +24,10 @@ This guide will help you set up your development environment, build the firmware
 
 ## Installation
 
-### 1. Clone the Repository
+### 1. Get the Source Code
 
-```bash
-git clone https://github.com/your-org/multiflexmeter-3.7.0.git
-cd multiflexmeter-3.7.0
-```
+1. Download V3.7.0 from the [GitHub Releases page](https://github.com/Multiflexmeter/Multiflexmeter/releases).
+2. Extract the archive to a working directory.
 
 ### 2. Initialize Submodules
 

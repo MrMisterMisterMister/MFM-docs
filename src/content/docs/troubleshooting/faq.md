@@ -1,17 +1,17 @@
 ---
 title: FAQ
-description: Frequently Asked Questions about MultiFlexMeter V3
+description: Frequently Asked Questions about Multiflexmeter V3
 ---
 
 # Frequently Asked Questions
 
-Answers to common questions about MultiFlexMeter V3.
+Answers to common questions about Multiflexmeter V3.
 
 ## General Questions
 
-### What is MultiFlexMeter?
+### What is Multiflexmeter?
 
-MultiFlexMeter V3 is an open-source IoT sensor platform based on ATmega1284P microcontroller and RFM95 LoRa radio. It's designed for low-power, long-range sensor data collection using LoRaWAN networks.
+Multiflexmeter V3 is an open-source IoT sensor platform based on ATmega1284P microcontroller and RFM95 LoRa radio. It's designed for low-power, long-range sensor data collection using LoRaWAN networks.
 
 ### What sensors are supported?
 

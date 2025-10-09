@@ -1,16 +1,16 @@
 ---
 title: Quick Start Guide
-description: Get your MultiFlexMeter V3 up and running in minutes
+description: Get your Multiflexmeter V3 up and running in minutes
 ---
 
 # Quick Start Guide
 
-Get your MultiFlexMeter V3 device operational in just a few steps.
+Get your Multiflexmeter V3 device operational in just a few steps.
 
 ## Prerequisites
 
 ### Hardware
-- MultiFlexMeter V3 board
+- Multiflexmeter V3 board
 - AVRISP programmer (USBasp, Arduino as ISP, or similar)
 - 6-pin ISP cable
 - Power supply (3.3V - 5V)
@@ -26,12 +26,12 @@ Get your MultiFlexMeter V3 device operational in just a few steps.
 - LoRaWAN gateway within range
 - The Things Network (TTN) coverage in your area
 
-## Step 1: Clone the Repository
+## Step 1: Download the Release
 
-```bash
-git clone https://github.com/your-org/Multiflexmeter-3.7.0.git
-cd Multiflexmeter-3.7.0
-```
+1. **Go to the repository**: [GitHub - multiflexmeter](https://github.com/Multiflexmeter/Multiflexmeter)
+2. **Download V3.7.0**: Navigate to the Releases section and download version 3.7.0 since the documentation matches this version.
+3. **Extract the archive**: Unzip the downloaded file to a working directory.
+
 
 ## Step 2: Register Device on The Things Network
 

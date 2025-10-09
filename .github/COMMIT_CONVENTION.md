@@ -1,6 +1,6 @@
 # Commit Message Convention
 
-This document outlines the commit message and Git tagging strategy for the MultiFlexMeter Documentation project.
+This document outlines the commit message and Git tagging strategy for the Multiflexmeter Documentation project.
 
 ## Philosophy
 
@@ -186,7 +186,7 @@ git tag -l "v*"
 | Update diagram | `Revise container context diagram` | `diagrams/container`, `content/update` |
 | Fix typo | `Correct sensor pin numbers` | `docs/reference`, `fix/typo` |
 | Config change | `Update Astro sidebar structure` | `config/nav`, `refactor/structure` |
-| Add asset | `Add MultiFlexMeter board photo` | `assets/images`, `content/new` |
+| Add asset | `Add Multiflexmeter board photo` | `assets/images`, `content/new` |
 | Build update | `Upgrade Astro to latest version` | `build/deps`, `chore/deps` |
 | New feature | `Add interactive code playground` | `feature/interactive`, `content/new` |
 

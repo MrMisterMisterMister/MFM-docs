@@ -5,7 +5,7 @@ description: PlatformIO build system configuration and compilation details
 
 # Build System
 
-Comprehensive guide to the PlatformIO build system configuration for MultiFlexMeter V3.
+Comprehensive guide to the PlatformIO build system configuration for Multiflexmeter V3.
 
 ## PlatformIO Configuration
 
@@ -275,7 +275,7 @@ Custom board defined in `boards/mfm_v3_m1284p.json`:
     "variant": "standard"
   },
   "frameworks": ["arduino"],
-  "name": "MultiFlexMeter V3 (ATmega1284P)",
+  "name": "Multiflexmeter V3 (ATmega1284P)",
   "upload": {
     "maximum_ram_size": 16384,
     "maximum_size": 130048,
@@ -283,7 +283,7 @@ Custom board defined in `boards/mfm_v3_m1284p.json`:
     "speed": 19200
   },
   "url": "https://github.com/your-repo/mfm",
-  "vendor": "MultiFlexMeter"
+  "vendor": "Multiflexmeter"
 }
 ```
 

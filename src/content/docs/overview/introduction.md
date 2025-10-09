@@ -1,15 +1,15 @@
 ---
 title: Introduction
-description: Overview of the MultiFlexMeter V3 IoT sensor platform
+description: Overview of the Multiflexmeter V3 IoT sensor platform
 ---
 
-# MultiFlexMeter V3 Introduction
+# Multiflexmeter V3 Introduction
 
-The MultiFlexMeter V3 (MFM) is an open-source IoT sensor platform designed for **flexible, low-cost, and frequent environmental measurements** in remote locations using LoRaWAN technology.
+The Multiflexmeter V3 (MFM) is an open-source IoT sensor platform designed for **flexible, low-cost, and frequent environmental measurements** in remote locations using LoRaWAN technology.
 
 ## Purpose
 
-MultiFlexMeter provides a robust, battery-powered solution for environmental monitoring applications such as:
+Multiflexmeter provides a robust, battery-powered solution for environmental monitoring applications such as:
 
 - Soil moisture and temperature monitoring
 - Water level measurement
@@ -53,7 +53,7 @@ MultiFlexMeter provides a robust, battery-powered solution for environmental mon
 
 ## Firmware Technology Stack
 
-The MultiFlexMeter V3 firmware is built using:
+The Multiflexmeter V3 firmware is built using:
 
 - **Language**: C++ (Arduino framework)
 - **Build System**: PlatformIO
@@ -64,7 +64,7 @@ The MultiFlexMeter V3 firmware is built using:
 ## Use Cases
 
 ### Agricultural Monitoring
-Deploy MultiFlexMeter devices across fields to monitor soil conditions, enabling precision agriculture and optimized irrigation.
+Deploy Multiflexmeter devices across fields to monitor soil conditions, enabling precision agriculture and optimized irrigation.
 
 ### Water Level Monitoring
 Track water levels in reservoirs, rivers, or irrigation channels using ultrasonic or pressure sensors.
@@ -77,7 +77,7 @@ Monitor urban green spaces, parks, or infrastructure with minimal maintenance re
 
 ## Getting Started
 
-Ready to start using MultiFlexMeter V3? Check out:
+Ready to start using Multiflexmeter V3? Check out:
 
 - [Quick Start Guide](/deployment/quick-start/) - Get your first device running
 - [Hardware Specifications](/hardware/specifications/) - Detailed hardware information
@@ -88,7 +88,7 @@ Ready to start using MultiFlexMeter V3? Check out:
 
 **Current Version**: V3.7.0
 
-The MultiFlexMeter V3 is a mature, production-ready platform with ongoing development and community support. The hardware and firmware have been tested in real-world deployments.
+The Multiflexmeter V3 is a mature, production-ready platform with ongoing development and community support. The hardware and firmware have been tested in real-world deployments.
 
 ## Community & Support
 

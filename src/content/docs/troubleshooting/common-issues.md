@@ -5,7 +5,7 @@ description: Frequently encountered problems and their solutions
 
 # Common Issues
 
-Solutions to frequently encountered problems with MultiFlexMeter V3.
+Solutions to frequently encountered problems with Multiflexmeter V3.
 
 ## Device Won't Join TTN
 

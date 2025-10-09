@@ -1,6 +1,6 @@
 # Contributing to MFM Documentation
 
-Thank you for contributing to the MultiFlexMeter V3 documentation!
+Thank you for contributing to the Multiflexmeter V3 documentation!
 
 ## Getting Started
 

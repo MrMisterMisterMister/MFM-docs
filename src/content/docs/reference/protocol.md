@@ -3,7 +3,7 @@ title: Communication Protocol
 description: Detailed specification of uplink and downlink messages, FPorts, and command formats.
 ---
 
-This document specifies the LoRaWAN communication protocol used by MultiFlexMeter V3, including uplink message formats, downlink commands, and payload structures.
+This document specifies the LoRaWAN communication protocol used by Multiflexmeter V3, including uplink message formats, downlink commands, and payload structures.
 
 ## LoRaWAN Configuration
 
@@ -327,7 +327,7 @@ Downlinks must be sent during these windows.
 
 ## Confirmed vs Unconfirmed Messages
 
-The MultiFlexMeter uses **unconfirmed uplinks** by default:
+The Multiflexmeter uses **unconfirmed uplinks** by default:
 
 ```c
 LMIC_setTxData2(fport, data, length, 0);  // Last param: 0 = unconfirmed

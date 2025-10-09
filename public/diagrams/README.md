@@ -1,6 +1,6 @@
-# MultiFlexMeter V3 Architecture Diagrams
+# Multiflexmeter V3 Architecture Diagrams
 
-This directory contains C4 architecture diagrams for the MultiFlexMeter V3 project in two formats:
+This directory contains C4 architecture diagrams for the Multiflexmeter V3 project in two formats:
 
 ## Diagram Formats
 
@@ -18,7 +18,7 @@ This directory contains C4 architecture diagrams for the MultiFlexMeter V3 proje
 
 ### 1. System Context
 - **Files:** `system_context.puml`, `system_context.likec4`
-- **Description:** Shows the MultiFlexMeter V3 in its ecosystem with external actors and systems
+- **Description:** Shows the Multiflexmeter V3 in its ecosystem with external actors and systems
 - **Includes:** Users, TTN network, integration platforms, programming tools
 
 ### 2. Container Context

@@ -1,11 +1,11 @@
 ---
 title: Features & Capabilities
-description: Detailed overview of MultiFlexMeter V3 features and capabilities
+description: Detailed overview of Multiflexmeter V3 features and capabilities
 ---
 
 # Features & Capabilities
 
-MultiFlexMeter V3 provides a comprehensive set of features for IoT sensor deployments.
+Multiflexmeter V3 provides a comprehensive set of features for IoT sensor deployments.
 
 ## Core Features
 

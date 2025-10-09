@@ -1,11 +1,11 @@
 ---
 title: Schematics & Design Files
-description: Hardware schematics and design files for MultiFlexMeter V3
+description: Hardware schematics and design files for Multiflexmeter V3
 ---
 
 # Schematics & Design Files
 
-Hardware design files and schematics for the MultiFlexMeter V3.
+Hardware design files and schematics for the Multiflexmeter V3.
 
 ## KiCad Project Files
 

@@ -6,14 +6,14 @@
 
 model {
   admin = person 'Device Administrator' {
-    description 'System administrator who programs firmware, configures credentials, and manages MultiFlexMeter devices'
+    description 'System administrator who programs firmware, configures credentials, and manages Multiflexmeter devices'
   }
 
   endUser = person 'End User' {
     description 'Person who views and analyzes measurement data through application dashboards'
   }
 
-  mfm = system 'MultiFlexMeter V3' {
+  mfm = system 'Multiflexmeter V3' {
     description 'LoRaWAN-enabled IoT sensor node based on ATmega1284P with RFM95W radio for remote measurements'
   }
 
@@ -35,7 +35,7 @@ model {
 
 views {
   view system_context {
-    title 'System Context - MultiFlexMeter V3'
+    title 'System Context - Multiflexmeter V3'
     include *
   }
 }

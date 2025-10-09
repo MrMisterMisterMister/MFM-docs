@@ -1,11 +1,11 @@
 ---
 title: Firmware Architecture
-description: Software architecture and code organization of MultiFlexMeter firmware
+description: Software architecture and code organization of Multiflexmeter firmware
 ---
 
 # Firmware Architecture
 
-Software architecture and code organization for the MultiFlexMeter V3 firmware.
+Software architecture and code organization for the Multiflexmeter V3 firmware.
 
 ## Architecture Overview
 

@@ -1,11 +1,11 @@
 ---
 title: API Reference
-description: Complete API reference for MultiFlexMeter firmware functions
+description: Complete API reference for Multiflexmeter firmware functions
 ---
 
 # API Reference
 
-Complete API reference for MultiFlexMeter V3 firmware functions and interfaces.
+Complete API reference for Multiflexmeter V3 firmware functions and interfaces.
 
 ## Configuration API
 

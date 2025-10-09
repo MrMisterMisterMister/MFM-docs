@@ -1,15 +1,15 @@
 ---
 title: Configuration
-description: Detailed EEPROM configuration and device setup for MultiFlexMeter V3
+description: Detailed EEPROM configuration and device setup for Multiflexmeter V3
 ---
 
 # Configuration
 
-Complete guide to configuring the MultiFlexMeter V3 device via EEPROM settings.
+Complete guide to configuring the Multiflexmeter V3 device via EEPROM settings.
 
 ## EEPROM Structure
 
-The MultiFlexMeter stores all configuration in EEPROM (persistent memory).
+The Multiflexmeter stores all configuration in EEPROM (persistent memory).
 
 ### Memory Layout
 
