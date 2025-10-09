@@ -17,19 +17,52 @@ export default defineConfig({
 			],
 			sidebar: [
 				{
-					label: 'Guides',
+					label: 'Overview',
 					items: [
-						{ label: 'Getting Started', slug: 'guides/getting-started' },
-						{ label: 'Architecture Overview', slug: 'guides/architecture' },
-						{ label: 'Configuration', slug: 'guides/configuration' },
+						{ label: 'Introduction', slug: 'overview/introduction' },
+						{ label: 'Features & Capabilities', slug: 'overview/features' },
+						{ label: 'System Architecture', slug: 'overview/architecture' },
 					],
 				},
 				{
-					label: 'Reference',
+					label: 'Hardware',
 					items: [
-						{ label: 'Communication Protocol', slug: 'reference/protocol' },
-						{ label: 'Hardware Reference', slug: 'reference/hardware' },
-						{ label: 'API Reference', slug: 'reference/api' },
+						{ label: 'Hardware Overview', slug: 'hardware/overview' },
+						{ label: 'Specifications', slug: 'hardware/specifications' },
+						{ label: 'Pin Mappings', slug: 'hardware/pinout' },
+						{ label: 'Schematics', slug: 'hardware/schematics' },
+					],
+				},
+				{
+					label: 'Firmware',
+					items: [
+						{ label: 'Firmware Architecture', slug: 'firmware/architecture' },
+						{ label: 'Communication Protocol', slug: 'firmware/protocol' },
+						{ label: 'API Reference', slug: 'firmware/api-reference' },
+						{ label: 'Build System', slug: 'firmware/build-system' },
+					],
+				},
+				{
+					label: 'Deployment',
+					items: [
+						{ label: 'Quick Start Guide', slug: 'deployment/quick-start' },
+						{ label: 'Configuration', slug: 'deployment/configuration' },
+						{ label: 'TTN Setup', slug: 'deployment/ttn-setup' },
+						{ label: 'Field Deployment', slug: 'deployment/field-deployment' },
+					],
+				},
+				{
+					label: 'Development',
+					items: [
+						{ label: 'Development Guide', slug: 'development/development-guide' },
+					],
+				},
+				{
+					label: 'Troubleshooting',
+					items: [
+						{ label: 'Common Issues', slug: 'troubleshooting/common-issues' },
+						{ label: 'Debugging', slug: 'troubleshooting/debugging' },
+						{ label: 'FAQ', slug: 'troubleshooting/faq' },
 					],
 				},
 			],

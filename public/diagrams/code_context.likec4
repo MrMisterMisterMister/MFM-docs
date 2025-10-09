@@ -1,166 +1,81 @@
-specification {
+﻿specification {
+  element system
+  element container
+  element component
   element function
-  element handler
-  element operation
 }
 
 model {
-  // Initialization Functions
-  init = function 'Initialization' {
+  mfm = system 'MultiFlexMeter V3' {
     
-    setup = operation 'setup()' {
-      description 'Main setup function called at startup'
+    application = container 'Application Firmware' {
+      
+      eventHandler = component 'Event Handler' {
+        description 'LMIC event processing'
+
+        setup = function 'setup()' {
+          description 'Initializes hardware, loads EEPROM credentials, configures LMIC, starts OTAA join'
+        }
+
+        loop = function 'loop()' {
+          description 'Executes LMIC scheduler via os_runloop_once() to process jobs and events'
+        }
+
+        onEvent = function 'onEvent()' {
+          description 'Handles LMIC events: EV_JOINED, EV_TXCOMPLETE, EV_RXCOMPLETE, EV_JOIN_FAILED'
+        }
+      }
+
+      measurementMgr = component 'Measurement Manager' {
+        description 'Sensor measurement orchestration'
+
+        doMeasure = function 'do_measure()' {
+          description 'LMIC job function that triggers sensor, waits 5s, reads data, schedules transmission'
+        }
+
+        doSend = function 'do_send()' {
+          description 'LMIC job function that transmits sensor data via LMIC_setTxData2()'
+        }
+      }
+
+      sensorInterface = component 'Sensor Interface' {
+        description 'SMBus communication'
+
+        sensorRead = function 'sensorRead()' {
+          description 'Implements SMBus protocol: CMD_PERFORM (0x00) trigger, 5s delay, CMD_READ (0x01) to get 8  int16_t'
+        }
+      }
+
+      configMgr = component 'Config Manager' {
+        description 'Credential management'
+
+        romReadCred = function 'rom_read_cred()' {
+          description 'Reads DevEUI, AppEUI, AppKey from EEPROM addresses 0x0A, 0x12, 0x1A'
+        }
+      }
     }
-    
-    board_setup = operation 'board_setup()' {
-      description 'Board-specific hardware initialization'
-    }
-    
-    sensors_init = operation 'sensors_init()' {
-      description 'Initialize I2C bus and sensors'
-    }
-    
-    conf_load = operation 'conf_load()' {
-      description 'Load configuration from EEPROM'
-    }
-    
-    os_init = operation 'os_init()' {
-      description 'Initialize LMIC OS'
-    }
-    
-    lmic_reset = operation 'LMIC_reset()' {
-      description 'Reset LoRaWAN MAC state'
-    }
+
+    lmic = container 'LMIC Stack'
   }
+
+  mfm.application.eventHandler.setup -> mfm.application.configMgr.romReadCred 'Loads credentials'
+  mfm.application.eventHandler.setup -> mfm.lmic 'Initializes LMIC and starts join'
   
-  // Job Execution Functions
-  jobs = function 'Job Execution' {
-    
-    ping = operation 'job_pingVersion' {
-      description 'Send firmware/hardware version'
-    }
-    
-    perform = operation 'job_performMeasurements' {
-      description 'Trigger sensor measurement'
-    }
-    
-    fetch = operation 'job_fetchAndSend' {
-      description 'Read sensor data and transmit'
-    }
-    
-    schedule = operation 'scheduleNextMeasurement' {
-      description 'Schedule next measurement cycle'
-    }
-  }
+  mfm.application.eventHandler.loop -> mfm.lmic 'Runs LMIC scheduler'
   
-  // Event Handlers
-  events = handler 'Event Handlers' {
-    
-    ev_joined = operation 'onEvent(EV_JOINED)' {
-      description 'Device successfully joined network'
-    }
-    
-    ev_txcomplete = operation 'onEvent(EV_TXCOMPLETE)' {
-      description 'Transmission complete, process downlinks'
-    }
-    
-    ev_joining = operation 'onEvent(EV_JOINING)' {
-      description 'Join procedure started'
-    }
-    
-    downlink = operation 'processDownlink()' {
-      description 'Process downlink commands'
-    }
-  }
+  mfm.application.eventHandler.onEvent -> mfm.lmic 'Receives events'
+  mfm.application.eventHandler.onEvent -> mfm.application.measurementMgr.doMeasure 'Schedules measurement on join'
   
-  // Sensor Operations
-  sensor_ops = function 'Sensor Operations' {
-    
-    sensor_perform = operation 'sensors_performMeasurement()' {
-      description 'Command sensor to start measurement'
-    }
-    
-    sensor_read = operation 'sensors_readMeasurement()' {
-      description 'Read measurement result from sensor'
-    }
-    
-    smbus_send = operation 'smbus_sendByte()' {
-      description 'Send I2C command byte'
-    }
-    
-    smbus_read = operation 'smbus_blockRead()' {
-      description 'Read I2C data block'
-    }
-  }
+  mfm.application.measurementMgr.doMeasure -> mfm.application.sensorInterface.sensorRead 'Reads sensor'
+  mfm.application.measurementMgr.doMeasure -> mfm.application.measurementMgr.doSend 'Schedules transmission'
   
-  // Configuration Operations
-  config = function 'Configuration' {
-    
-    get_interval = operation 'conf_getMeasurementInterval()' {
-      description 'Get measurement interval'
-    }
-    
-    set_interval = operation 'conf_setMeasurementInterval()' {
-      description 'Set measurement interval'
-    }
-    
-    get_appeui = operation 'conf_getAppEui()' {
-      description 'Get Application EUI'
-    }
-    
-    save_conf = operation 'conf_save()' {
-      description 'Save configuration to EEPROM'
-    }
-  }
-  
-  // Execution Flow Relationships
-  init.setup -> init.board_setup
-  init.setup -> init.sensors_init
-  init.setup -> init.conf_load
-  init.setup -> init.os_init
-  init.setup -> init.lmic_reset
-  
-  events.ev_joined -> jobs.ping
-  jobs.ping -> jobs.perform
-  
-  jobs.perform -> sensor_ops.sensor_perform
-  sensor_ops.sensor_perform -> sensor_ops.smbus_send
-  jobs.perform -> jobs.fetch
-  
-  jobs.fetch -> sensor_ops.sensor_read
-  sensor_ops.sensor_read -> sensor_ops.smbus_read
-  jobs.fetch -> jobs.schedule
-  jobs.fetch -> events.ev_txcomplete 'triggers'
-  
-  events.ev_txcomplete -> events.downlink 'if data received'
-  events.ev_txcomplete -> jobs.schedule
-  
-  jobs.schedule -> config.get_interval
-  jobs.schedule -> jobs.perform 'next cycle'
-  
-  events.downlink -> config.set_interval 'CMD_INTERVAL'
-  events.downlink -> config.save_conf
-  events.downlink -> jobs.schedule 'reschedule'
+  mfm.application.measurementMgr.doSend -> mfm.lmic 'Queues uplink message'
 }
 
 views {
-  view index {
-    title 'MultiFlexMeter V3 - Code Execution Flow'
-    include *
-  }
-  
-  view startup {
-    title 'Startup Sequence'
-    include init.*
-  }
-  
-  view measurement_cycle {
-    title 'Measurement Cycle'
-    include jobs.*, sensor_ops.*
-  }
-  
-  view downlink_processing {
-    title 'Downlink Processing'
-    include events.*, config.*
+  view code_context {
+    title 'Code Context - Key Functions'
+    include mfm.application.*.*
+    include mfm.lmic
   }
 }

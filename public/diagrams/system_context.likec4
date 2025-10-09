@@ -1,66 +1,41 @@
-specification {
+﻿specification {
   element person
   element system
   element external
 }
 
 model {
-  // People
-  operator = person 'System Operator' {
-    description 'Manages and monitors sensor deployments'
+  admin = person 'Device Administrator' {
+    description 'System administrator who programs firmware, configures credentials, and manages MultiFlexMeter devices'
   }
-  
-  admin = person 'Administrator' {
-    description 'Configures devices and manages infrastructure'
+
+  endUser = person 'End User' {
+    description 'Person who views and analyzes measurement data through application dashboards'
   }
-  
-  // Main System
+
   mfm = system 'MultiFlexMeter V3' {
-    description 'Open-source IoT sensor platform for environmental monitoring using LoRaWAN'
+    description 'LoRaWAN-enabled IoT sensor node based on ATmega1284P with RFM95W radio for remote measurements'
   }
-  
-  // External Systems
-  ttn = external 'The Things Network' {
-    description 'LoRaWAN network server providing connectivity'
+
+  lorawan = external 'LoRaWAN Network' {
+    description 'The Things Network gateway infrastructure and network server for LoRaWAN communication'
+    technology 'TTN / LoRaWAN 1.0.x'
   }
-  
-  integration = external 'Integration Platform' {
-    description 'Data processing and visualization platform'
+
+  application = external 'Application Server' {
+    description 'Backend server that receives decoded sensor data and provides web interface for data visualization'
+    technology 'TTN Console / Custom Backend'
   }
-  
-  programmer = external 'AVRISP Programmer' {
-    description 'Programming device for firmware and EEPROM flashing'
-  }
-  
-  // Relationships
-  operator -> mfm 'Views measurements from' {
-    technology 'Serial/Debug'
-  }
-  
-  admin -> mfm 'Configures and programs' {
-    technology 'AVRISP/FTDI'
-  }
-  
-  mfm -> ttn 'Sends sensor data via' {
-    technology 'LoRaWAN OTAA'
-  }
-  
-  ttn -> integration 'Forwards messages to' {
-    technology 'MQTT/HTTP'
-  }
-  
-  integration -> operator 'Provides dashboards to' {
-    technology 'Web'
-  }
-  
-  ttn -> mfm 'Sends downlink commands' {
-    technology 'LoRaWAN'
-  }
+
+  admin -> mfm 'Programs firmware and configures LoRaWAN credentials'
+  mfm -> lorawan 'Transmits sensor measurements via LoRaWAN'
+  lorawan -> application 'Routes uplink messages with sensor data'
+  endUser -> application 'Views measurement data and device status'
 }
 
 views {
-  view index {
-    title 'MultiFlexMeter V3 - System Context'
+  view system_context {
+    title 'System Context - MultiFlexMeter V3'
     include *
   }
 }

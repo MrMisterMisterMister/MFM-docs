@@ -5,14 +5,14 @@ template: splash
 hero:
   tagline: Open-source IoT sensor platform for flexible, low-cost, and frequent environmental measurements using LoRaWAN.
   image:
-    file: ../../assets/houston.webp
+    file: ../../assets/mfm.png
   actions:
-    - text: Getting Started
-      link: /guides/getting-started/
+    - text: Quick Start Guide
+      link: /deployment/quick-start/
       icon: right-arrow
       variant: primary
     - text: View Architecture
-      link: /guides/architecture/
+      link: /overview/architecture/
       icon: open-book
       variant: minimal
 ---
@@ -36,9 +36,24 @@ MultiFlexMeter V3 (MFM) is an open-source sensor platform designed for **frequen
 		Optimized for battery-powered deployments with efficient power management and configurable measurement intervals.
 	</Card>
 	<Card title="Open Source Hardware & Firmware" icon="open-book">
-		Complete hardware designs (KiCad) and firmware source code (PlatformIO/Arduino) available under MIT license.
+		Complete hardware designs (KiCad) and C++ firmware source code (PlatformIO) available under MIT license.
 	</Card>
 </CardGrid>
+
+## Firmware Technology Stack
+
+The MultiFlexMeter V3 firmware is built using modern C++ development tools:
+
+- **Language**: C++ with Arduino Framework
+- **Build System**: PlatformIO - Professional build tool for embedded systems
+- **IDE**: VS Code with PlatformIO extension (recommended)
+- **LoRaWAN Library**: MCCI Arduino-LMIC
+- **Toolchain**: AVR-GCC cross-compiler
+- **Programming**: AVRDude with ISP programmer
+
+:::tip[No Python Required]
+This is a **pure C++ embedded project** built with PlatformIO. You don't need Python knowledge to work with the firmware - just C++ and familiarity with the Arduino framework.
+:::
 
 ## Technical Specifications
 
@@ -53,21 +68,25 @@ MultiFlexMeter V3 (MFM) is an open-source sensor platform designed for **frequen
 ## Quick Links
 
 <CardGrid>
-	<Card title="Getting Started" icon="document">
-		Set up your development environment and flash your first firmware.
-		[Read the guide →](/guides/getting-started/)
+	<Card title="🚀 Quick Start" icon="rocket">
+		Get your first MultiFlexMeter device operational in minutes.
+		
+		[Start Here →](/deployment/quick-start/)
 	</Card>
-	<Card title="Configuration" icon="setting">
-		Learn how to configure EEPROM settings and LoRaWAN credentials.
-		[Configure device →](/guides/configuration/)
+	<Card title="🔧 Hardware" icon="seti:config">
+		Detailed hardware specifications, pin mappings, and schematics.
+		
+		[Explore Hardware →](/hardware/specifications/)
 	</Card>
-	<Card title="Architecture" icon="puzzle">
-		Understand the system design and component interactions.
-		[Explore architecture →](/guides/architecture/)
+	<Card title="💻 Firmware Development" icon="seti:c">
+		Build, modify, and extend the C++ firmware with PlatformIO.
+		
+		[Development Guide →](/development/development-guide/)
 	</Card>
-	<Card title="Protocol Reference" icon="information">
-		Details on uplink/downlink messages and communication protocols.
-		[View protocol →](/reference/protocol/)
+	<Card title="📡 Communication Protocol" icon="information">
+		Understand LoRaWAN messages, payload formats, and commands.
+		
+		[Protocol Docs →](/firmware/protocol/)
 	</Card>
 </CardGrid>
 
