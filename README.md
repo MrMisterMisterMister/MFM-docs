@@ -19,7 +19,7 @@ This documentation covers:
 - **Hardware Reference** - Pin mappings, specifications, and fuse settings
 - **API Reference** - Complete function documentation with examples
 
-## 🚀 Quick Start
+<!-- ## 🚀 Quick Start
 
 ### View Documentation Locally
 
@@ -36,7 +36,7 @@ Then open your browser to: **http://localhost:4321**
 npm run build
 ```
 
-The static site will be generated in the `dist/` directory.
+The static site will be generated in the `dist/` directory. -->
 
 ## 📁 Project Structure
 
