@@ -6,8 +6,8 @@ import starlight from '@astrojs/starlight';
 export default defineConfig({
 	integrations: [
 		starlight({
-			title: 'Multiflexmeter V3 Docs',
-			description: 'Documentation for the Multiflexmeter V3 open-source IoT sensor platform',
+			title: 'Multiflexmeter V3.7.0 Docs',
+			description: 'Documentation for the Multiflexmeter V3.7.0 open-source IoT sensor platform',
 			social: [
 				{ 
 					icon: 'github', 

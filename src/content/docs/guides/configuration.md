@@ -1,9 +1,9 @@
 ---
 title: Configuration Guide
-description: Configure EEPROM settings, LoRaWAN credentials, and device parameters for Multiflexmeter V3.
+description: Configure EEPROM settings, LoRaWAN credentials, and device parameters for Multiflexmeter V3.7.0.
 ---
 
-This guide covers all configuration aspects of the Multiflexmeter V3, including EEPROM programming, LoRaWAN setup, and runtime configuration.
+This guide covers all configuration aspects of the Multiflexmeter V3.7.0, including EEPROM programming, LoRaWAN setup, and runtime configuration.
 
 ## EEPROM Configuration
 

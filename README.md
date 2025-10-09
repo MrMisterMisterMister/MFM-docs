@@ -1,8 +1,8 @@
-# Multiflexmeter V3 Documentation
+# Multiflexmeter V3.7.0 Documentation
 
 [![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
 
-Comprehensive technical documentation for the **Multiflexmeter V3** - an open-source IoT sensor platform for environmental monitoring using LoRaWAN.
+Comprehensive technical documentation for the **Multiflexmeter V3.7.0** - an open-source IoT sensor platform for environmental monitoring using LoRaWAN.
 
 ## 📚 What's Included
 
@@ -182,7 +182,7 @@ When contributing to the documentation:
 
 ## 🤝 About the Project
 
-Multiflexmeter V3 is an open-source IoT sensor platform designed for:
+Multiflexmeter V3.7.0 is an open-source IoT sensor platform designed for:
 - Environmental monitoring
 - Long-range wireless communication via LoRaWAN
 - Low-power battery operation

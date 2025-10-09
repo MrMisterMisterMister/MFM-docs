@@ -1,11 +1,11 @@
 ---
 title: Pin Mappings
-description: Complete pin assignments for Multiflexmeter V3
+description: Complete pin assignments for Multiflexmeter V3.7.0
 ---
 
 # Pin Mappings
 
-Complete pin assignments and GPIO configuration for Multiflexmeter V3.
+Complete pin assignments and GPIO configuration for Multiflexmeter V3.7.0.
 
 ## RFM95 LoRa Module Pins
 

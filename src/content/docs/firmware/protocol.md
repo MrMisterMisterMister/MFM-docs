@@ -1,11 +1,11 @@
 ---
 title: Communication Protocol
-description: LoRaWAN message formats, FPorts, and command specifications for Multiflexmeter V3
+description: LoRaWAN message formats, FPorts, and command specifications for Multiflexmeter V3.7.0
 ---
 
 # Communication Protocol
 
-This document describes the LoRaWAN communication protocol used by Multiflexmeter V3, including uplink message formats, downlink commands, and TTN integration.
+This document describes the LoRaWAN communication protocol used by Multiflexmeter V3.7.0, including uplink message formats, downlink commands, and TTN integration.
 
 ## LoRaWAN Configuration
 
@@ -411,7 +411,7 @@ Device will receive downlink after next uplink (Class A).
 
 ## Fair Use Policy
 
-Multiflexmeter V3 implements optional TTN Fair Use Policy compliance.
+Multiflexmeter V3.7.0 implements optional TTN Fair Use Policy compliance.
 
 ### Configuration
 

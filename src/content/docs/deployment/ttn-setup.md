@@ -1,16 +1,16 @@
 ---
 title: TTN Setup
-description: Complete guide to setting up The Things Network for Multiflexmeter V3
+description: Complete guide to setting up The Things Network for Multiflexmeter V3.7.0
 ---
 
 # The Things Network Setup
 
-Step-by-step guide to register and configure Multiflexmeter V3 devices on The Things Network (TTN).
+Step-by-step guide to register and configure Multiflexmeter V3.7.0 devices on The Things Network (TTN).
 
 ## Prerequisites
 
 - TTN account (free): https://console.cloud.thethings.network/
-- Multiflexmeter V3 hardware
+- Multiflexmeter V3.7.0 hardware
 - Internet connection
 
 ## Step 1: Create TTN Application

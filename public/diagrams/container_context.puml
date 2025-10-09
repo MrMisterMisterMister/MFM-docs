@@ -3,11 +3,11 @@
 
 LAYOUT_WITH_LEGEND()
 
-title Container Context Diagram - Multiflexmeter V3
+title Container Context Diagram - Multiflexmeter V3.7.0
 
 Person(admin, "Administrator", "Configures and manages devices")
 
-System_Boundary(mfm_device, "Multiflexmeter V3 Device") {
+System_Boundary(mfm_device, "Multiflexmeter V3.7.0 Device") {
     Container(firmware, "Firmware", "C/C++, Arduino", "Main control logic, LoRaWAN communication, and sensor orchestration")
     Container(lmic, "LMIC Library", "C++", "LoRaWAN MAC layer implementation")
     Container(eeprom, "EEPROM Storage", "Non-volatile memory", "Stores device credentials and configuration")

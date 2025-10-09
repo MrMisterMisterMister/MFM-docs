@@ -3,7 +3,7 @@
 
 LAYOUT_WITH_LEGEND()
 
-title Component Context Diagram - Multiflexmeter V3 Firmware
+title Component Context Diagram - Multiflexmeter V3.7.0 Firmware
 
 Container_Boundary(firmware, "Multiflexmeter Firmware") {
     Component(main, "Main Controller", "main.cpp", "Core event loop and orchestration")

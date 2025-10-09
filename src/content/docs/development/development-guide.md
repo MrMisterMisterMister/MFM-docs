@@ -1,11 +1,11 @@
 ---
 title: Development Guide
-description: Complete guide to building, modifying, and debugging Multiflexmeter V3 firmware
+description: Complete guide to building, modifying, and debugging Multiflexmeter V3.7.0 firmware
 ---
 
 # Firmware Development Guide
 
-This guide covers everything you need to know to build, modify, and debug the Multiflexmeter V3 firmware.
+This guide covers everything you need to know to build, modify, and debug the Multiflexmeter V3.7.0 firmware.
 
 ## Development Environment
 
@@ -31,7 +31,7 @@ This guide covers everything you need to know to build, modify, and debug the Mu
 - AVR ISP programmer (USBasp, AVRISP mkII, or Arduino as ISP)
 - 6-pin ISP cable
 - FTDI USB-to-Serial adapter (for debugging)
-- Multiflexmeter V3 hardware
+- Multiflexmeter V3.7.0 hardware
 
 ## Project Setup
 

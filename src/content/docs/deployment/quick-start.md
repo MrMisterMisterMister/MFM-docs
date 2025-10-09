@@ -1,16 +1,16 @@
 ---
 title: Quick Start Guide
-description: Get your Multiflexmeter V3 up and running in minutes
+description: Get your Multiflexmeter V3.7.0 up and running in minutes
 ---
 
 # Quick Start Guide
 
-Get your Multiflexmeter V3 device operational in just a few steps.
+Get your Multiflexmeter V3.7.0 device operational in just a few steps.
 
 ## Prerequisites
 
 ### Hardware
-- Multiflexmeter V3 board
+- Multiflexmeter V3.7.0 board
 - AVRISP programmer (USBasp, Arduino as ISP, or similar)
 - 6-pin ISP cable
 - Power supply (3.3V - 5V)

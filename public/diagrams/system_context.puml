@@ -3,12 +3,12 @@
 
 LAYOUT_WITH_LEGEND()
 
-title System Context Diagram - Multiflexmeter V3
+title System Context Diagram - Multiflexmeter V3.7.0
 
 Person(operator, "System Operator", "Manages and monitors sensor deployments")
 Person(admin, "Administrator", "Configures devices and manages infrastructure")
 
-System(mfm, "Multiflexmeter V3", "Open-source IoT sensor platform for environmental monitoring using LoRaWAN")
+System(mfm, "Multiflexmeter V3.7.0", "Open-source IoT sensor platform for environmental monitoring using LoRaWAN")
 
 System_Ext(ttn, "The Things Network", "LoRaWAN network server providing connectivity")
 System_Ext(integration, "Integration Platform", "Data processing and visualization platform")

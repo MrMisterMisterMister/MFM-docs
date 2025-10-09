@@ -1,13 +1,13 @@
 ---
 title: Hardware Reference
-description: Pin mappings, board variants, electrical specifications, and hardware design for Multiflexmeter V3.
+description: Pin mappings, board variants, electrical specifications, and hardware design for Multiflexmeter V3.7.0.
 ---
 
-This document provides detailed hardware specifications, pin assignments, and electrical characteristics of the Multiflexmeter V3 platform.
+This document provides detailed hardware specifications, pin assignments, and electrical characteristics of the Multiflexmeter V3.7.0 platform.
 
 ## Board Variants
 
-Multiflexmeter V3 supports multiple board variants with the ATmega1284P microcontroller.
+Multiflexmeter V3.7.0 supports multiple board variants with the ATmega1284P microcontroller.
 
 ### MFM V3 M1284P (Standard)
 

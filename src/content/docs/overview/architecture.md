@@ -1,13 +1,13 @@
 ---
 title: System Architecture
-description: Understanding the Multiflexmeter V3 system architecture, components, and data flow.
+description: Understanding the Multiflexmeter V3.7.0 system architecture, components, and data flow.
 ---
 
-This document provides a comprehensive overview of the Multiflexmeter V3 architecture using the C4 model, including system design, component interactions, and operational workflows.
+This document provides a comprehensive overview of the Multiflexmeter V3.7.0 architecture using the C4 model, including system design, component interactions, and operational workflows.
 
 ## Architecture Documentation
 
-The Multiflexmeter V3 architecture is documented using the C4 model at four levels:
+The Multiflexmeter V3.7.0 architecture is documented using the C4 model at four levels:
 
 1. **System Context** - How MFM fits into the broader IoT ecosystem
 2. **Container Architecture** - Major software and hardware containers
@@ -22,7 +22,7 @@ See the [Diagram Rendering Guide](/diagrams/README.md) for setup instructions.
 
 ## System Context
 
-The Multiflexmeter V3 operates within a larger IoT ecosystem:
+The Multiflexmeter V3.7.0 operates within a larger IoT ecosystem:
 
 **View Diagrams:**
 - [PlantUML Version](/diagrams/system_context.puml)

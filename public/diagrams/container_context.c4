@@ -8,7 +8,7 @@
 model {
   admin = person 'Device Administrator'
 
-  mfm = system 'Multiflexmeter V3' {
+  mfm = system 'Multiflexmeter V3.7.0' {
     description 'LoRaWAN sensor node with C++ firmware on ATmega1284P'
 
     application = container 'Application Firmware' {
@@ -52,7 +52,7 @@ model {
 
 views {
   view container_context {
-    title 'Container Context - Multiflexmeter V3 Firmware Architecture'
+    title 'Container Context - Multiflexmeter V3.7.0 Firmware Architecture'
     include mfm.*
     include admin
     include lorawan

@@ -5,7 +5,7 @@
 }
 
 model {
-  mfm = system 'Multiflexmeter V3' {
+  mfm = system 'Multiflexmeter V3.7.0' {
     
     application = container 'Application Firmware' {
       description 'Main firmware logic in C++'

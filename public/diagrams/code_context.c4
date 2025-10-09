@@ -6,7 +6,7 @@
 }
 
 model {
-  mfm = system 'Multiflexmeter V3' {
+  mfm = system 'Multiflexmeter V3.7.0' {
     
     application = container 'Application Firmware' {
       

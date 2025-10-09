@@ -1,11 +1,11 @@
 ---
 title: Introduction
-description: Overview of the Multiflexmeter V3 IoT sensor platform
+description: Overview of the Multiflexmeter V3.7.0 IoT sensor platform
 ---
 
-# Multiflexmeter V3 Introduction
+# Multiflexmeter V3.7.0 Introduction
 
-The Multiflexmeter V3 (MFM) is an open-source IoT sensor platform designed for **flexible, low-cost, and frequent environmental measurements** in remote locations using LoRaWAN technology.
+The Multiflexmeter V3.7.0 (MFM) is an open-source IoT sensor platform designed for **flexible, low-cost, and frequent environmental measurements** in remote locations using LoRaWAN technology.
 
 ## Purpose
 
@@ -53,7 +53,7 @@ Multiflexmeter provides a robust, battery-powered solution for environmental mon
 
 ## Firmware Technology Stack
 
-The Multiflexmeter V3 firmware is built using:
+The Multiflexmeter V3.7.0 firmware is built using:
 
 - **Language**: C++ (Arduino framework)
 - **Build System**: PlatformIO
@@ -77,7 +77,7 @@ Monitor urban green spaces, parks, or infrastructure with minimal maintenance re
 
 ## Getting Started
 
-Ready to start using Multiflexmeter V3? Check out:
+Ready to start using Multiflexmeter V3.7.0? Check out:
 
 - [Quick Start Guide](/deployment/quick-start/) - Get your first device running
 - [Hardware Specifications](/hardware/specifications/) - Detailed hardware information
@@ -88,7 +88,7 @@ Ready to start using Multiflexmeter V3? Check out:
 
 **Current Version**: V3.7.0
 
-The Multiflexmeter V3 is a mature, production-ready platform with ongoing development and community support. The hardware and firmware have been tested in real-world deployments.
+The Multiflexmeter V3.7.0 is a mature, production-ready platform with ongoing development and community support. The hardware and firmware have been tested in real-world deployments.
 
 ## Community & Support
 
