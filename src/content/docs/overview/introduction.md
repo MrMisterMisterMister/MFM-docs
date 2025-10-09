@@ -82,7 +82,7 @@ Ready to start using Multiflexmeter V3.7.0? Check out:
 - [Quick Start Guide](/deployment/quick-start/) - Get your first device running
 - [Hardware Specifications](/hardware/specifications/) - Detailed hardware information
 - [Firmware Architecture](/firmware/architecture/) - Understand the firmware structure
-- [Development Setup](/development/environment-setup/) - Set up your development environment
+- [Development Setup](/development/development-guide/) - Set up your development environment
 
 ## Project Status
 
@@ -92,7 +92,7 @@ The Multiflexmeter V3.7.0 is a mature, production-ready platform with ongoing de
 
 ## Community & Support
 
-- **Repository**: [GitHub Organization](https://github.com/your-org/multiflexmeter)
+- **Repository**: [MFM Documentation](https://github.com/MrMisterMisterMister/MFM-docs)
 - **Issue Tracking**: Report bugs and request features
 - **Documentation**: Comprehensive guides and reference materials
 - **Contributions**: Community contributions welcome

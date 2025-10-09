@@ -9,7 +9,7 @@ Comprehensive technical documentation for the **Multiflexmeter V3.7.0** - an ope
 This documentation covers:
 
 - **Getting Started** - Setup, building, and flashing firmware
-- **Architecture** - System design with C4 diagrams (PlantUML & LikeC4)
+- **Architecture** - System design with interactive C4 diagrams (LikeC4)
 - **Configuration** - EEPROM, LoRaWAN credentials, and device settings
 - **Communication Protocol** - Uplink/downlink messages and command formats
 - **Hardware Reference** - Pin mappings, specifications, and fuse settings
@@ -40,12 +40,11 @@ The static site will be generated in the `dist/` directory. -->
 MFM-docs/
 ├── public/
 │   ├── favicon.svg
-│   └── diagrams/              # C4 architecture diagrams
-│       ├── *.puml            # PlantUML format
-│       ├── *.likec4          # LikeC4 format
-│       └── README.md         # Diagram rendering guide
+│   └── diagrams/              # Exported diagram assets
 ├── src/
 │   ├── assets/               # Images and media
+│   ├── likec4/               # LikeC4 architecture models
+│   │   └── model.c4          # C4 architecture definition
 │   ├── content/
 │   │   └── docs/             # Documentation content
 │   │       ├── index.mdx     # Landing page
@@ -79,24 +78,20 @@ All commands are run from the root of the project:
 
 ## 🎨 Architecture Diagrams
 
-The documentation includes C4 architecture diagrams in two formats:
-
-- **PlantUML** (`.puml` files) - Traditional format, widely supported
-- **LikeC4** (`.likec4` files) - Modern DSL with better tooling
-
-See `public/diagrams/README.md` for rendering instructions.
+The documentation includes interactive C4 architecture diagrams built with LikeC4.
 
 ### Viewing Diagrams
 
-**PlantUML:**
-- Install "PlantUML" VS Code extension
-- Open any `.puml` file and press `Alt+D`
-- Or use: https://www.plantuml.com/plantuml/
+**Live Site:**
+- Visit the deployed documentation site
+- Navigate to "Interactive Diagrams" or visit `/diagrams/`
+- Explore interactive system architecture views
 
-**LikeC4:**
+**Development:**
 - Install "LikeC4" VS Code extension
-- Open any `.likec4` file
-- Or use: https://likec4.dev/
+- Open `src/likec4/model.c4` to view the source
+- Run `npm run dev:likec4` for local diagram server
+- Or edit online at: https://likec4.dev/
 
 <!-- ## 🚢 Deployment
 
@@ -138,13 +133,9 @@ npm run build
 
 ### New Architecture Diagram
 
-1. Create both `.puml` and `.likec4` versions in `public/diagrams/`
-2. Reference in documentation with:
-   ```markdown
-   **Diagrams:**
-   - [PlantUML Version](/diagrams/your_diagram.puml)
-   - [LikeC4 Version](/diagrams/your_diagram.likec4)
-   ```
+1. Edit the LikeC4 model in `src/likec4/model.c4`
+2. The diagrams will be automatically built and served at `/diagrams/`
+3. Reference in documentation with links to the interactive diagrams:
 
 ## 🛠️ Customization
 
@@ -156,7 +147,7 @@ Edit `astro.config.mjs`:
 starlight({
   title: 'Your Project Name',
   social: [
-    { icon: 'github', href: 'https://github.com/your-org/your-repo' }
+    { icon: 'github', href: 'https://github.com/MrMisterMisterMister/MFM-docs' }
   ],
   // ... other settings
 })
@@ -174,7 +165,7 @@ Starlight supports custom CSS. See [Starlight's customization guide](https://sta
 
 When contributing to the documentation:
 
-1. **Keep both diagram formats in sync** - Update both PlantUML and LikeC4 versions
+1. **Update the LikeC4 model** - Edit `src/likec4/model.c4` for architecture changes
 2. **Include code examples** - Provide practical, runnable examples
 3. **Add troubleshooting sections** - Document common issues and solutions
 4. **Cross-reference related topics** - Link to related documentation pages
@@ -198,7 +189,6 @@ Multiflexmeter V3.7.0 is an open-source IoT sensor platform designed for:
 - **Starlight Documentation:** https://starlight.astro.build/
 - **Astro Documentation:** https://docs.astro.build/
 - **C4 Model:** https://c4model.com/
-- **PlantUML:** https://plantuml.com/
 - **LikeC4:** https://likec4.dev/
 
 ## 📄 License

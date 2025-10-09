@@ -37,7 +37,7 @@ This guide covers everything you need to know to build, modify, and debug the Mu
 
 ### 1. Get the Source Code
 
-1. Download V3.7.0 from the [GitHub Releases page](https://github.com/Multiflexmeter/Multiflexmeter/releases).4
+1. Download V3.7.0 from the [GitHub Releases page](https://github.com/MrMisterMisterMister/MFM-docs/releases).
 2. Extract the archive to a working directory.
 
 ### 2. Initialize LMIC Submodule
@@ -238,7 +238,7 @@ Bits 9-5:    Minor version (0-31)
 Bits 4-0:    Patch version (0-31)
 ```
 
-Example: Version 1.2.3 (release) = `0b1_00001_00010_00011` = `0x8443`
+Example: Version 1.3.7 (release) = `0b1_00001_00011_00111` = `0x8467`
 
 ## Flashing the Firmware
 
@@ -388,7 +388,7 @@ If device resets unexpectedly:
 
 ### Adding a New Sensor
 
-See [Adding Sensors Guide](/development/adding-sensors/) for details.
+See the firmware architecture documentation for sensor integration details.
 
 Quick overview:
 1. Define sensor commands in `include/sensors.h`
@@ -539,7 +539,5 @@ region `text' overflowed by XXX bytes
 
 ## Next Steps
 
-- [Adding Custom Sensors](/development/adding-sensors/)
-- [Contributing Guidelines](/development/contributing/)
 - [API Reference](/firmware/api-reference/)
 - [Protocol Specification](/firmware/protocol/)

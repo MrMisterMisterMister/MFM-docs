@@ -9,9 +9,8 @@ This document provides a comprehensive overview of the Multiflexmeter V3.7.0 arc
 
 The Multiflexmeter V3.7.0 operates within a larger IoT ecosystem:
 
-**Diagrams:**
-- [PlantUML Version](/diagrams/system_context.puml)
-- [LikeC4 Version](/diagrams/system_context.likec4)
+**Diagram:**
+- [Interactive System Context](/diagrams/)
 
 ### External Systems
 
@@ -24,9 +23,8 @@ The Multiflexmeter V3.7.0 operates within a larger IoT ecosystem:
 
 The device consists of several key containers working together:
 
-**Diagrams:**
-- [PlantUML Version](/diagrams/container_context.puml)
-- [LikeC4 Version](/diagrams/container_context.likec4)
+**Diagram:**
+- [Interactive Container Architecture](/diagrams/)
 
 ### Main Containers
 
@@ -66,9 +64,8 @@ LoRa transceiver providing:
 
 The firmware is organized into logical components:
 
-**Diagrams:**
-- [PlantUML Version](/diagrams/component_context.puml)
-- [LikeC4 Version](/diagrams/component_context.likec4)
+**Diagram:**
+- [Interactive Component Architecture](/diagrams/)
 
 ### Firmware Components
 
@@ -124,9 +121,8 @@ System monitoring:
 
 The operational flow follows this sequence:
 
-**Diagrams:**
-- [PlantUML Version](/diagrams/code_context.puml)
-- [LikeC4 Version](/diagrams/code_context.likec4)
+**Diagram:**
+- [Interactive Code Flow](/diagrams/)
 
 ### Startup Sequence
 

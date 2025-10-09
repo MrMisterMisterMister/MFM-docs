@@ -13,7 +13,7 @@ export default defineConfig({
 				{ 
 					icon: 'github', 
 					label: 'GitHub', 
-					href: 'https://github.com/your-org/multiflexmeter' 
+					href: 'https://github.com/MrMisterMisterMister/MFM-docs' 
 				}
 			],
 			sidebar: [

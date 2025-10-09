@@ -348,11 +348,11 @@ Yes! Contributions welcome:
 4. Test thoroughly
 5. Submit pull request
 
-See: [Contributing Guide](/development/contributing/) (if exists)
+Contact the project maintainers via GitHub issues for contribution opportunities.
 
 ### Where is the source code?
 
-GitHub: https://github.com/your-org/multiflexmeter (update with actual repo)
+GitHub: https://github.com/MrMisterMisterMister/MFM-docs
 
 ---
 

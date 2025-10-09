@@ -282,7 +282,7 @@ Custom board defined in `boards/mfm_v3_m1284p.json`:
     "protocol": "usbasp",
     "speed": 19200
   },
-  "url": "https://github.com/your-repo/mfm",
+  "url": "https://github.com/MrMisterMisterMister/MFM-docs",
   "vendor": "Multiflexmeter"
 }
 ```

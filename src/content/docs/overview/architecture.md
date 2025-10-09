@@ -14,19 +14,14 @@ The Multiflexmeter V3.7.0 architecture is documented using the C4 model at four 
 3. **Component Architecture** - Firmware components and their interactions
 4. **Code Context** - Detailed execution flow and implementation
 
-All diagrams are available in two formats:
-- **PlantUML** (`.puml`) - For rendering with PlantUML tools
-- **LikeC4** (`.c4`) - For rendering with LikeC4 tools
-
-See the [Diagram Rendering Guide](/diagrams/README.md) for setup instructions.
+The architecture diagrams are interactive and built with LikeC4. You can explore them on the live site at [Interactive Diagrams](/diagrams/).
 
 ## System Context
 
 The Multiflexmeter V3.7.0 operates within a larger IoT ecosystem:
 
-**View Diagrams:**
-- [PlantUML Version](/diagrams/system_context.puml)
-- [LikeC4 Version](/diagrams/system_context.c4)
+**View Diagram:**
+- [Interactive System Context Diagram](/diagrams/)
 
 ### External Systems
 
@@ -57,9 +52,8 @@ The Multiflexmeter V3.7.0 operates within a larger IoT ecosystem:
 
 The device consists of several key containers working together:
 
-**View Diagrams:**
-- [PlantUML Version](/diagrams/container_context.puml)
-- [LikeC4 Version](/diagrams/container_context.c4)
+**View Diagram:**
+- [Interactive Container Diagram](/diagrams/)
 
 ### Main Containers
 
@@ -121,9 +115,8 @@ LoRa transceiver providing:
 
 The firmware is organized into logical components:
 
-**View Diagrams:**
-- [PlantUML Version](/diagrams/component_context.puml)
-- [LikeC4 Version](/diagrams/component_context.c4)
+**View Diagram:**
+- [Interactive Component Diagram](/diagrams/)
 
 ### Firmware Components
 
@@ -233,9 +226,8 @@ The firmware is organized into logical components:
 
 The operational flow follows this sequence:
 
-**View Diagrams:**
-- [PlantUML Version](/diagrams/code_context.puml)
-- [LikeC4 Version](/diagrams/code_context.c4)
+**View Diagram:**
+- [Interactive Code Flow Diagram](/diagrams/)
 
 ### Startup Sequence
 

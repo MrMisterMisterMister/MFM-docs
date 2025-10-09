@@ -109,11 +109,11 @@ Bits 4-0:    Patch version (0-31)
 
 **Example:**
 
-Firmware Version 1.2.3 (release):
+Firmware Version 1.3.7 (release):
 ```
-Binary: 1 00001 00010 00011
-Hex: 0x8443
-Bytes: 84 43
+Binary: 1 00001 00011 00111
+Hex: 0x8467
+Bytes: 84 67
 ```
 
 #### Decoding Version
@@ -141,7 +141,7 @@ Complete version uplink:
 
 Decoded:
 - Message type: `0x10`
-- Firmware: `0x8443` → v1.2.3 (release)
+- Firmware: `0x8467` → v1.3.7 (release)
 - Hardware: `0x00C3` → v0.6.3 (development)
 
 ## Downlink Commands

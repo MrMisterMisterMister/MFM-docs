@@ -54,7 +54,7 @@ Retrieves firmware version from EEPROM hardware version field.
 **Example:**
 ```cpp
 uint16_t version = rom_conf_get_version();
-// version = 0x08A5 = v1.2.5
+// version = 0x8467 = v1.3.7
 ```
 
 ---

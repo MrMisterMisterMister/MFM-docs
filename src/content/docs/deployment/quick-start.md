@@ -28,7 +28,7 @@ Get your Multiflexmeter V3.7.0 device operational in just a few steps.
 
 ## Step 1: Download the Release
 
-1. **Go to the repository**: [GitHub - multiflexmeter](https://github.com/Multiflexmeter/Multiflexmeter)
+1. **Go to the repository**: [GitHub - multiflexmeter](https://github.com/MrMisterMisterMister/MFM-docs)
 2. **Download V3.7.0**: Navigate to the Releases section and download version 3.7.0 since the documentation matches this version.
 3. **Extract the archive**: Unzip the downloaded file to a working directory.
 
@@ -334,5 +334,5 @@ screen /dev/ttyUSB0 115200
 Need help? Check:
 - [Troubleshooting Guide](/troubleshooting/common-issues/)
 - [FAQ](/troubleshooting/faq/)
-- [GitHub Issues](https://github.com/your-org/multiflexmeter/issues)
+- [GitHub Issues](https://github.com/MrMisterMisterMister/MFM-docs/issues)
 - [Community Forum](https://forum.example.com/)

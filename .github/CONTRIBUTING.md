@@ -75,7 +75,7 @@ Now when you run `git commit`, you'll see helpful reminders!
 1. **Clear and Concise**: Write for clarity
 2. **Examples**: Include practical code examples
 3. **Cross-Reference**: Link to related sections
-4. **Diagrams**: Update both PlantUML and LikeC4 versions
+4. **Diagrams**: Update the LikeC4 model and interactive diagrams
 5. **Test**: Run `npm run build` before committing
 
 ## File Structure

@@ -26,7 +26,7 @@ This guide will help you set up your development environment, build the firmware
 
 ### 1. Get the Source Code
 
-1. Download V3.7.0 from the [GitHub Releases page](https://github.com/Multiflexmeter/Multiflexmeter/releases).
+1. Download V3.7.0 from the [GitHub Releases page](https://github.com/MrMisterMisterMister/MFM-docs/releases).
 2. Extract the archive to a working directory.
 
 ### 2. Initialize Submodules

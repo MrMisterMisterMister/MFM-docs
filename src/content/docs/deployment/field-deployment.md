@@ -256,7 +256,7 @@ Hardware:
 Configuration:
 - Interval: 300s (5 min)
 - Fair Use: Enabled
-- Firmware: v1.2.5
+- Firmware: v1.3.7
 
 Initial Readings:
 - RSSI: -87 dBm
@@ -280,7 +280,7 @@ Date       | Action             | By      | Notes
 2024-01-15 | Initial install    | J. Doe  | RSSI -87 dBm
 2024-02-15 | Routine check      | J. Doe  | All OK
 2024-05-10 | Battery replacement| J. Smith| Old: 11.8V
-2024-08-01 | Firmware update    | J. Doe  | v1.2.5 → v1.3.0
+2024-08-01 | Firmware update    | J. Doe  | v1.3.0 → v1.3.7
 ```
 
 ## Decommissioning

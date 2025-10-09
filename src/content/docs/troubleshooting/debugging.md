@@ -43,7 +43,7 @@ $port.Open()
 
 ```
 [BOOT] Multiflexmeter V3.7.0
-[BOOT] Version: 1.2.5
+[BOOT] Version: 1.3.7
 [BOOT] Reading EEPROM...
 [BOOT] Config valid: YES
 [BOOT] Interval: 300s
