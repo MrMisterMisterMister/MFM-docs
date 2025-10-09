@@ -1,0 +1,65 @@
+# Subject line: Start with verb, sentence case, no period, <72 chars
+
+
+# Why is this change needed?
+# - 
+
+# What does this change do?
+# - 
+
+# Any additional context or breaking changes?
+# - 
+
+# Related issues/PRs:
+# Closes #
+# Refs #
+
+# --- AFTER COMMITTING, TAG WITH: ---
+# git tag <category/type>
+#
+# Content Tags:
+#   docs/guide        - Guide page changes
+#   docs/reference    - Reference page changes
+#   docs/landing      - Landing page changes
+#   content/update    - Update existing content
+#   content/new       - New content added
+#
+# Visual Tags:
+#   diagrams/system    - System context diagram
+#   diagrams/container - Container context diagram
+#   diagrams/component - Component context diagram
+#   diagrams/code      - Code context diagram
+#   assets/images      - Images/photos
+#   assets/icons       - Icons/logos
+#
+# Technical Tags:
+#   config/astro      - Astro config changes
+#   config/nav        - Navigation changes
+#   build/deps        - Dependency updates
+#   build/scripts     - Build scripts
+#   fix/typo          - Typo fixes
+#   fix/links         - Broken link fixes
+#   fix/formatting    - Formatting issues
+#
+# Maintenance Tags:
+#   chore/cleanup     - Cleanup
+#   chore/deps        - Dependencies
+#   refactor/structure - Restructuring
+#   style/formatting   - Visual/style
+#
+# Feature Tags:
+#   feature/search     - Search functionality
+#   feature/interactive - Interactive elements
+#   feature/navigation  - Navigation improvements
+#
+# --- COMMIT MESSAGE EXAMPLES ---
+# Update hardware pin mappings table
+# Add EEPROM configuration examples
+# Fix broken links in protocol reference
+# Reorganize sidebar navigation structure
+#
+# --- TAGGING EXAMPLES ---
+# git tag docs/reference content/update
+# git tag docs/guide content/new
+# git tag diagrams/component content/update
+# git tag fix/links docs/reference
