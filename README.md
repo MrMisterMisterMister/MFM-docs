@@ -102,7 +102,7 @@ See `public/diagrams/README.md` for rendering instructions.
 - Open any `.likec4` file
 - Or use: https://likec4.dev/
 
-## 🚢 Deployment
+<!-- ## 🚢 Deployment
 
 ### GitHub Pages
 
@@ -121,7 +121,7 @@ npm run build
 
 1. Connect your GitHub repository
 2. Vercel auto-detects Astro and configures build settings
-3. Deploy automatically on every commit
+3. Deploy automatically on every commit -->
 
 ## ✏️ Adding Content
 
