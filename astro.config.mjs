@@ -4,7 +4,7 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://malendemolens.com',
+	site: process.env.SITE_URL,
 	integrations: [
 		starlight({
 			title: 'Multiflexmeter V3.7.0',
