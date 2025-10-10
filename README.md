@@ -126,47 +126,26 @@ The documentation includes interactive C4 architecture diagrams built with LikeC
 - Run `npm run dev:likec4` for local diagram server
 - Or edit online at: https://likec4.dev/
 
-## 🚢 Deployment
+<!-- ## 🚢 Deployment
 
-### GitHub Pages (Recommended)
-
-This repository is configured for automatic deployment to GitHub Pages:
-
-1. **Enable GitHub Pages:**
-   - Go to your repository on GitHub
-   - Navigate to **Settings** → **Pages**
-   - Under "Source", select **GitHub Actions**
-
-2. **Automatic Deployment:**
-   - Every push to the `main` branch automatically triggers deployment
-   - The site will be available at: `https://mrmistermistermister.github.io/MFM-docs/`
-   - Check the **Actions** tab to monitor deployment progress
-
-3. **Manual Deployment:**
-   - Go to **Actions** tab in your repository
-   - Click **Deploy to GitHub Pages** workflow
-   - Click **Run workflow** button
-
-### Local Production Build
-
-To test the production build locally:
+### GitHub Pages
 
 ```bash
 npm run build
-npm run preview
+# Deploy the dist/ folder to GitHub Pages
 ```
 
-### Other Hosting Options
+### Netlify
 
-**Netlify:**
 1. Run `npm run build`
 2. Drag and drop the `dist/` folder to Netlify
 3. Or connect your GitHub repo for auto-deployment
 
-**Vercel:**
+### Vercel
+
 1. Connect your GitHub repository
 2. Vercel auto-detects Astro and configures build settings
-3. Deploy automatically on every commit
+3. Deploy automatically on every commit -->
 
 ## ✏️ Adding Content
 
