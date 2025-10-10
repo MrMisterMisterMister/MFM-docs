@@ -255,3 +255,23 @@ Contact maintainers for regional variants.
 - [Pin Mappings](/hardware/pinout/) - Detailed pin assignments
 - [Schematics](/hardware/schematics/) - View hardware design
 - [Hardware Overview](/hardware/overview/) - General hardware information
+
+## Legacy Documentation
+
+### MFM v2.0 Hardware Specification (Reference)
+
+:::note
+The document below is for the previous MFM v2.0 hardware version. While some concepts remain applicable, refer to the current V3.7.0 specifications above for accurate technical details.
+:::
+
+<iframe 
+  src="/pdfs/Hardware-P22296-1-SPEC-MFM-v2.0.pdf" 
+  width="100%" 
+  height="800px"
+  title="MFM v2.0 Hardware Specification">
+  <p>Your browser doesn't support PDF viewing. 
+     <a href="/pdfs/Hardware-P22296-1-SPEC-MFM-v2.0.pdf" download>Download Hardware Specification PDF</a>
+  </p>
+</iframe>
+
+[📄 Download Hardware Specification (PDF)](/pdfs/Hardware-P22296-1-SPEC-MFM-v2.0.pdf)
