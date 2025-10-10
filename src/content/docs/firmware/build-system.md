@@ -15,26 +15,39 @@ The project uses PlatformIO as the build system, configured via `platformio.ini`
 
 ```ini
 [platformio]
-default_envs = mfm_v3_m1284p
+boards_dir = boards
 
-[env:mfm_v3_m1284p]
+[env]
 platform = atmelavr
 framework = arduino
-board = mfm_v3_m1284p
-lib_deps = 
-    mcci-catena/MCCI Arduino LoRaWAN Library @ ^0.9.2
-    adafruit/Adafruit SleepyDog Library @ ^1.6.4
+
+# LMIC library configuration
 build_flags = 
-    -Os
-    -DCFG_eu868=1
-    -DCFG_sx1276_radio=1
     -DARDUINO_LMIC_PROJECT_CONFIG_H_SUPPRESS
-    -DSERIAL_BAUD=115200
-upload_protocol = usbasp
+    -DDISABLE_BEACONS
+    -DDISABLE_PING
+    -DLMIC_PRINTF_TO=Serial
+    -DLMIC_DEBUG_LEVEL=2
+    -DFW_VERSION_MAJOR=0
+    -DFW_VERSION_MINOR=0
+    -DFW_VERSION_PATCH=0
+    -DFW_VERSION_PROTO=1
+
+upload_protocol = atmelice_isp
+upload_port = usb
 upload_flags = 
-    -Pusb
-    -B10
-board_build.f_cpu = 16000000L
+    -e
+    -B0.25 
+board_upload.require_upload_port = no
+monitor_port = /dev/ttyUSB0
+monitor_speed = 115200
+
+lib_deps = 
+    adafruit/Adafruit SleepyDog Library@^1.4.0
+    https://github.com/mcci-catena/arduino-lmic.git
+
+[env:mfm_v3_m1284p]
+board = mfm_v3_m1284p
 board_fuses.lfuse = 0xFF
 board_fuses.hfuse = 0xD1
 board_fuses.efuse = 0xFF
@@ -127,8 +140,9 @@ lib_deps =
 
 - **Adafruit SleepyDog**
   - Version: 1.6.4 or compatible
-  - Purpose: Watchdog timer management
-  - Size: ~2KB flash
+  - Purpose: **Declared dependency (unused)**
+  - **Note:** Listed in `platformio.ini` but not used in source code. Actual watchdog functionality is implemented in custom `wdt.cpp`
+  - Size: 0KB (not compiled in)
 
 ### Local Libraries
 

@@ -44,6 +44,12 @@ export default defineConfig({
 					],
 				},
 				{
+					label: 'Software & Backend',
+					items: [
+						{ label: 'Overview', slug: 'software' },
+					],
+				},
+				{
 					label: 'Deployment',
 					items: [
 						{ label: 'Quick Start Guide', slug: 'deployment/quick-start' },

@@ -295,15 +295,18 @@ case EV_TXCOMPLETE:
 EEPROM configuration structure:
 
 ```cpp
-typedef struct {
-    uint8_t magic[4];          // "MFM\0"
-    uint8_t hw_version[2];     // Hardware/firmware version
-    uint8_t appeui[8];         // LoRaWAN Application EUI
-    uint8_t deveui[8];         // LoRaWAN Device EUI
-    uint8_t appkey[16];        // LoRaWAN Application Key
-    uint8_t interval[2];       // Measurement interval (seconds, big-endian)
-    uint8_t fair_use;          // Fair Use Policy (0=disabled, 1=enabled)
-} rom_conf_t;
+struct __attribute__((packed)) rom_conf_t {
+    uint8_t MAGIC[4];               // "MFM\0"
+    struct {
+        uint8_t MSB;                // Hardware version MSB
+        uint8_t LSB;                // Hardware version LSB
+    } HW_VERSION;                   // Hardware/firmware version (2 bytes)
+    uint8_t APP_EUI[8];             // LoRaWAN Application EUI
+    uint8_t DEV_EUI[8];             // LoRaWAN Device EUI
+    uint8_t APP_KEY[16];            // LoRaWAN Application Key
+    uint16_t MEASUREMENT_INTERVAL;  // Measurement interval (seconds, little-endian)
+    uint8_t USE_TTN_FAIR_USE_POLICY; // Fair Use Policy (0=disabled, 1=enabled)
+};
 ```
 
 **Total Size:** 41 bytes

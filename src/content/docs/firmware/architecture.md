@@ -57,53 +57,80 @@ void loop() {
 ```
 
 **Key Functions:**
-- `EV_TXCOMPLETE` - Transmission complete handler
-- `EV_JOINING` - OTAA join in progress
-- `EV_JOINED` - OTAA join successful
-- `do_send()` - Send uplink message
-- `do_measure()` - Trigger sensor reading
-- `onEvent()` - LMIC event handler
+- `onEvent()` - LMIC event handler for join/TX/RX events
+- `job_performMeasurements()` - Trigger sensor measurement
+- `job_fetchAndSend()` - Read sensor data and transmit
+- `job_pingVersion()` - Send version information
+- `job_reset()` - Device reset handler
+- `scheduleNextMeasurement()` - Schedule next measurement cycle
+- `processDownlink()` - Handle received commands
 
 ### 2. Sensor Interface (`sensors.cpp`, `smbus.cpp`)
 
 **SMBus Communication:**
 ```cpp
 // High-level sensor API
-uint8_t sensorPerform(uint8_t sensor_address);
-uint8_t sensorRead(uint8_t sensor_address, int16_t* data);
+error_t sensors_init(void);
+error_t sensors_performMeasurement(void);
+error_t sensors_readMeasurement(uint8_t *buf, uint8_t *length);
 
 // Low-level SMBus protocol
-smBusInit();
-smBusWriteByte(address, command);
-smBusReadWord(address, command);
+error_t smbus_init(void);
+error_t smbus_sendByte(uint8_t addr, uint8_t byte);
+error_t smbus_blockRead(uint8_t addr, uint8_t cmd, 
+                        uint8_t *rx_buf, uint8_t *rx_length);
+error_t smbus_blockWrite(uint8_t addr, uint8_t cmd,
+                         uint8_t *tx_buf, uint8_t tx_length);
 ```
 
 **Command Flow:**
-1. Send `CMD_PERFORM` (0x10) to trigger measurement
-2. Wait (sensor processing time)
-3. Send `CMD_READ` (0x11) to retrieve data
-4. Parse response (8 × int16 values)
+1. Send `CMD_PERFORM` (0x10) to sensor address 0x36
+2. Wait 5 seconds (`MEASUREMENT_SEND_DELAY_AFTER_PERFORM_S`)
+3. Send `CMD_READ` (0x11) to retrieve raw sensor data
+4. Transmit variable-length response (up to 32 bytes)
 
 ### 3. Configuration (`rom_conf.cpp`, `config.h`)
 
 **EEPROM Management:**
 ```cpp
 // Structure in EEPROM
-typedef struct {
-    uint8_t magic[4];          // "MFM\0"
-    uint8_t hw_version[2];     // Hardware version
-    uint8_t appeui[8];         // Application EUI
-    uint8_t deveui[8];         // Device EUI
-    uint8_t appkey[16];        // Application Key
-    uint8_t interval[2];       // Measurement interval (seconds)
-    uint8_t fair_use;          // Fair Use Policy compliance
-} rom_conf_t;
+struct __attribute__((packed)) rom_conf_t {
+    uint8_t MAGIC[4];               // "MFM\0"
+    struct {
+        uint8_t MSB;                // Hardware version MSB
+        uint8_t LSB;                // Hardware version LSB
+    } HW_VERSION;                   // Hardware version (2 bytes)
+    uint8_t APP_EUI[8];             // Application EUI
+    uint8_t DEV_EUI[8];             // Device EUI
+    uint8_t APP_KEY[16];            // Application Key
+    uint16_t MEASUREMENT_INTERVAL;  // Measurement interval (seconds)
+    uint8_t USE_TTN_FAIR_USE_POLICY; // Fair Use Policy compliance
+};
+```
+
+**Error Handling:**
+```cpp
+typedef enum {
+  ERR_NONE,                 // No error
+  ERR_SMBUS_SLAVE_NACK,     // Slave did not acknowledge
+  ERR_SMBUS_ARB_LOST,       // Bus arbitration lost
+  ERR_SMBUS_NO_ALERT,       // No alert pending
+  ERR_SMBUS_ERR,            // General SMBus error
+} error_t;
+```
+    uint16_t MEASUREMENT_INTERVAL;  // Measurement interval (seconds)
+    uint8_t USE_TTN_FAIR_USE_POLICY; // Fair Use Policy compliance
+};
 ```
 
 **Configuration Functions:**
-- `rom_conf_init()` - Load config from EEPROM
-- `rom_conf_is_valid()` - Validate magic bytes
-- `rom_conf_get_version()` - Get firmware version
+- `conf_load()` - Load config from EEPROM
+- `conf_save()` - Save config to EEPROM  
+- `conf_getMeasurementInterval()` - Get measurement interval with bounds checking
+- `conf_setMeasurementInterval()` - Set measurement interval
+- `conf_getAppEui()`, `conf_getDevEui()`, `conf_getAppKey()` - LoRaWAN credentials
+- `conf_getFirmwareVersion()`, `conf_getHardwareVersion()` - Version info
+- `versionToUint16()` - Convert version struct to uint16
 
 **Compile-Time Configuration** (`config.h`):
 ```cpp
@@ -114,19 +141,34 @@ typedef struct {
 
 ### 4. Watchdog Timer (`wdt.cpp`)
 
-- Watchdog for crash recovery
-- Uses Adafruit SleepyDog library
-- Automatically resets on hang
+Custom watchdog implementation for device reset functionality:
+```cpp
+void mcu_reset(void);  // Force MCU reset via watchdog
+```
+
+- Uses AVR watchdog timer directly
+- 15ms timeout for reset
+- Used by downlink reset command (0xDEAD)
+
+:::note[Library Dependencies]
+While `Adafruit SleepyDog Library@^1.4.0` is included in `platformio.ini`, the firmware uses the custom `wdt.cpp` implementation for reset functionality. The Adafruit library is not actively used in the code.
+:::
 
 ### 5. Board Support (`boards/`)
 
-Board-specific implementations:
+Board-specific implementations for hardware variants:
 ```cpp
-// mfm_v3_m1284p.cpp
-void board_init();              // Initialize hardware
-void board_sleep();             // Enter sleep mode
-void board_sensor_power(bool);  // Control sensor power
+// mfm_v3_m1284p.cpp / mfm_v3.cpp
+void board_setup(void);        // Initialize board-specific settings
 ```
+
+**Pin Definitions** (`include/board_config/`):
+- `mfm_v3_m1284p.h` - ATmega1284P pin mappings
+- `mfm_v3.h` - ATmega328P pin mappings (legacy)
+
+**Board Selection** via PlatformIO build flags:
+- `-DBOARD_MFM_V3_M1284P` for current boards
+- `-DBOARD_MFM_V3` for legacy boards
 
 ## Event Flow
 
@@ -148,31 +190,34 @@ graph TD
 
 ```mermaid
 graph TD
-    A[Timer Expires] --> B[do_measure]
-    B --> C[Power On Sensor]
-    C --> D[Send CMD_PERFORM]
-    D --> E[Wait]
-    E --> F[Send CMD_READ]
-    F --> G[Read 8×int16 Data]
-    G --> H[Power Off Sensor]
-    H --> I[do_send]
-    I --> J[Transmit LoRaWAN]
-    J --> K[Schedule Next]
+    A[Timer Expires] --> B[job_performMeasurements]
+    B --> C[sensors_performMeasurement]
+    C --> D[Send CMD_PERFORM to 0x36]
+    D --> E[Wait 5 seconds]
+    E --> F[job_fetchAndSend]
+    F --> G[sensors_readMeasurement]
+    G --> H[Send CMD_READ to 0x36]
+    H --> I[Read variable sensor data]
+    I --> J[LMIC_setTxData2 on FPort 1]
+    J --> K[scheduleNextMeasurement]
 ```
 
 ### Downlink Handling
 
 ```mermaid
 graph TD
-    A[Receive Downlink] --> B{Port?}
-    B -->|Port 1| C[Parse Command]
-    C --> D{Command Type?}
-    D -->|0x10| E[Update Interval]
-    D -->|0x11| F[Update Module Config]
-    D -->|0xDEAD| G[Reset Device]
-    E --> H[Save to EEPROM]
-    F --> H
-    G --> I[Reboot]
+    A[Receive Downlink] --> B[EV_TXCOMPLETE Event]
+    B --> C{LMIC.dataLen > 0?}
+    C -->|Yes| D[processDownlink]
+    D --> E{Command Byte}
+    E -->|0x10| F[DL_CMD_INTERVAL]
+    E -->|0x11| G[DL_CMD_MODULE]
+    E -->|0xDE| H[DL_CMD_REJOIN]
+    F --> I[conf_setMeasurementInterval + conf_save]
+    G --> J[smbus_blockWrite to sensor]
+    H --> K{Second byte = 0xAD?}
+    K -->|Yes| L[Schedule mcu_reset in 5s]
+    C -->|No| M[Continue Normal Operation]
 ```
 
 ## Memory Layout
@@ -212,9 +257,14 @@ graph TD
 - Default fallback values
 
 ### 4. Power Management
-- Sleep mode between measurements
-- Peripheral power control
-- Watchdog for reliability
+- **LMIC-based power control**: Uses `os_runloop_once()` for efficient sleep/wake cycles
+- **Custom reset functionality**: Custom `wdt.cpp` for controlled device resets
+- **Peripheral power control**: Pin-based sensor power management
+- **Low-power operation**: Event-driven design minimizes active time
+
+:::note[Power Management Libraries]
+The firmware uses LMIC's built-in power management rather than external sleep libraries. While `Adafruit SleepyDog Library` is listed as a dependency, it's not actively used in the current implementation.
+:::
 
 ## Build System Integration
 

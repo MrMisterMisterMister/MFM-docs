@@ -121,10 +121,25 @@ Build artifacts will be in `.pio/build/mfm_v3_m1284p/firmware.hex`
 
 ## Step 5: Program the Device
 
-### Flash Firmware
+### Using PlatformIO (Recommended)
 
 ```bash
+# Build and upload automatically using configured programmer
+pio run -e mfm_v3_m1284p -t upload
+```
+
+This uses the upload protocol configured in `platformio.ini` (default: `atmelice_isp`).
+
+### Using AVRDude Manually
+
+If using a different programmer or manual flashing:
+
+```bash
+# For USBasp programmer
 avrdude -c usbasp -p m1284p -U flash:w:.pio/build/mfm_v3_m1284p/firmware.hex:i
+
+# For Atmel-ICE programmer  
+avrdude -c atmelice_isp -p m1284p -U flash:w:.pio/build/mfm_v3_m1284p/firmware.hex:i
 ```
 
 ### Program EEPROM

@@ -9,17 +9,35 @@ Complete technical specifications for the Multiflexmeter V3.7.0 hardware platfor
 
 ## Microcontroller
 
+### MFM V3 M1284P (Primary/Current)
+
 | Specification | Value |
 |--------------|-------|
 | **Model** | ATmega1284P |
 | **Architecture** | 8-bit AVR RISC |
-| **Clock Speed** | 16 MHz (external crystal) |
+| **Clock Speed** | 8 MHz (internal oscillator) |
 | **Flash Memory** | 128 KB |
 | **SRAM** | 16 KB |
 | **EEPROM** | 4 KB |
 | **I/O Pins** | 32 programmable |
 | **Operating Voltage** | 1.8V - 5.5V |
 | **Typical Operating** | 3.3V - 5V |
+| **Arduino Core** | MightyCore |
+
+### MFM V3 (Legacy)
+
+| Specification | Value |
+|--------------|-------|
+| **Model** | ATmega328P |
+| **Architecture** | 8-bit AVR RISC |
+| **Clock Speed** | 8 MHz (internal oscillator) |
+| **Flash Memory** | 32 KB |
+| **SRAM** | 2 KB |
+| **EEPROM** | 1 KB |
+| **I/O Pins** | 23 programmable |
+| **Operating Voltage** | 1.8V - 5.5V |
+| **Typical Operating** | 3.3V - 5V |
+| **Arduino Core** | MiniCore |
 
 ## LoRa Radio Module
 
@@ -127,12 +145,31 @@ See [Pin Mappings](/hardware/pinout/) for complete pin assignments.
 
 ## Board Variants
 
-### MFM V3 M1284P (Standard)
+### MFM V3 M1284P (Recommended)
 
-- Board ID: `mfm_v3_m1284p`
-- Full feature set
-- Production-ready
-- KiCad files available
+- **Board ID**: `mfm_v3_m1284p`
+- **MCU**: ATmega1284P
+- **Memory**: 128KB Flash, 16KB RAM, 4KB EEPROM
+- **Clock**: 8MHz internal oscillator
+- **Arduino Core**: MightyCore
+- **Features**: Full feature set, production-ready
+- **Upload Protocol**: stk500 at 115200 baud
+- **Status**: Current/active variant
+
+### MFM V3 (Legacy)
+
+- **Board ID**: `mfm_v3`
+- **MCU**: ATmega328P
+- **Memory**: 32KB Flash, 2KB RAM, 1KB EEPROM
+- **Clock**: 8MHz internal oscillator
+- **Arduino Core**: MiniCore
+- **Features**: Reduced I/O pins, limited memory
+- **Upload Protocol**: stk500v2 at 115200 baud
+- **Status**: Legacy support only
+
+:::tip[Board Selection]
+Use **MFM V3 M1284P** for new projects. It provides more memory, additional I/O pins, and is the actively developed variant.
+:::
 
 ## Compliance
 

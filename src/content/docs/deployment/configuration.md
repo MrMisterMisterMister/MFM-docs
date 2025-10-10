@@ -30,15 +30,18 @@ Total:   41 bytes
 ### Structure Definition
 
 ```cpp
-typedef struct {
-    uint8_t magic[4];          // "MFM\0" (0x4D, 0x46, 0x4D, 0x00)
-    uint8_t hw_version[2];     // Version: proto:major:minor:patch
-    uint8_t appeui[8];         // Application EUI (MSB first)
-    uint8_t deveui[8];         // Device EUI (MSB first)
-    uint8_t appkey[16];        // Application Key (MSB first)
-    uint8_t interval[2];       // Interval in seconds (big-endian)
-    uint8_t fair_use;          // 0=disabled, 1=enabled
-} rom_conf_t;
+struct __attribute__((packed)) rom_conf_t {
+    uint8_t MAGIC[4];               // "MFM\0" (0x4D, 0x46, 0x4D, 0x00)
+    struct {
+        uint8_t MSB;                // Hardware version MSB
+        uint8_t LSB;                // Hardware version LSB
+    } HW_VERSION;                   // Version: proto:major:minor:patch (2 bytes)
+    uint8_t APP_EUI[8];             // Application EUI (LSB first)
+    uint8_t DEV_EUI[8];             // Device EUI (LSB first)
+    uint8_t APP_KEY[16];            // Application Key (MSB first)
+    uint16_t MEASUREMENT_INTERVAL;  // Interval in seconds (little-endian)
+    uint8_t USE_TTN_FAIR_USE_POLICY; // 0=disabled, 1=enabled
+};
 ```
 
 ## Field Details

@@ -15,15 +15,15 @@ The configuration is stored at EEPROM address `0x00` with the following structur
 
 ```c
 struct __attribute__((packed)) rom_conf_t {
-  uint8_t MAGIC[4];              // Magic identifier: "MFM\0"
+  uint8_t MAGIC[4];               // Magic identifier: "MFM\0"
   struct {
     uint8_t MSB;                  // Hardware version MSB
     uint8_t LSB;                  // Hardware version LSB
-  } HW_VERSION;
-  uint8_t APP_EUI[8];            // LoRaWAN Application EUI (LSB first)
-  uint8_t DEV_EUI[8];            // LoRaWAN Device EUI (LSB first)
-  uint8_t APP_KEY[16];           // LoRaWAN Application Key (MSB first)
-  uint16_t MEASUREMENT_INTERVAL; // Measurement interval in seconds
+  } HW_VERSION;                   // 2 bytes total
+  uint8_t APP_EUI[8];             // LoRaWAN Application EUI (LSB first)
+  uint8_t DEV_EUI[8];             // LoRaWAN Device EUI (LSB first)
+  uint8_t APP_KEY[16];            // LoRaWAN Application Key (MSB first)
+  uint16_t MEASUREMENT_INTERVAL;  // Measurement interval in seconds (little-endian)
   uint8_t USE_TTN_FAIR_USE_POLICY; // Enable TTN Fair Use: 0 = disabled, 1 = enabled
 };
 ```

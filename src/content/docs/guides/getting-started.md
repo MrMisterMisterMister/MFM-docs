@@ -98,7 +98,7 @@ Before the device can operate, you **must** program the EEPROM with device crede
 The EEPROM contains:
 
 ```c
-struct rom_conf_t {
+struct __attribute__((packed)) rom_conf_t {
   uint8_t MAGIC[4];              // "MFM\0"
   struct {
     uint8_t MSB;

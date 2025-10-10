@@ -47,74 +47,56 @@ The device requires three credentials stored in EEPROM:
 
 ### FPort 1: Measurement Data
 
-Measurement messages contain data from one or more sensor modules.
+Contains raw sensor data from external I²C sensors. The message format is determined by the connected sensor module at address `0x36`.
 
-#### Format
+**Message Structure:**
+- **FPort**: 1 (measurement data)
+- **Payload**: Variable length, directly from sensor's I²C response
+- **Maximum**: 32 bytes
+- **Encoding**: Raw binary data from sensor
 
-```
-<Module Address> <Module Type> <Module Data Blob> [<Module Address> <Module Type> <Module Data>...]
-```
+The device performs a measurement cycle:
+1. Send command `0x10` (CMD_PERFORM) to sensor at address `0x36`
+2. Wait 5 seconds (`MEASUREMENT_SEND_DELAY_AFTER_PERFORM_S`)
+3. Read data with command `0x11` (CMD_READ) from sensor
+4. Transmit the raw sensor response via LoRaWAN
 
-**Structure:**
-- **Module Address** (1 byte): I²C address of the sensor module (default: `0x36`)
-- **Module Type** (1 byte): Identifier for the sensor type
-- **Module Data Blob** (variable): Module-specific measurement data
-
-#### Example
-
-```
-36 01 03 E8 00 64
-```
-
-Decoded:
-- Module Address: `0x36` (54 decimal)
-- Module Type: `0x01`
-- Data Blob: `03 E8 00 64` (module-specific format)
-
-#### Multiple Modules
-
-If multiple sensors are connected:
-
-```
-36 01 <data1> 37 02 <data2> 38 01 <data3>
-```
-
-Three modules at addresses 0x36, 0x37, 0x38.
+:::note[Sensor-Specific Format]
+The actual payload format depends on the specific sensor module connected. Refer to your sensor module documentation for payload interpretation.
+:::
 
 ### FPort 2: Version Information
 
-Sent automatically after successful OTAA join.
+Sent automatically after successful OTAA join, or when explicitly requested.
 
-#### Format
-
+**Message Structure:**
 ```
-0x10 <FW_MSB> <FW_LSB> <HW_MSB> <HW_LSB>
+Byte 0: 0x10 (version response indicator)
+Byte 1: Firmware version (high byte)
+Byte 2: Firmware version (low byte)
+Byte 3: Hardware version (high byte)
+Byte 4: Hardware version (low byte)
 ```
 
-**Fields:**
-- **0x10** (1 byte): Message type identifier
-- **FW_MSB, FW_LSB** (2 bytes): Firmware version (big-endian uint16)
-- **HW_MSB, HW_LSB** (2 bytes): Hardware version (big-endian uint16)
-
-#### Version Encoding
-
-Each version is a 16-bit value with bit-packed fields:
+**Version Encoding:**
+Versions are encoded as 16-bit values using `versionToUint16()` function with the following bit layout:
 
 ```
 Bit 15:      Proto (0 = development, 1 = release)
 Bits 14-10:  Major version (0-31)
-Bits 9-5:    Minor version (0-31)
+Bits 9-5:    Minor version (0-31)  
 Bits 4-0:    Patch version (0-31)
 ```
 
 **Example:**
+- Firmware v3.7.0 (release) = Proto:1, Major:3, Minor:7, Patch:0
+- Binary: `1 00011 00111 00000` = `0x8E00`
+- Hardware v1.2.0 = `0x8440`
+- Full payload: `10 8E 00 84 40`
 
-Firmware Version 1.3.7 (release):
-```
-Binary: 1 00001 00011 00111
-Hex: 0x8467
-Bytes: 84 67
-```
+**Trigger Conditions:**
+- Automatically sent after OTAA join completion
+- Can be requested via specific downlink command (implementation dependent)
 
 #### Decoding Version
 
@@ -146,7 +128,7 @@ Decoded:
 
 ## Downlink Commands
 
-Downlink commands can be sent on **any FPort**. The device processes commands based on the first byte.
+Downlink commands can be sent on **any FPort**. The device processes commands based on the first byte (command ID).
 
 ### Command 0x10: Change Measurement Interval
 
@@ -159,13 +141,8 @@ Update the measurement interval dynamically.
 ```
 
 **Fields:**
-- **0x10** (1 byte): Command identifier
+- **0x10** (1 byte): Command identifier (`DL_CMD_INTERVAL`)
 - **Interval** (2 bytes big-endian): New interval in **seconds**
-
-**Constraints:**
-- Minimum: 20 seconds (`MIN_INTERVAL`)
-- Maximum: 4270 seconds (~71 minutes) (`MAX_INTERVAL`)
-- Out-of-range values are clamped to limits
 
 #### Example
 
@@ -177,12 +154,13 @@ Downlink: 10 07 08
 ```
 
 **Device Action:**
-1. Validate interval (20 ≤ interval ≤ 4270)
-2. Update EEPROM with new value
-3. Cancel current scheduled measurement
-4. Schedule next measurement with new interval
+1. Parse 16-bit interval from bytes 1-2
+2. Update measurement interval via `conf_setMeasurementInterval()`
+3. Save configuration to EEPROM with `conf_save()`
+4. Cancel current scheduled measurement
+5. Schedule next measurement with new interval
 
-### Command 0x11: Forward Command to Module
+### Command 0x11: Forward Command to Sensor Module
 
 Send a command directly to a sensor module via I²C/SMBus.
 
@@ -193,16 +171,14 @@ Send a command directly to a sensor module via I²C/SMBus.
 ```
 
 **Fields:**
-- **0x11** (1 byte): Command identifier
-- **Module Address** (1 byte): I²C address of target module
-- **Module Command** (1 byte): Command byte for the module
+- **0x11** (1 byte): Command identifier (`DL_CMD_MODULE`)
+- **Module Address** (1 byte): I²C address of target sensor
+- **Module Command** (1 byte): Command byte for the sensor
 - **Arguments** (0-29 bytes): Optional command-specific parameters
-
-**Maximum payload**: 32 bytes total (LoRaWAN Class A downlink limit)
 
 #### Example
 
-Send command `0x20` with argument `0x01` to module at address `0x36`:
+Send command `0x20` with argument `0x01` to sensor at address `0x36`:
 
 ```
 Downlink: 11 36 20 01
@@ -213,18 +189,18 @@ Downlink: 11 36 20 01
 2. Extract module command: `0x20`
 3. Extract arguments: `[0x01]`
 4. Execute: `smbus_blockWrite(0x36, 0x20, [0x01], 1)`
-5. Return any error via debug output (if enabled)
+5. Any I²C errors logged to debug output
 
 #### Use Cases
 
 - Configure sensor parameters
-- Trigger special measurements
-- Update sensor firmware
+- Trigger special sensor measurements
+- Update sensor calibration
 - Read sensor diagnostics
 
 ### Command 0xDEAD: Force Device Reset
 
-Reboot the device after a delay.
+Reboot the device after a delay (emergency recovery).
 
 #### Format
 
@@ -233,13 +209,13 @@ Reboot the device after a delay.
 ```
 
 **Fields:**
-- **0xDE 0xAD** (2 bytes): Magic reset command
+- **0xDE 0xAD** (2 bytes): Magic reset command (`DL_CMD_REJOIN`)
 
 **Device Action:**
-1. Validate second byte is `0xAD`
+1. Validate second byte is exactly `0xAD`
 2. Schedule reset job with 5-second delay
-3. Device resets via watchdog or software reset
-4. Device powers up, loads EEPROM, and rejoins network
+3. Device performs software reset
+4. Device reboots, loads EEPROM config, and rejoins network via OTAA
 
 :::caution[Reset Behavior]
 Device will perform full OTAA rejoin after reset. Ensure good network coverage.
@@ -252,6 +228,13 @@ Downlink: DE AD
 ```
 
 After 5 seconds, device resets and rejoins.
+
+### Downlink Timing
+
+- **Class A**: Downlinks only received in RX1/RX2 windows after uplink
+- **Delay**: Device processes commands immediately upon receipt
+- **Response**: No automatic acknowledgment (use version command if needed)
+- **Scheduling**: TTN Console → Device → Downlink → Schedule downlink
 
 ## TTN Integration
 
