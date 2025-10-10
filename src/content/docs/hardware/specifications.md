@@ -267,7 +267,8 @@ The document below is for the previous MFM v2.0 hardware version. While some con
 <iframe 
   src="/pdfs/Hardware-P22296-1-SPEC-MFM-v2.0.pdf" 
   width="100%" 
-  height="800px"
+  height="100vh"
+  style="min-height: 842px; border: none;"
   title="MFM v2.0 Hardware Specification">
   <p>Your browser doesn't support PDF viewing. 
      <a href="/pdfs/Hardware-P22296-1-SPEC-MFM-v2.0.pdf" download>Download Hardware Specification PDF</a>

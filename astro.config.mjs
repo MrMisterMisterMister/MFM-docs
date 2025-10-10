@@ -38,6 +38,7 @@ export default defineConfig({
 					label: 'Firmware',
 					items: [
 						{ label: 'Firmware Architecture', slug: 'firmware/architecture' },
+						{ label: 'Specifications', slug: 'firmware/specifications' },
 						{ label: 'Communication Protocol', slug: 'firmware/protocol' },
 						{ label: 'API Reference', slug: 'firmware/api-reference' },
 						{ label: 'Build System', slug: 'firmware/build-system' },

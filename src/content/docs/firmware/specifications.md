@@ -186,7 +186,8 @@ The document below is for the previous MFM v2.0 firmware version. While some arc
 <iframe 
   src="/pdfs/Firmware-P22296-10-SPEC-MFM-v2.0.pdf" 
   width="100%" 
-  height="800px"
+  height="100vh"
+  style="min-height: 1200px; border: none;"
   title="MFM v2.0 Firmware Specification">
   <p>Your browser doesn't support PDF viewing. 
      <a href="/pdfs/Firmware-P22296-10-SPEC-MFM-v2.0.pdf" download>Download Firmware Specification PDF</a>
