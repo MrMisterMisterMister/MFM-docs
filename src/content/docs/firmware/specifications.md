@@ -111,7 +111,10 @@ build_flags =
 
 | Event | Interval | Variation | Notes |
 |-------|----------|-----------|--------|
-| **Sensor Reading** | LMIC scheduled | ±100ms | Job scheduler dependent |
+| **Sensor Perform → Read** | 10 seconds | Fixed | `MEASUREMENT_SEND_DELAY_AFTER_PERFORM_S` |
+| **Join → Version Ping** | 45 seconds | Fixed | `MEASUREMENT_DELAY_AFTER_PING_S` |
+| **Measurement Interval** | 20-4270 seconds | Configurable | From EEPROM, bounds checked |
+| **Reset Delay** | 5 seconds | Fixed | After 0xDEAD command |
 | **LoRaWAN TX** | Duty cycle limited | EU868 regulations | Max 1% duty cycle |
 | **Watchdog Reset** | 8 seconds | Hardware timer | Safety mechanism |
 
@@ -142,20 +145,24 @@ build_flags =
 
 | Function | Purpose | Call Frequency |
 |----------|---------|----------------|
-| `setup()` | Initialization | Once at boot |
-| `loop()` | Event processing | Continuous |
-| `onEvent()` | LMIC event handler | As needed |
-| `do_send()` | Sensor data transmission | LMIC scheduled |
+| `setup()` | Board, sensor, LMIC initialization | Once at boot |
+| `loop()` | LMIC job scheduler only | Continuous (`os_runloop_once()`) |
+| `onEvent()` | LMIC event handler | On LoRaWAN events |
+| `job_performMeasurements()` | Trigger sensor measurement | LMIC scheduled |
+| `job_fetchAndSend()` | Read and transmit sensor data | After 10s delay |
+| `job_pingVersion()` | Send version after join | After join completion |
+| `scheduleNextMeasurement()` | Calculate next measurement time | After transmission |
+| `processDownlink()` | Handle downlink commands | On RX data |
 
-### Job Scheduling
+### Job Functions
 
 ```cpp
-// Job types used in firmware
-typedef enum {
-    JOB_SENSOR_READ,    // Read sensor data
-    JOB_DATA_SEND,      // Transmit via LoRaWAN
-    JOB_WATCHDOG_RESET  // Safety reset
-} job_type_t;
+// Actual job functions used in firmware
+void job_pingVersion(osjob_t *job);      // Send version info after join
+void job_performMeasurements(osjob_t *job); // Start sensor measurement  
+void job_fetchAndSend(osjob_t *job);     // Read sensor and transmit
+void job_reset(osjob_t *job);            // Device reset via watchdog
+void job_error(osjob_t *job);            // Error state (infinite loop)
 ```
 
 ## Compatibility
@@ -187,7 +194,7 @@ The document below is for the previous MFM v2.0 firmware version. While some arc
   src="/pdfs/Firmware-P22296-10-SPEC-MFM-v2.0.pdf" 
   width="100%" 
   height="100vh"
-  style="min-height: 1200px; border: none;"
+  style="min-height: 842px; border: none;"
   title="MFM v2.0 Firmware Specification">
   <p>Your browser doesn't support PDF viewing. 
      <a href="/pdfs/Firmware-P22296-10-SPEC-MFM-v2.0.pdf" download>Download Firmware Specification PDF</a>

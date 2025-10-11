@@ -41,18 +41,21 @@ Event-driven main loop handling:
 
 ```cpp
 void setup() {
-    // Initialize hardware
-    // Configure LMIC
-    // Read EEPROM config
-    // Schedule first measurement
+    board_setup();                    // Initialize hardware
+    sensors_init();                   // Initialize sensor interface
+    os_init();                        // Initialize LMIC
+    LMIC_reset();                     // Reset LoRaWAN stack
+    
+    if (!conf_load()) {               // Load EEPROM config
+        os_setCallback(&main_job, FUNC_ADDR(job_error));
+        return;
+    }
+    
+    LMIC_startJoining();              // Begin OTAA join
 }
 
 void loop() {
-    // Job scheduler
-    os_runloop_once();
-    
-    // Optional: sleep mode
-    Watchdog.sleep();
+    os_runloop_once();                // LMIC job scheduler (only this!)
 }
 ```
 
@@ -60,44 +63,79 @@ void loop() {
 - `onEvent()` - LMIC event handler for join/TX/RX events
 - `job_performMeasurements()` - Trigger sensor measurement
 - `job_fetchAndSend()` - Read sensor data and transmit
-- `job_pingVersion()` - Send version information
+- `job_pingVersion()` - Send version information after join
 - `job_reset()` - Device reset handler
-- `scheduleNextMeasurement()` - Schedule next measurement cycle
+- `scheduleNextMeasurement()` - Calculate and schedule next cycle
 - `processDownlink()` - Handle received commands
+- `getTransmissionTime()` - Enforce duty cycle compliance
+
+**Job Workflow:**
+1. **Join Phase:** `EV_JOINED` → `job_pingVersion()`
+2. **Version Phase:** After **45s** (`MEASUREMENT_DELAY_AFTER_PING_S`) → `job_performMeasurements()`  
+3. **Measurement Phase:** After **10s** (`MEASUREMENT_SEND_DELAY_AFTER_PERFORM_S`) → `job_fetchAndSend()`
+4. **Transmission Phase:** After TX → `scheduleNextMeasurement()`
+5. **Repeat:** Back to step 3 (with configurable interval)
 
 ### 2. Sensor Interface (`sensors.cpp`, `smbus.cpp`)
 
-**SMBus Communication:**
+**High-Level Sensor API:**
 ```cpp
-// High-level sensor API
-error_t sensors_init(void);
-error_t sensors_performMeasurement(void);
-error_t sensors_readMeasurement(uint8_t *buf, uint8_t *length);
-
-// Low-level SMBus protocol
-error_t smbus_init(void);
-error_t smbus_sendByte(uint8_t addr, uint8_t byte);
-error_t smbus_blockRead(uint8_t addr, uint8_t cmd, 
-                        uint8_t *rx_buf, uint8_t *rx_length);
-error_t smbus_blockWrite(uint8_t addr, uint8_t cmd,
-                         uint8_t *tx_buf, uint8_t tx_length);
+error_t sensors_init(void);                    // Initialize SMBus interface
+error_t sensors_performMeasurement(void);      // Send CMD_PERFORM to 0x36
+error_t sensors_readMeasurement(uint8_t *buf, uint8_t *length);  // Read data
 ```
 
-**Command Flow:**
-1. Send `CMD_PERFORM` (0x10) to sensor address 0x36
-2. Wait 5 seconds (`MEASUREMENT_SEND_DELAY_AFTER_PERFORM_S`)
-3. Send `CMD_READ` (0x11) to retrieve raw sensor data
-4. Transmit variable-length response (up to 32 bytes)
-
-### 3. Configuration (`rom_conf.cpp`, `config.h`)
-
-**EEPROM Management:**
+**Low-Level SMBus Protocol:**
 ```cpp
-// Structure in EEPROM
+error_t smbus_init(void);                      // Set SCL to 80kHz
+error_t smbus_sendByte(uint8_t addr, uint8_t byte);           // Send command
+error_t smbus_blockRead(uint8_t addr, uint8_t cmd, 
+                        uint8_t *rx_buf, uint8_t *rx_length); // Read block
+error_t smbus_blockWrite(uint8_t addr, uint8_t cmd,
+                         uint8_t *tx_buf, uint8_t tx_length); // Write block
+```
+
+**Communication Protocol:**
+1. Send `CMD_PERFORM` (0x10) to sensor address **0x36**
+2. Wait exactly **10 seconds** (`MEASUREMENT_SEND_DELAY_AFTER_PERFORM_S`)
+3. Send `CMD_READ` (0x11) to retrieve measurement data
+4. Receive variable-length response (1-32 bytes)
+5. Transmit data via LoRaWAN on port 1
+
+### 3. Configuration Management (`rom_conf.cpp`, `config.h`)
+
+**EEPROM Structure:**
+```cpp
 struct __attribute__((packed)) rom_conf_t {
-    uint8_t MAGIC[4];               // "MFM\0"
+    uint8_t MAGIC[4];               // "MFM\0" signature
     struct {
         uint8_t MSB;                // Hardware version MSB
+        uint8_t LSB;                // Hardware version LSB
+    } HW_VERSION;
+    uint8_t APP_EUI[8];             // Application EUI
+    uint8_t DEV_EUI[8];             // Device EUI
+    uint8_t APP_KEY[16];            // Application Key (128-bit)
+    uint16_t MEASUREMENT_INTERVAL;   // Interval in seconds
+    uint8_t USE_TTN_FAIR_USE_POLICY; // Fair use enforcement flag
+};
+// Total: 41 bytes
+```
+
+**Configuration Functions:**
+```cpp
+bool conf_load(void);               // Load from EEPROM, validate MAGIC
+void conf_save(void);               // Save to EEPROM
+void conf_getDevEui(uint8_t *buf);  // Get Device EUI
+void conf_getAppEui(uint8_t *buf);  // Get Application EUI
+void conf_getAppKey(uint8_t *buf);  // Get Application Key
+uint16_t conf_getMeasurementInterval(); // Get interval (bounds checked)
+void conf_setMeasurementInterval(uint16_t interval); // Set interval
+```
+
+**Version Handling:**
+- **Firmware Version:** From compile-time defines (`FW_VERSION_MAJOR` = 0, `FW_VERSION_MINOR` = 0, `FW_VERSION_PATCH` = 0)
+- **Hardware Version:** From EEPROM `HW_VERSION` field
+- **Encoding:** 16-bit format `[proto:1][major:5][minor:5][patch:5]`
         uint8_t LSB;                // Hardware version LSB
     } HW_VERSION;                   // Hardware version (2 bytes)
     uint8_t APP_EUI[8];             // Application EUI
@@ -193,7 +231,7 @@ graph TD
     A[Timer Expires] --> B[job_performMeasurements]
     B --> C[sensors_performMeasurement]
     C --> D[Send CMD_PERFORM to 0x36]
-    D --> E[Wait 5 seconds]
+    D --> E[Wait 10 seconds]
     E --> F[job_fetchAndSend]
     F --> G[sensors_readMeasurement]
     G --> H[Send CMD_READ to 0x36]
@@ -218,6 +256,39 @@ graph TD
     H --> K{Second byte = 0xAD?}
     K -->|Yes| L[Schedule mcu_reset in 5s]
     C -->|No| M[Continue Normal Operation]
+```
+
+## Downlink Commands
+
+The firmware supports three downlink commands processed by `processDownlink()`:
+
+### 1. Device Reset (`DL_CMD_REJOIN` = 0xDE)
+**Format:** `0xDE 0xAD`
+- **Purpose:** Force device reset and rejoin
+- **Security:** Requires exact second byte `0xAD` (forms `0xDEAD`)
+- **Action:** Schedules `job_reset()` after 5 seconds
+- **Implementation:** `mcu_reset()` via watchdog timer
+
+### 2. Measurement Interval (`DL_CMD_INTERVAL` = 0x10)
+**Format:** `0x10 <MSB> <LSB>`
+- **Purpose:** Change measurement interval
+- **Range:** 20-4270 seconds (enforced by bounds checking)
+- **Action:** Updates `conf_setMeasurementInterval()` and saves to EEPROM
+- **Side Effect:** Cancels current measurement job and reschedules
+
+### 3. Module Command (`DL_CMD_MODULE` = 0x11)
+**Format:** `0x11 <ADDRESS> <COMMAND> [ARGS...]`
+- **Purpose:** Send SMBus command to external sensor
+- **Address:** Sensor I²C address (typically 0x36)
+- **Command:** Sensor-specific command byte
+- **Args:** Optional command arguments (variable length)
+- **Implementation:** `smbus_blockWrite(address, command, args, length)`
+
+**Example Commands:**
+```
+0xDE 0xAD              → Reset device
+0x10 0x00 0x3C         → Set interval to 60 seconds
+0x11 0x36 0x20 0x01    → Send command 0x20 with arg 0x01 to sensor 0x36
 ```
 
 ## Memory Layout
@@ -257,9 +328,10 @@ graph TD
 - Default fallback values
 
 ### 4. Power Management
-- **LMIC-based power control**: Uses `os_runloop_once()` for efficient sleep/wake cycles
-- **Custom reset functionality**: Custom `wdt.cpp` for controlled device resets
-- **Peripheral power control**: Pin-based sensor power management
+- **LMIC-based power control**: Uses `os_runloop_once()` for efficient sleep/wake cycles automatically
+- **Custom reset functionality**: Custom `wdt.cpp` for controlled device resets (not sleep)
+- **No external sleep libraries**: Power management is handled entirely by LMIC library
+- **Job-based scheduling**: All timing and power states managed by LMIC job scheduler
 - **Low-power operation**: Event-driven design minimizes active time
 
 :::note[Power Management Libraries]

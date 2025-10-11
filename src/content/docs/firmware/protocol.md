@@ -57,7 +57,7 @@ Contains raw sensor data from external I²C sensors. The message format is deter
 
 The device performs a measurement cycle:
 1. Send command `0x10` (CMD_PERFORM) to sensor at address `0x36`
-2. Wait 5 seconds (`MEASUREMENT_SEND_DELAY_AFTER_PERFORM_S`)
+2. Wait **10 seconds** (`MEASUREMENT_SEND_DELAY_AFTER_PERFORM_S`)
 3. Read data with command `0x11` (CMD_READ) from sensor
 4. Transmit the raw sensor response via LoRaWAN
 
