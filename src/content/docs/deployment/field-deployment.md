@@ -1,11 +1,11 @@
 ---
 title: Field Deployment
-description: Best practices for installing and deploying Multiflexmeter V3.7.0 devices in the field
+description: Best practices for installing and deploying Multiflexmeter 3.7.0 devices in the field
 ---
 
 # Field Deployment
 
-Best practices and guidelines for installing Multiflexmeter V3.7.0 devices in production environments.
+Best practices and guidelines for installing Multiflexmeter 3.7.0 devices in production environments.
 
 ## Pre-Deployment Checklist
 

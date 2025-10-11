@@ -7,8 +7,8 @@ export default defineConfig({
 	site: process.env.SITE_URL,
 	integrations: [
 		starlight({
-			title: 'Multiflexmeter V3.7.0',
-			description: 'Documentation for the Multiflexmeter V3.7.0 open-source IoT sensor platform',
+			title: 'Multiflexmeter 3.7.0',
+			description: 'Documentation for the Multiflexmeter 3.7.0 open-source IoT sensor platform',
 			social: [
 				{ 
 					icon: 'github', 

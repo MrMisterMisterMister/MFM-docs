@@ -1,11 +1,11 @@
 ---
 title: Hardware Specifications
-description: Complete technical specifications for Multiflexmeter V3.7.0 hardware
+description: Complete technical specifications for Multiflexmeter 3.7.0 hardware
 ---
 
 # Hardware Specifications
 
-Complete technical specifications for the Multiflexmeter V3.7.0 hardware platform.
+Complete technical specifications for the Multiflexmeter 3.7.0 hardware platform.
 
 ## Microcontroller
 
@@ -261,7 +261,7 @@ Contact maintainers for regional variants.
 ### MFM v2.0 Hardware Specification (Reference)
 
 :::note
-The document below is for the previous MFM v2.0 hardware version. While some concepts remain applicable, refer to the current V3.7.0 specifications above for accurate technical details.
+The document below is for the previous MFM v2.0 hardware version. While some concepts remain applicable, refer to the current 3.7.0 specifications above for accurate technical details.
 :::
 
 <iframe 

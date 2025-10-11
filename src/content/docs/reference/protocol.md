@@ -3,7 +3,7 @@ title: Communication Protocol
 description: Detailed specification of uplink and downlink messages, FPorts, and command formats.
 ---
 
-This document specifies the LoRaWAN communication protocol used by Multiflexmeter V3.7.0, including uplink message formats, downlink commands, and payload structures.
+This document specifies the LoRaWAN communication protocol used by Multiflexmeter 3.7.0, including uplink message formats, downlink commands, and payload structures.
 
 ## LoRaWAN Configuration
 

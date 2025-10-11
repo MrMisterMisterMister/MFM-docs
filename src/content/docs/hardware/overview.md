@@ -1,15 +1,15 @@
 ---
 title: Hardware Overview
-description: Introduction to Multiflexmeter V3.7.0 hardware
+description: Introduction to Multiflexmeter 3.7.0 hardware
 ---
 
 # Hardware Overview
 
-Introduction to the Multiflexmeter V3.7.0 hardware platform and its components.
+Introduction to the Multiflexmeter 3.7.0 hardware platform and its components.
 
 ## Board Overview
 
-The Multiflexmeter V3.7.0 is built around the ATmega1284P microcontroller and RFM95 LoRa radio module, providing a complete IoT sensor platform in a compact form factor.
+The Multiflexmeter 3.7.0 is built around the ATmega1284P microcontroller and RFM95 LoRa radio module, providing a complete IoT sensor platform in a compact form factor.
 
 ## Key Components
 
@@ -39,7 +39,7 @@ The Multiflexmeter V3.7.0 is built around the ATmega1284P microcontroller and RF
 
 ```
 ┌─────────────────────────────────────────┐
-│           Multiflexmeter V3.7.0             │
+│           Multiflexmeter 3.7.0             │
 │                                         │
 │  ┌──────────┐          ┌────────────┐  │
 │  │          │   SPI    │            │  │

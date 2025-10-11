@@ -1,16 +1,16 @@
 ---
 title: Quick Start Guide
-description: Get your Multiflexmeter V3.7.0 up and running in minutes
+description: Get your Multiflexmeter 3.7.0 up and running in minutes
 ---
 
 # Quick Start Guide
 
-Get your Multiflexmeter V3.7.0 device operational in just a few steps.
+Get your Multiflexmeter 3.7.0 device operational in just a few steps.
 
 ## Prerequisites
 
 ### Hardware
-- Multiflexmeter V3.7.0 board
+- Multiflexmeter 3.7.0 board
 - AVRISP programmer (USBasp, Arduino as ISP, or similar)
 - 6-pin ISP cable
 - Power supply (3.3V - 5V)
@@ -29,7 +29,7 @@ Get your Multiflexmeter V3.7.0 device operational in just a few steps.
 ## Step 1: Download the Release
 
 1. **Go to the repository**: [GitHub - multiflexmeter](https://github.com/MrMisterMisterMister/MFM-docs)
-2. **Download V3.7.0**: Navigate to the Releases section and download version 3.7.0 since the documentation matches this version.
+2. **Download 3.7.0**: Navigate to the Releases section and download version 3.7.0 since the documentation matches this version.
 3. **Extract the archive**: Unzip the downloaded file to a working directory.
 
 

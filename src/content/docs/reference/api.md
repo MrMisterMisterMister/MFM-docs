@@ -3,7 +3,7 @@ title: API Reference
 description: Firmware API documentation covering key functions, modules, and data structures.
 ---
 
-This reference documents the key functions, modules, and data structures in the Multiflexmeter V3.7.0 firmware.
+This reference documents the key functions, modules, and data structures in the Multiflexmeter 3.7.0 firmware.
 
 ## Core Modules
 

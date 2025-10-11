@@ -1,11 +1,11 @@
 ---
 title: Firmware Specifications
-description: Complete technical specifications for Multiflexmeter V3.7.0 firmware
+description: Complete technical specifications for Multiflexmeter 3.7.0 firmware
 ---
 
 # Firmware Specifications
 
-Complete technical specifications for the Multiflexmeter V3.7.0 firmware platform.
+Complete technical specifications for the Multiflexmeter 3.7.0 firmware platform.
 
 ## Firmware Information
 
@@ -187,7 +187,7 @@ void job_error(osjob_t *job);            // Error state (infinite loop)
 ### MFM v2.0 Firmware Specification (Reference)
 
 :::note
-The document below is for the previous MFM v2.0 firmware version. While some architectural concepts remain applicable, refer to the current V3.7.0 specifications above for accurate implementation details.
+The document below is for the previous MFM v2.0 firmware version. While some architectural concepts remain applicable, refer to the current 3.7.0 specifications above for accurate implementation details.
 :::
 
 <iframe 

@@ -1,11 +1,11 @@
 ---
 title: Debugging Guide
-description: Advanced debugging techniques for Multiflexmeter V3.7.0
+description: Advanced debugging techniques for Multiflexmeter 3.7.0
 ---
 
 # Debugging Guide
 
-Advanced debugging techniques and tools for troubleshooting Multiflexmeter V3.7.0.
+Advanced debugging techniques and tools for troubleshooting Multiflexmeter 3.7.0.
 
 ## Serial Debug Output
 
@@ -42,7 +42,7 @@ $port.Open()
 ### Debug Output Format
 
 ```
-[BOOT] Multiflexmeter V3.7.0
+[BOOT] Multiflexmeter 3.7.0
 [BOOT] Version: 1.3.7
 [BOOT] Reading EEPROM...
 [BOOT] Config valid: YES
