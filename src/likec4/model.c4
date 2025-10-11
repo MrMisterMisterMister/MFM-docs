@@ -210,7 +210,7 @@ model {
 views {
     view index {
         title "System Context View: Multiflexmeter"
-        description "Level 1: System Context - Shows Multiflexmeter device (our system) and its external dependencies"
+        description "Level 1: System Context - Shows Multiflexmeter device and its external dependencies"
         include multiFlexMeter, lorawanNetwork, multiflexmeterServer
     }
 
