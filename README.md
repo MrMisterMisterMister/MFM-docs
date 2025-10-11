@@ -15,25 +15,6 @@ This documentation covers:
 - **Hardware Reference** - Pin mappings, specifications, and fuse settings
 - **API Reference** - Complete function documentation with examples
 
-<!-- ## 🚀 Quick Start
-
-### View Documentation Locally
-
-```bash
-npm install
-npm run dev
-```
-
-Then open your browser to: **http://localhost:4321**
-
-### Build for Production
-
-```bash
-npm run build
-```
-
-The static site will be generated in the `dist/` directory. -->
-
 ## 📁 Project Structure
 
 ```
@@ -126,27 +107,6 @@ The documentation includes interactive C4 architecture diagrams built with LikeC
 - Run `npm run dev:likec4` for local diagram server
 - Or edit online at: https://likec4.dev/
 
-<!-- ## 🚢 Deployment
-
-### GitHub Pages
-
-```bash
-npm run build
-# Deploy the dist/ folder to GitHub Pages
-```
-
-### Netlify
-
-1. Run `npm run build`
-2. Drag and drop the `dist/` folder to Netlify
-3. Or connect your GitHub repo for auto-deployment
-
-### Vercel
-
-1. Connect your GitHub repository
-2. Vercel auto-detects Astro and configures build settings
-3. Deploy automatically on every commit -->
-
 ## ✏️ Adding Content
 
 ### New Documentation Page
@@ -169,30 +129,6 @@ npm run build
 1. Edit the LikeC4 model in `src/likec4/model.c4`
 2. The diagrams will be automatically built and served at `/diagrams/`
 3. Reference in documentation with links to the interactive diagrams:
-
-## 🛠️ Customization
-
-### Update Branding
-
-Edit `astro.config.mjs`:
-
-```javascript
-starlight({
-  title: 'Your Project Name',
-  social: [
-    { icon: 'github', href: 'https://github.com/MrMisterMisterMister/MFM-docs' }
-  ],
-  // ... other settings
-})
-```
-
-<!-- ### Add Logo
-
-Replace `src/assets/houston.webp` with your logo and update `src/content/docs/index.mdx`. -->
-
-<!-- ### Modify Theme
-
-Starlight supports custom CSS. See [Starlight's customization guide](https://starlight.astro.build/guides/customization/). -->
 
 ## 📖 Documentation Guidelines
 
@@ -220,6 +156,7 @@ Multiflexmeter 3.7.0 is an open-source IoT sensor platform designed for:
 ## 📚 Resources
 
 - **Starlight Documentation:** https://starlight.astro.build/
+- **Multiflexmeter-3.7.0 Release:** https://github.com/Multiflexmeter/Multiflexmeter/releases/tag/V3.7.0
 - **Astro Documentation:** https://docs.astro.build/
 - **C4 Model:** https://c4model.com/
 - **LikeC4:** https://likec4.dev/
