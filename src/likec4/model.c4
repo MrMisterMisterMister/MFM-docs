@@ -58,7 +58,7 @@ model {
 
         // Level 2: Containers
         // Firmware Container
-        deviceFirmware = container "Device Firmware" {
+        deviceSoftware = container "Device Firmware" {
             title "Device Firmware"
             description "Embedded firmware running on ATmega1284P microcontroller"
             technology "C++/Arduino Framework"
@@ -175,15 +175,15 @@ model {
     lorawanNetwork -> multiflexmeterServer "Routes processed data to backend platform"
 
     // Level 2: Container Relationships (Internal to Our System)
-    deviceFirmware -> deviceHardware "Controls and interfaces with all hardware components"
-    deviceFirmware -> sensorHardware "Controls and reads sensors via I2C"
-    deviceFirmware -> radioHardware "Transmits LoRaWAN packets"
-    deviceFirmware -> storageHardware "Stores/retrieves configuration and credentials"
-    deviceFirmware -> powerHardware "Manages power consumption and sleep modes"
+    deviceSoftware -> deviceHardware "Controls and interfaces with all hardware components"
+    deviceSoftware -> sensorHardware "Controls and reads sensors via I2C"
+    deviceSoftware -> radioHardware "Transmits LoRaWAN packets"
+    deviceSoftware -> storageHardware "Stores/retrieves configuration and credentials"
+    deviceSoftware -> powerHardware "Manages power consumption and sleep modes"
 
     // Container connections to external systems
     radioHardware -> lorawanNetwork "Sends LoRaWAN packets to TTN gateway"
-    deviceFirmware -> lorawanNetwork "Manages LoRaWAN protocol stack"
+    deviceSoftware -> lorawanNetwork "Manages LoRaWAN protocol stack"
 
     // Level 3: Component Relationships (Internal to Our System)
     applicationController -> communicationStack "Initiates LoRaWAN transmissions"
@@ -217,21 +217,21 @@ views {
     view of multiFlexMeter {
         title "Container View: Multiflexmeter"
         description "Level 2: Container View - Shows major containers within Multiflexmeter and external systems"
-        include multiFlexMeter, deviceFirmware, deviceHardware, sensorHardware, radioHardware, storageHardware, powerHardware
+        include multiFlexMeter, deviceSoftware, deviceHardware, sensorHardware, radioHardware, storageHardware, powerHardware
         include lorawanNetwork, multiflexmeterServer
     }
 
-    view of deviceFirmware {
+    view of deviceSoftware {
         title "Component View: Multiflexmeter"
-        description "Level 3: Component View - Shows software components within device firmware and their hardware interfaces"
-        include multiFlexMeter, deviceFirmware, deviceHardware
+        description "Level 3: Component View - Shows software components within device software and their hardware interfaces"
+        include multiFlexMeter, deviceSoftware, deviceHardware
         include applicationController, sensorManager, configurationManager, communicationStack, hardwareAbstraction
         include sensorHardware, radioHardware, storageHardware, powerHardware
         include lorawanNetwork, multiflexmeterServer
     }
 
     view code {
-        title "Code Diagram: Multiflexmeter"
+        title "Code View: Multiflexmeter"
         description "Level 4: Code View - Shows functions and structures within software components"
         include setupFunction, eventHandler, measurementJobs, sensorAPI, configStructure, i2cDriver, boardSupport
         include applicationController, sensorManager, configurationManager, hardwareAbstraction
