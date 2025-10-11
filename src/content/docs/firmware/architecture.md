@@ -136,14 +136,13 @@ void conf_setMeasurementInterval(uint16_t interval); // Set interval
 - **Firmware Version:** From compile-time defines (`FW_VERSION_MAJOR` = 0, `FW_VERSION_MINOR` = 0, `FW_VERSION_PATCH` = 0)
 - **Hardware Version:** From EEPROM `HW_VERSION` field
 - **Encoding:** 16-bit format `[proto:1][major:5][minor:5][patch:5]`
-        uint8_t LSB;                // Hardware version LSB
-    } HW_VERSION;                   // Hardware version (2 bytes)
+    uint8_t LSB;                // Hardware version LSB
+    HW_VERSION;                   // Hardware version (2 bytes)
     uint8_t APP_EUI[8];             // Application EUI
     uint8_t DEV_EUI[8];             // Device EUI
     uint8_t APP_KEY[16];            // Application Key
     uint16_t MEASUREMENT_INTERVAL;  // Measurement interval (seconds)
     uint8_t USE_TTN_FAIR_USE_POLICY; // Fair Use Policy compliance
-};
 ```
 
 **Error Handling:**
