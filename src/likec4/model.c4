@@ -37,6 +37,13 @@ specification {
 }
 
 model {
+    // Data source - The physical system being monitored
+    mallemolen = externalSystem "Mallemolen Polder Mill" {
+        title "Mallemolen (Historic Polder Mill in Gouda)"
+        description "Traditional Dutch polder mill built in 1727, used for water management and drainage. Monitoring focuses on wing revolution frequency/speed and pumping activity detection."
+        technology "Historic Polder Mill Structure"
+    }
+
     // External systems - Level 1: System Context
     lorawanNetwork = externalSystem "LoRaWAN Network" {
         title "The Things Network (TTN)"
@@ -58,7 +65,7 @@ model {
 
         // Level 2: Containers
         // Firmware Container
-        deviceSoftware = container "Device Firmware" {
+        deviceFirmware = container "Device Firmware" {
             title "Device Firmware"
             description "Embedded firmware running on ATmega1284P microcontroller"
             technology "C++/Arduino Framework"
@@ -96,7 +103,19 @@ model {
 
                 sensorAPI = codeUnit "Sensor Functions" {
                     title "sensors_init(), sensors_performMeasurement(), sensors_readMeasurement()"
-                    description "for initialization, measurement triggering, and data reading"
+                    description "Existing sensor API for I2C sensor board communication at address 0x36"
+                    technology "C++ Functions"
+                }
+
+                hallSensorFunctions = codeUnit "I2C Hall Sensor Functions [TODO]" {
+                    title "hall_readWingRPM(), hall_readPumpingStatus(), hall_initI2C() [TO BE IMPLEMENTED]"
+                    description "I2C-based Hall Effect sensor communication functions using SMBus protocol - TO BE DEVELOPED"
+                    technology "C++ Functions using existing SMBus API [TODO]"
+                }
+
+                sensorDataProcessing = codeUnit "Sensor Data Processing [TODO]" {
+                    title "calculateRPM(), filterSensorData(), validateMeasurements() [TO BE IMPLEMENTED]"
+                    description "Data processing, filtering, and validation functions for all I2C sensor readings - TO BE DEVELOPED"
                     technology "C++ Functions"
                 }
             }
@@ -145,9 +164,33 @@ model {
             technology "Custom PCB with ATmega1284P, Sensors, LoRa Module, EEPROM, Power Circuitry"
 
             sensorHardware = container "Sensor Hardware" {
-                title "Environmental Sensors"
-                description "Physical sensors for environmental measurements"
-                technology "JSN-SR04T (Ultrasonic), DS18B20 (Temperature)"
+                title "Polder Mill Monitoring Sensors"
+                description "Multi-sensor I2C network for comprehensive polder mill monitoring using shared SDA/SCL bus"
+                technology "I2C Bus Network with Multiple Slave Devices"
+
+                existingSensorBoard = container "Existing Sensor Board [I2C 0x36]" {
+                    title "Environmental Sensor Board"
+                    description "Existing I2C slave device containing ultrasonic and temperature sensors"
+                    technology "I2C Slave 0x36, JSN-SR04T + DS18B20, CMD_PERFORM=0x10, CMD_READ=0x11"
+                }
+
+                wingRevolutionSensor = container "Wing Revolution Sensor [TODO: I2C 0x37]" {
+                    title "Wing Revolution Detection [TO BE IMPLEMENTED]"
+                    description "I2C Hall Effect sensor board for precise wing rotation measurement - TO BE ADDED"
+                    technology "I2C Slave 0x37, Hall Effect A3144, CMD_READ_RPM=0x20 [TODO]"
+                }
+
+                pumpingDetectionSensor = container "Pumping Detection Sensor [TODO: I2C 0x38]" {
+                    title "Pumping Mechanism Detection [TO BE IMPLEMENTED]"
+                    description "I2C Hall Effect sensor board for rad/vijzel pumping activity detection - TO BE ADDED"
+                    technology "I2C Slave 0x38, Hall Effect A3144, CMD_READ_STATUS=0x21 [TODO]"
+                }
+
+                i2cBusInfrastructure = container "I2C Bus Infrastructure" {
+                    title "Shared I2C Communication Bus"
+                    description "Two-wire I2C bus connecting all sensor devices to ATmega1284P"
+                    technology "SDA/SCL lines, 100kHz, 7-bit addressing, SMBus protocol support"
+                }
             }
 
             radioHardware = container "Radio Hardware" {
@@ -171,19 +214,27 @@ model {
     }
 
     // External System Connections to Our System
+    multiFlexMeter -> mallemolen "Monitors polder mill operations"
     multiFlexMeter -> lorawanNetwork "Transmits sensor data via LoRaWAN protocol"
     lorawanNetwork -> multiflexmeterServer "Routes processed data to backend platform"
 
     // Level 2: Container Relationships (Internal to Our System)
-    deviceSoftware -> deviceHardware "Controls and interfaces with all hardware components"
-    deviceSoftware -> sensorHardware "Controls and reads sensors via I2C"
-    deviceSoftware -> radioHardware "Transmits LoRaWAN packets"
-    deviceSoftware -> storageHardware "Stores/retrieves configuration and credentials"
-    deviceSoftware -> powerHardware "Manages power consumption and sleep modes"
+    deviceFirmware -> deviceHardware "Controls and interfaces with all hardware components"
+    deviceFirmware -> sensorHardware "Controls and reads sensors via I2C"
+    deviceFirmware -> radioHardware "Transmits LoRaWAN packets"
+    deviceFirmware -> storageHardware "Stores/retrieves configuration and credentials"
+    deviceFirmware -> powerHardware "Manages power consumption and sleep modes"
+
+    // Physical sensor connections to data source
+    sensorHardware -> mallemolen "Monitors polder mill conditions: wing revolution, pumping activity, temperature"
+    existingSensorBoard -> mallemolen "Monitors environmental conditions (temperature, distance) via existing I2C interface"
+    wingRevolutionSensor -> mallemolen "Measures wing gear rotation frequency and speed [TODO: TO BE IMPLEMENTED]"
+    pumpingDetectionSensor -> mallemolen "Detects rad/vijzel pumping mechanism activity [TODO: TO BE IMPLEMENTED]"
+    i2cBusInfrastructure -> mallemolen "Enables reliable sensor communication via shared I2C bus"
 
     // Container connections to external systems
     radioHardware -> lorawanNetwork "Sends LoRaWAN packets to TTN gateway"
-    deviceSoftware -> lorawanNetwork "Manages LoRaWAN protocol stack"
+    deviceFirmware -> lorawanNetwork "Manages LoRaWAN protocol stack"
 
     // Level 3: Component Relationships (Internal to Our System)
     applicationController -> communicationStack "Initiates LoRaWAN transmissions"
@@ -205,35 +256,56 @@ model {
     sensorAPI -> i2cDriver "Communicates via I2C protocol with sensors"
     configStructure -> boardSupport "Accesses hardware configuration and pin definitions"
     i2cDriver -> boardSupport "Uses board-specific I2C pin configurations"
+
+    // Sensor function relationships
+    sensorAPI -> hallSensorFunctions "Coordinates Hall Effect sensor operations [TODO: TO BE IMPLEMENTED]"
+    sensorAPI -> sensorDataProcessing "Processes and validates all sensor data [TODO: TO BE IMPLEMENTED]"
+    hallSensorFunctions -> i2cDriver "Uses I2C for Hall sensor communication [TODO: TO BE IMPLEMENTED]"
 }
 
 views {
     view index {
-        title "System Context View: Multiflexmeter"
-        description "Level 1: System Context - Shows Multiflexmeter device and its external dependencies"
-        include multiFlexMeter, lorawanNetwork, multiflexmeterServer
+        title "System Context View: Multiflexmeter Polder Mill Monitoring"
+        description "Level 1: System Context - Shows Multiflexmeter device monitoring Mallemolen polder mill wing revolution and pumping activity"
+        include mallemolen, multiFlexMeter, lorawanNetwork, multiflexmeterServer
     }
 
     view of multiFlexMeter {
-        title "Container View: Multiflexmeter"
-        description "Level 2: Container View - Shows major containers within Multiflexmeter and external systems"
-        include multiFlexMeter, deviceSoftware, deviceHardware, sensorHardware, radioHardware, storageHardware, powerHardware
+        title "Container View: Multiflexmeter Polder Mill Monitoring"
+        description "Level 2: Container View - Shows major containers within Multiflexmeter monitoring wing revolution frequency and pumping status"
+        include mallemolen, multiFlexMeter, deviceFirmware, deviceHardware, sensorHardware, radioHardware, storageHardware, powerHardware
         include lorawanNetwork, multiflexmeterServer
     }
 
-    view of deviceSoftware {
+    view of deviceFirmware {
         title "Component View: Multiflexmeter"
-        description "Level 3: Component View - Shows software components within device software and their hardware interfaces"
-        include multiFlexMeter, deviceSoftware, deviceHardware
+        description "Level 3: Component View - Shows software components within device firmware and their hardware interfaces"
+        include multiFlexMeter, deviceFirmware, deviceHardware
         include applicationController, sensorManager, configurationManager, communicationStack, hardwareAbstraction
         include sensorHardware, radioHardware, storageHardware, powerHardware
-        include lorawanNetwork, multiflexmeterServer
+        include lorawanNetwork, multiflexmeterServer, mallemolen
+    }
+
+    view of sensorHardware {
+        title "I2C Sensor Network: Polder Mill Monitoring"
+        description "Detailed view of I2C sensor network showing existing environmental sensors and planned Hall sensor expansion"
+        include mallemolen, sensorHardware, i2cBusInfrastructure
+        include existingSensorBoard, wingRevolutionSensor, pumpingDetectionSensor
     }
 
     view code {
-        title "Code View: Multiflexmeter"
+        title "Code Diagram: Multiflexmeter"
         description "Level 4: Code View - Shows functions and structures within software components"
         include setupFunction, eventHandler, measurementJobs, sensorAPI, configStructure, i2cDriver, boardSupport
+        include hallSensorFunctions, sensorDataProcessing
         include applicationController, sensorManager, configurationManager, hardwareAbstraction
+    }
+
+    view sensorFunctions {
+        title "Sensor Functions Detail View"
+        description "Detailed view of sensor-specific function implementations and data processing"
+        include sensorManager, sensorAPI
+        include hallSensorFunctions, sensorDataProcessing
+        include i2cDriver, boardSupport
     }
 }

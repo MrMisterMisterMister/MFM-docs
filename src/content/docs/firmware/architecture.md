@@ -78,14 +78,74 @@ void loop() {
 
 ### 2. Sensor Interface (`sensors.cpp`, `smbus.cpp`)
 
-**High-Level Sensor API:**
-```cpp
-error_t sensors_init(void);                    // Initialize SMBus interface
-error_t sensors_performMeasurement(void);      // Send CMD_PERFORM to 0x36
-error_t sensors_readMeasurement(uint8_t *buf, uint8_t *length);  // Read data
+#### I2C Hardware Architecture
+
+The sensor communication is built on a master-slave I2C architecture:
+
+```
+ATmega1284P (I2C Master)
+│
+├── SDA Pin (PC1/Pin 17) ──┐
+├── SCL Pin (PC0/Pin 16) ──┤
+│                          │
+└── I2C Bus ───────────────┘
+    │
+    └── 0x36: Sensor Board (I2C Slave)
+        ├── JSN-SR04T (Ultrasonic)
+        └── DS18B20 (Temperature)
 ```
 
-**Low-Level SMBus Protocol:**
+#### Hardware Abstraction Layer
+
+**SMBus Interface (`smbus.cpp`):**
+```cpp
+error_t smbus_init(void);                    // Initialize I2C peripheral
+error_t smbus_sendByte(uint8_t addr, uint8_t cmd);   // Send command
+error_t smbus_blockRead(uint8_t addr, uint8_t cmd,   // Read data block
+                        uint8_t *buf, uint8_t *len);
+```
+
+#### Application Interface
+
+**Sensor API (`sensors.cpp`):**
+```cpp
+#define SENSOR_BOARD_ADDR 0x36
+#define CMD_PERFORM 0x10    // Trigger measurement
+#define CMD_READ 0x11       // Read results
+
+error_t sensors_init(void);
+error_t sensors_performMeasurement(void);
+error_t sensors_readMeasurement(uint8_t *buf, uint8_t *length);
+```
+
+#### I2C Transaction Flow
+
+**1. Trigger Measurement:**
+```
+sensors_performMeasurement()
+└── smbus_sendByte(0x36, 0x10)
+    └── I2C: [START][0x36][0x10][STOP]
+```
+
+**2. Read Measurement Data:**
+```
+sensors_readMeasurement()
+└── smbus_blockRead(0x36, 0x11, buf, &len)
+    └── I2C: [START][0x36][0x11][RESTART][0x36|READ][LENGTH][DATA...][STOP]
+```
+
+#### Communication Protocol
+
+1. Send `CMD_PERFORM` (0x10) to sensor address **0x36**
+2. Wait exactly **10 seconds** (`MEASUREMENT_SEND_DELAY_AFTER_PERFORM_S`)
+3. Send `CMD_READ` (0x11) to retrieve measurement data
+4. Receive variable-length response (1-32 bytes)
+5. Transmit data via LoRaWAN on port 1
+
+#### Legacy SMBus Functions
+
+For compatibility, additional SMBus functions are available:
+
 ```cpp
 error_t smbus_init(void);                      // Set SCL to 80kHz
 error_t smbus_sendByte(uint8_t addr, uint8_t byte);           // Send command
@@ -94,13 +154,6 @@ error_t smbus_blockRead(uint8_t addr, uint8_t cmd,
 error_t smbus_blockWrite(uint8_t addr, uint8_t cmd,
                          uint8_t *tx_buf, uint8_t tx_length); // Write block
 ```
-
-**Communication Protocol:**
-1. Send `CMD_PERFORM` (0x10) to sensor address **0x36**
-2. Wait exactly **10 seconds** (`MEASUREMENT_SEND_DELAY_AFTER_PERFORM_S`)
-3. Send `CMD_READ` (0x11) to retrieve measurement data
-4. Receive variable-length response (1-32 bytes)
-5. Transmit data via LoRaWAN on port 1
 
 ### 3. Configuration Management (`rom_conf.cpp`, `config.h`)
 
