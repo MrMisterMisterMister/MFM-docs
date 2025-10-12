@@ -98,25 +98,25 @@ model {
 
             sensorManager = component "Sensor Manager" {
                 title "Sensor Manager"
-                description "High-level sensor interface and data collection coordination"
+                description "High-level sensor interface and data collection coordination via I2C sensor network"
                 technology "sensors.cpp"
 
-                sensorAPI = codeUnit "Sensor Functions" {
+                sensorAPI = codeUnit "Core Sensor Functions" {
                     title "sensors_init(), sensors_performMeasurement(), sensors_readMeasurement()"
-                    description "Existing sensor API for I2C sensor board communication at address 0x36"
+                    description "EXISTING sensor API for I2C sensor board communication at address 0x36 (JSN-SR04T + DS18B20)"
                     technology "C++ Functions"
                 }
 
-                hallSensorFunctions = codeUnit "I2C Hall Sensor Functions [TODO]" {
-                    title "hall_readWingRPM(), hall_readPumpingStatus(), hall_initI2C() [TO BE IMPLEMENTED]"
-                    description "I2C-based Hall Effect sensor communication functions using SMBus protocol - TO BE DEVELOPED"
-                    technology "C++ Functions using existing SMBus API [TODO]"
+                wingStatusFunctions = codeUnit "Wing Status Functions [TODO]" {
+                    title "sensors_isWingRotating(), sensors_getWingMovement() [TO BE IMPLEMENTED]"
+                    description "Simple wing rotation detection via I2C Hall sensor - returns true/false if wings are moving"
+                    technology "C++ Functions extending existing sensor API [TODO]"
                 }
 
-                sensorDataProcessing = codeUnit "Sensor Data Processing [TODO]" {
-                    title "calculateRPM(), filterSensorData(), validateMeasurements() [TO BE IMPLEMENTED]"
-                    description "Data processing, filtering, and validation functions for all I2C sensor readings - TO BE DEVELOPED"
-                    technology "C++ Functions"
+                pumpStatusFunctions = codeUnit "Pump Status Functions [TODO]" {
+                    title "sensors_isPumpActive(), sensors_getPumpMovement() [TO BE IMPLEMENTED]"
+                    description "Simple pump activity detection via I2C Hall sensor - returns true/false if pump is moving"
+                    technology "C++ Functions extending existing sensor API [TODO]"
                 }
             }
 
@@ -257,10 +257,11 @@ model {
     configStructure -> boardSupport "Accesses hardware configuration and pin definitions"
     i2cDriver -> boardSupport "Uses board-specific I2C pin configurations"
 
-    // Sensor function relationships
-    sensorAPI -> hallSensorFunctions "Coordinates Hall Effect sensor operations [TODO: TO BE IMPLEMENTED]"
-    sensorAPI -> sensorDataProcessing "Processes and validates all sensor data [TODO: TO BE IMPLEMENTED]"
-    hallSensorFunctions -> i2cDriver "Uses I2C for Hall sensor communication [TODO: TO BE IMPLEMENTED]"
+    // Sensor function relationships - simplified for basic status detection
+    sensorAPI -> wingStatusFunctions "Coordinates wing status detection [TODO: TO BE IMPLEMENTED]"
+    sensorAPI -> pumpStatusFunctions "Coordinates pump status detection [TODO: TO BE IMPLEMENTED]"
+    wingStatusFunctions -> i2cDriver "Uses SMBus for wing sensor communication [TODO: TO BE IMPLEMENTED]"
+    pumpStatusFunctions -> i2cDriver "Uses SMBus for pump sensor communication [TODO: TO BE IMPLEMENTED]"
 }
 
 views {
@@ -297,15 +298,15 @@ views {
         title "Code Diagram: Multiflexmeter"
         description "Level 4: Code View - Shows functions and structures within software components"
         include setupFunction, eventHandler, measurementJobs, sensorAPI, configStructure, i2cDriver, boardSupport
-        include hallSensorFunctions, sensorDataProcessing
+        include wingStatusFunctions, pumpStatusFunctions
         include applicationController, sensorManager, configurationManager, hardwareAbstraction
     }
 
     view sensorFunctions {
-        title "Sensor Functions Detail View"
-        description "Detailed view of sensor-specific function implementations and data processing"
+        title "I2C Sensor Functions Detail View"
+        description "Detailed view of I2C sensor network function implementations for simple status detection"
         include sensorManager, sensorAPI
-        include hallSensorFunctions, sensorDataProcessing
+        include wingStatusFunctions, pumpStatusFunctions
         include i2cDriver, boardSupport
     }
 }
