@@ -325,12 +325,4 @@ views {
         include wingStatusFunctions, pumpStatusFunctions
         include applicationController, sensorManager, configurationManager, hardwareAbstraction
     }
-
-    view sensorFunctions {
-        title "I2C Sensor Functions Detail View"
-        description "Detailed view of actual I2C sensor network implementation and planned extensions for simple status detection"
-        include sensorManager, sensorAPI
-        include wingStatusFunctions, pumpStatusFunctions
-        include i2cDriver, boardSupport, watchdogTimer
-    }
 }
