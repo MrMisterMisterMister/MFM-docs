@@ -74,37 +74,43 @@ model {
             applicationController = component "Application Controller" {
                 title "Application Controller"
                 description "Main application logic coordinating device behavior and LoRaWAN communication"
-                technology "main.cpp"
+                technology "main.cpp (400 lines)"
 
                 // Level 4: Code units
-                setupFunction = codeUnit "setup()" {
+                setupFunction = codeUnit "Arduino Setup" {
                     title "setup()"
-                    description "Device initialization, LMIC setup, and configuration loading"
-                    technology "C++ Function"
+                    description "Device initialization: Serial, board setup, LMIC configuration, config loading"
+                    technology "C++ Function (main.cpp:63)"
                 }
 
-                eventHandler = codeUnit "onEvent()" {
-                    title "onEvent()"
-                    description "LoRaWAN event processing (join, transmission, downlink)"
-                    technology "C++ Function"
+                eventHandler = codeUnit "LoRaWAN Event Handler" {
+                    title "onEvent(ev_t ev)"
+                    description "LoRaWAN event processing: EV_JOINED, EV_TXCOMPLETE, EV_TXSTART, etc."
+                    technology "C++ Function (main.cpp:318)"
                 }
 
-                measurementJobs = codeUnit "Measurement Jobs" {
-                    title "job_performMeasurements(), job_fetchAndSend()"
-                    description "Scheduled measurement and transmission workflow"
-                    technology "C++ Functions"
+                measurementJobs = codeUnit "LMIC Job Functions" {
+                    title "job_performMeasurements(), job_fetchAndSend(), job_pingVersion(), job_reset(), job_error()"
+                    description "Scheduled LMIC job functions for measurements, transmission, and error handling"
+                    technology "C++ Functions (main.cpp:101-175)"
+                }
+
+                loraConfiguration = codeUnit "LoRaWAN Pin Mapping" {
+                    title "lmic_pinmap lmic_pins"
+                    description "Hardware pin mapping between ATmega1284P and SX1276 radio module"
+                    technology "C++ Constant Structure (main.cpp:42)"
                 }
             }
 
             sensorManager = component "Sensor Manager" {
                 title "Sensor Manager"
                 description "High-level sensor interface and data collection coordination via I2C sensor network"
-                technology "sensors.cpp"
+                technology "sensors.cpp (76 lines)"
 
                 sensorAPI = codeUnit "Core Sensor Functions" {
                     title "sensors_init(), sensors_performMeasurement(), sensors_readMeasurement()"
-                    description "EXISTING sensor API for I2C sensor board communication at address 0x36 (JSN-SR04T + DS18B20)"
-                    technology "C++ Functions"
+                    description "EXISTING sensor API for I2C sensor board communication at address 0x36 (JSN-SR04T + DS18B20) - commands CMD_PERFORM=0x10, CMD_READ=0x11"
+                    technology "C++ Functions (sensors.cpp:45-73)"
                 }
 
                 wingStatusFunctions = codeUnit "Wing Status Functions [TODO]" {
@@ -123,36 +129,54 @@ model {
             configurationManager = component "Configuration Manager" {
                 title "Configuration Manager"
                 description "Device configuration, LoRaWAN credentials, and settings management"
-                technology "rom_conf.cpp"
+                technology "rom_conf.cpp (111 lines)"
 
-                configStructure = codeUnit "Configuration Structure" {
-                    title "rom_conf_t, conf_load(), conf_save()"
-                    description "EEPROM configuration layout and persistence functions"
-                    technology "C++ Struct & Functions"
+                configStructure = codeUnit "Configuration Functions" {
+                    title "conf_load(), conf_save(), conf_getAppEui(), conf_getDevEui(), conf_getAppKey(), conf_setMeasurementInterval()"
+                    description "EEPROM configuration management with magic header 'MFM' validation and LoRaWAN credential handling"
+                    technology "C++ Functions (rom_conf.cpp:42-111)"
+                }
+
+                configDataStructure = codeUnit "Configuration Data Structure" {
+                    title "rom_conf_t config"
+                    description "Static configuration structure in RAM with EEPROM persistence - includes magic header, LoRaWAN keys, and device settings"
+                    technology "C++ Static Structure (rom_conf.cpp:27)"
                 }
             }
 
             communicationStack = component "Communication Stack" {
                 title "Communication Stack"
                 description "LoRaWAN protocol implementation and radio control"
-                technology "arduino-lmic library"
+                technology "arduino-lmic library (external)"
+
+                lmicLibrary = codeUnit "LMIC Library" {
+                    title "Arduino LMIC LoRaWAN Stack"
+                    description "External library providing LoRaWAN protocol implementation, job scheduling, and radio control"
+                    technology "C++ Library (arduino-lmic)"
+                }
             }
 
             hardwareAbstraction = component "Hardware Abstraction Layer" {
                 title "Hardware Abstraction Layer"
                 description "Low-level hardware drivers and board support"
-                technology "smbus.cpp, board.cpp, wdt.cpp"
+                technology "smbus.cpp (212 lines), board.cpp variants, wdt.cpp (54 lines)"
 
-                i2cDriver = codeUnit "I2C Driver" {
-                    title "smbus_blockRead(), smbus_blockWrite(), TWI functions"
-                    description "I2C/SMBus protocol implementation for sensor communication"
-                    technology "C++ Functions"
+                i2cDriver = codeUnit "I2C/SMBus Driver" {
+                    title "smbus_init(), smbus_blockRead(), smbus_blockWrite(), smbus_sendByte(), smbus_alertAddress()"
+                    description "I2C/SMBus protocol implementation using ATmega1284P TWI hardware at 100kHz with error handling"
+                    technology "C++ Functions (smbus.cpp:108-212)"
                 }
 
-                boardSupport = codeUnit "Board Support" {
-                    title "board_setup(), pin definitions"
-                    description "Hardware initialization and GPIO configuration"
-                    technology "C++ Functions & Constants"
+                boardSupport = codeUnit "Board Support Variants" {
+                    title "board_setup() - MFM v3 and v3_M1284P variants"
+                    description "Hardware initialization: v3 (minimal setup), v3_M1284P (optional clock prescaler)"
+                    technology "C++ Functions (mfm_v3.cpp, mfm_v3_m1284p.cpp)"
+                }
+
+                watchdogTimer = codeUnit "Watchdog Timer" {
+                    title "mcu_reset(), ISR(WDT_vect), volatile uint8_t do_reset"
+                    description "System reset functionality and watchdog timer management"
+                    technology "C++ Functions & ISR (wdt.cpp:38-54)"
                 }
             }
         }
@@ -161,7 +185,7 @@ model {
         deviceHardware = container "Device Hardware" {
             title "Device Hardware"
             description "Physical hardware components of the Multiflexmeter device"
-            technology "Custom PCB with ATmega1284P, Sensors, LoRa Module, EEPROM, Power Circuitry"
+            technology "Custom PCB - MFM v3 (ATmega328P) or MFM v3 M1284P (ATmega1284P), Sensors, LoRa Module, EEPROM, Power Circuitry"
 
             sensorHardware = container "Sensor Hardware" {
                 title "Polder Mill Monitoring Sensors"
@@ -296,17 +320,17 @@ views {
 
     view code {
         title "Code Diagram: Multiflexmeter"
-        description "Level 4: Code View - Shows functions and structures within software components"
-        include setupFunction, eventHandler, measurementJobs, sensorAPI, configStructure, i2cDriver, boardSupport
+        description "Level 4: Code View - Shows actual functions and structures from source files"
+        include setupFunction, eventHandler, measurementJobs, loraConfiguration, sensorAPI, configStructure, configDataStructure, i2cDriver, boardSupport, watchdogTimer
         include wingStatusFunctions, pumpStatusFunctions
         include applicationController, sensorManager, configurationManager, hardwareAbstraction
     }
 
     view sensorFunctions {
         title "I2C Sensor Functions Detail View"
-        description "Detailed view of I2C sensor network function implementations for simple status detection"
+        description "Detailed view of actual I2C sensor network implementation and planned extensions for simple status detection"
         include sensorManager, sensorAPI
         include wingStatusFunctions, pumpStatusFunctions
-        include i2cDriver, boardSupport
+        include i2cDriver, boardSupport, watchdogTimer
     }
 }
