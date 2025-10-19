@@ -3,8 +3,6 @@ title: Configuration
 description: Detailed EEPROM configuration and device setup for Multiflexmeter 3.7.0
 ---
 
-# Configuration
-
 Complete guide to configuring the Multiflexmeter 3.7.0 device via EEPROM settings.
 
 ## EEPROM Structure

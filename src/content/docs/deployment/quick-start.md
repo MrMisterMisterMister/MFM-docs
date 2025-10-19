@@ -3,8 +3,6 @@ title: Quick Start Guide
 description: Get your Multiflexmeter 3.7.0 up and running in minutes
 ---
 
-# Quick Start Guide
-
 Get your Multiflexmeter 3.7.0 device operational in just a few steps.
 
 ## Prerequisites

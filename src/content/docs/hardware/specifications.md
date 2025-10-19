@@ -3,8 +3,6 @@ title: Hardware Specifications
 description: Complete technical specifications for Multiflexmeter 3.7.0 hardware
 ---
 
-# Hardware Specifications
-
 Complete technical specifications for the Multiflexmeter 3.7.0 hardware platform.
 
 ## Microcontroller

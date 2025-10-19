@@ -3,8 +3,6 @@ title: API Reference
 description: Complete API reference for Multiflexmeter firmware functions
 ---
 
-# API Reference
-
 Complete API reference for Multiflexmeter 3.7.0 firmware functions and interfaces.
 
 ## Configuration API

@@ -3,8 +3,6 @@ title: Development Guide
 description: Complete guide to building, modifying, and debugging Multiflexmeter 3.7.0 firmware
 ---
 
-# Firmware Development Guide
-
 This guide covers everything you need to know to build, modify, and debug the Multiflexmeter 3.7.0 firmware.
 
 ## Development Environment

@@ -3,8 +3,6 @@ title: Firmware Specifications
 description: Complete technical specifications for Multiflexmeter 3.7.0 firmware
 ---
 
-# Firmware Specifications
-
 Complete technical specifications for the Multiflexmeter 3.7.0 firmware platform.
 
 ## Firmware Information

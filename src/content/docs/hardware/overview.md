@@ -3,8 +3,6 @@ title: Hardware Overview
 description: Introduction to Multiflexmeter 3.7.0 hardware
 ---
 
-# Hardware Overview
-
 Introduction to the Multiflexmeter 3.7.0 hardware platform and its components.
 
 ## Board Overview

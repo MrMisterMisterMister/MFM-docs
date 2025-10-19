@@ -3,8 +3,6 @@ title: Build System
 description: PlatformIO build system configuration and compilation details
 ---
 
-# Build System
-
 Comprehensive guide to the PlatformIO build system configuration for Multiflexmeter 3.7.0.
 
 ## PlatformIO Configuration

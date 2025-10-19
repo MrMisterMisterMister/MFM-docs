@@ -3,8 +3,6 @@ title: TTN Setup
 description: Complete guide to setting up The Things Network for Multiflexmeter 3.7.0
 ---
 
-# The Things Network Setup
-
 Step-by-step guide to register and configure Multiflexmeter 3.7.0 devices on The Things Network (TTN).
 
 ## Prerequisites

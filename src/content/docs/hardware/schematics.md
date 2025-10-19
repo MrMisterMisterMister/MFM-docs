@@ -3,8 +3,6 @@ title: Schematics & Design Files
 description: Hardware schematics and design files for Multiflexmeter 3.7.0
 ---
 
-# Schematics & Design Files
-
 Hardware design files and schematics for the Multiflexmeter 3.7.0.
 
 ## KiCad Project Files

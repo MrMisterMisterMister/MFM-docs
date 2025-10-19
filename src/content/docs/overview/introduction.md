@@ -3,8 +3,6 @@ title: Introduction
 description: Overview of the Multiflexmeter 3.7.0 IoT sensor platform
 ---
 
-# Multiflexmeter 3.7.0 Introduction
-
 The Multiflexmeter 3.7.0 (MFM) is an open-source IoT sensor platform designed for **flexible, low-cost, and frequent environmental measurements** in remote locations using LoRaWAN technology.
 
 ## Purpose
