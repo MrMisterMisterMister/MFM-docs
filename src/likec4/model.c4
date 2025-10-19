@@ -79,26 +79,50 @@ model {
                 // Level 4: Code units
                 setupFunction = codeUnit "Arduino Setup" {
                     title "setup()"
-                    description "Device initialization: Serial, board setup, LMIC configuration, config loading"
-                    technology "C++ Function (main.cpp:63)"
+                    description "Device initialization: Serial, board_setup(), os_init(), LMIC_reset(), conf_load(), LMIC_startJoining()"
+                    technology "C++ Function (main.cpp:63-97)"
+                }
+
+                loopFunction = codeUnit "Arduino Loop" {
+                    title "loop()"
+                    description "Main loop: executes os_runloop_once() for LMIC OS scheduler"
+                    technology "C++ Function (main.cpp:99)"
                 }
 
                 eventHandler = codeUnit "LoRaWAN Event Handler" {
                     title "onEvent(ev_t ev)"
-                    description "LoRaWAN event processing: EV_JOINED, EV_TXCOMPLETE, EV_TXSTART, etc."
-                    technology "C++ Function (main.cpp:318)"
+                    description "LoRaWAN event processing: EV_JOINING, EV_JOINED (starts job_pingVersion), EV_TXCOMPLETE (processes downlinks), EV_JOIN_TXCOMPLETE, EV_LINK_DEAD"
+                    technology "C++ Function (main.cpp:318-386)"
                 }
 
                 measurementJobs = codeUnit "LMIC Job Functions" {
                     title "job_performMeasurements(), job_fetchAndSend(), job_pingVersion(), job_reset(), job_error()"
-                    description "Scheduled LMIC job functions for measurements, transmission, and error handling"
+                    description "Scheduled jobs: perform (triggers sensors), fetch&send (reads+transmits), pingVersion (sends FW/HW version on fport 2), reset (mcu_reset after 5s), error (sleep loop)"
                     technology "C++ Functions (main.cpp:101-175)"
+                }
+
+                downlinkProcessor = codeUnit "Downlink Command Processor" {
+                    title "processDownlink(uint8_t cmd, uint8_t *args, uint8_t len)"
+                    description "Processes LoRaWAN downlinks: 0xDE 0xAD (reset), 0x10 (set interval), 0x11 (forward to module via SMBus)"
+                    technology "C++ Function (main.cpp:248-302)"
+                }
+
+                schedulingLogic = codeUnit "Measurement Scheduling" {
+                    title "scheduleNextMeasurement(), getTransmissionTime()"
+                    description "Schedules next measurement considering TTN fair use policy (30s airtime/day), duty cycle, and user interval (20-4270s)"
+                    technology "C++ Functions (main.cpp:124-246)"
                 }
 
                 loraConfiguration = codeUnit "LoRaWAN Pin Mapping" {
                     title "lmic_pinmap lmic_pins"
-                    description "Hardware pin mapping between ATmega1284P and SX1276 radio module"
-                    technology "C++ Constant Structure (main.cpp:42)"
+                    description "Hardware pin mapping: NSS, RST, DIO_0, DIO_1, DIO_2 between ATmega1284P and SX1276 radio"
+                    technology "C++ Constant Structure (main.cpp:50-55)"
+                }
+
+                loraCallbacks = codeUnit "LMIC Credential Callbacks" {
+                    title "os_getArtEui(), os_getDevEui(), os_getDevKey(), os_getMeasurementInterval()"
+                    description "LMIC callbacks to retrieve LoRaWAN OTAA credentials and interval from configuration manager"
+                    technology "C++ Functions (main.cpp:391-399)"
                 }
             }
 
@@ -132,15 +156,21 @@ model {
                 technology "rom_conf.cpp (111 lines)"
 
                 configStructure = codeUnit "Configuration Functions" {
-                    title "conf_load(), conf_save(), conf_getAppEui(), conf_getDevEui(), conf_getAppKey(), conf_setMeasurementInterval()"
-                    description "EEPROM configuration management with magic header 'MFM' validation and LoRaWAN credential handling"
+                    title "conf_load(), conf_save(), conf_getAppEui(), conf_getDevEui(), conf_getAppKey(), conf_setMeasurementInterval(), conf_getMeasurementInterval(), conf_getUseTTNFairUsePolicy()"
+                    description "EEPROM ops: conf_load() reads from addr 0, validates 'MFM' magic; conf_save() writes to EEPROM; getters/setters for EUIs (LSB-first), AppKey (MSB-first), interval (little-endian, bounds 20-4270s)"
                     technology "C++ Functions (rom_conf.cpp:42-111)"
                 }
 
                 configDataStructure = codeUnit "Configuration Data Structure" {
-                    title "rom_conf_t config"
-                    description "Static configuration structure in RAM with EEPROM persistence - includes magic header, LoRaWAN keys, and device settings"
-                    technology "C++ Static Structure (rom_conf.cpp:27)"
+                    title "rom_conf_t config (static)"
+                    description "Static RAM copy of EEPROM config: MAGIC[4]='MFM', HW_VERSION (MSB,LSB), APP_EUI[8], DEV_EUI[8], APP_KEY[16], MEASUREMENT_INTERVAL (uint16_t), USE_TTN_FAIR_USE_POLICY (uint8_t)"
+                    technology "C++ Static Structure (rom_conf.cpp:29, rom_conf.h:63-74)"
+                }
+
+                versionHandling = codeUnit "Version Management" {
+                    title "conf_getFirmwareVersion(), conf_getHardwareVersion(), versionToUint16()"
+                    description "Version encoding/decoding: bit[15]=proto, bits[14:10]=major, bits[9:5]=minor, bits[4:0]=patch; FW version from build flags, HW version from EEPROM"
+                    technology "C++ Functions (rom_conf.cpp:88-111)"
                 }
             }
 
@@ -161,22 +191,58 @@ model {
                 description "Low-level hardware drivers and board support"
                 technology "smbus.cpp (212 lines), board.cpp variants, wdt.cpp (54 lines)"
 
-                i2cDriver = codeUnit "I2C/SMBus Driver" {
+                i2cDriver = codeUnit "I2C/SMBus High-Level API" {
                     title "smbus_init(), smbus_blockRead(), smbus_blockWrite(), smbus_sendByte(), smbus_alertAddress()"
-                    description "I2C/SMBus protocol implementation using ATmega1284P TWI hardware at 100kHz with error handling"
+                    description "SMBus protocol implementation: init (80kHz TWI clock), blockRead (cmd+length+data), blockWrite (cmd+length+data), sendByte, alertAddress (ARA response)"
                     technology "C++ Functions (smbus.cpp:108-212)"
+                }
+
+                twiLowLevel = codeUnit "TWI Low-Level Functions" {
+                    title "twi_start(), twi_tx(), twi_rx(), twi_stop(), twi_error()"
+                    description "ATmega1284P TWI hardware control: start condition, transmit byte, receive byte (with ACK/NACK), stop condition, error translation from TW_STATUS"
+                    technology "C++ Functions (smbus.cpp:41-105)"
                 }
 
                 boardSupport = codeUnit "Board Support Variants" {
                     title "board_setup() - MFM v3 and v3_M1284P variants"
-                    description "Hardware initialization: v3 (minimal setup), v3_M1284P (optional clock prescaler)"
-                    technology "C++ Functions (mfm_v3.cpp, mfm_v3_m1284p.cpp)"
+                    description "Hardware initialization: v3 (ATmega328P@8MHz, MiniCore, no special init), v3_M1284P (ATmega1284P@8MHz, MightyCore, optional clock prescaler)"
+                    technology "C++ Functions (mfm_v3.cpp:41-44, mfm_v3_m1284p.cpp:43-51)"
                 }
 
-                watchdogTimer = codeUnit "Watchdog Timer" {
+                boardPinConfig = codeUnit "Board Pin Configurations" {
+                    title "mfm_v3.h, mfm_v3_m1284p.h"
+                    description "Pin definitions: PERIF_PWR, JSN_TX/RX, ONE_WIRE, BUZZER, NSS, RST, DIO_0..5 (differs between v3 and v3_m1284p)"
+                    technology "C++ Header Files (board_config/*.h)"
+                }
+
+                watchdogTimer = codeUnit "Watchdog Timer & Reset" {
                     title "mcu_reset(), ISR(WDT_vect), volatile uint8_t do_reset"
-                    description "System reset functionality and watchdog timer management"
-                    technology "C++ Functions & ISR (wdt.cpp:38-54)"
+                    description "Software reset via watchdog: mcu_reset() sets do_reset=1, enables WDTO_15MS, infinite loop; ISR checks do_reset flag"
+                    technology "C++ Functions & ISR (wdt.cpp:26-53)"
+                }
+            }
+
+            debugSystem = component "Debug & Diagnostic System" {
+                title "Debug System"
+                description "Conditional debug output system for firmware development and troubleshooting"
+                technology "debug.h (91 lines)"
+
+                debugMacros = codeUnit "Debug Macros" {
+                    title "_debug(), _debugTime(), _debugf(), _debugFlush()"
+                    description "Conditional macros (enabled by DEBUG flag): _debugTime() prints [ms] from os_getTime(), _debug() prints args, _debugf() printf-style, _debugFlush() flushes serial"
+                    technology "C++ Preprocessor Macros (debug.h:35-89)"
+                }
+            }
+
+            errorHandling = component "Error Handling System" {
+                title "Error Handling"
+                description "Centralized error code definitions and handling"
+                technology "errors.h (46 lines)"
+
+                errorTypes = codeUnit "Error Type Enumeration" {
+                    title "error_t enum"
+                    description "Error codes: ERR_NONE, ERR_SMBUS_SLAVE_NACK, ERR_SMBUS_ARB_LOST, ERR_SMBUS_NO_ALERT, ERR_SMBUS_ERR"
+                    technology "C++ Enum (errors.h:26-33)"
                 }
             }
         }
@@ -220,19 +286,49 @@ model {
             radioHardware = container "Radio Hardware" {
                 title "LoRa Radio Module"
                 description "Long-range wireless communication hardware"
-                technology "SX1276 LoRa Transceiver"
+                technology "SX1276 LoRa Transceiver (RFM95W)"
+
+                sx1276Chip = component "SX1276 LoRa Chip" {
+                    title "SX1276 LoRa Transceiver"
+                    description "Semtech SX1276 LoRa transceiver chip supporting EU868 frequency plan"
+                    technology "SX1276 IC"
+                }
+
+                spiInterface = component "SPI Interface" {
+                    title "SPI Communication"
+                    description "SPI bus for MCU-to-radio communication: MOSI, MISO, SCK, NSS (chip select)"
+                    technology "Hardware SPI"
+                }
+
+                dioLines = component "DIO Interrupt Lines" {
+                    title "DIO GPIO Interrupt Pins"
+                    description "Digital I/O pins for radio event signaling: DIO0 (TxDone/RxDone), DIO1 (RxTimeout/FhssChangeChannel), DIO2 (FhssChangeChannel)"
+                    technology "GPIO Interrupts"
+                }
             }
 
             storageHardware = container "Storage Hardware" {
                 title "Non-volatile Storage"
                 description "Configuration and credential storage"
-                technology "EEPROM"
+                technology "ATmega1284P Internal EEPROM (4KB)"
+
+                eepromChip = component "EEPROM Storage" {
+                    title "ATmega1284P EEPROM"
+                    description "4KB internal EEPROM for persistent config storage (41 bytes used at address 0x00)"
+                    technology "Internal EEPROM"
+                }
             }
 
             powerHardware = container "Power System" {
                 title "Power Management"
                 description "Battery power supply and management circuits"
                 technology "Battery & Power Electronics"
+
+                peripheralPowerControl = component "Peripheral Power Switch" {
+                    title "Peripheral Power Control"
+                    description "GPIO-controlled power switch for sensors (PIN_PERIF_PWR): v3=pin2, v3_m1284p=pin20"
+                    technology "MOSFET Power Switch"
+                }
             }
         }
     }
@@ -264,28 +360,60 @@ model {
     applicationController -> communicationStack "Initiates LoRaWAN transmissions"
     applicationController -> configurationManager "Manages device settings and credentials"
     applicationController -> sensorManager "Schedules measurement cycles"
-    // applicationController -> hardwareAbstraction "Controls hardware resources"
+    applicationController -> debugSystem "Uses debug output during development"
+    applicationController -> hardwareAbstraction "Controls watchdog and board initialization"
 
     sensorManager -> hardwareAbstraction "Uses I2C communication for sensor access"
     configurationManager -> hardwareAbstraction "Accesses EEPROM storage for persistence"
     communicationStack -> hardwareAbstraction "Controls radio hardware for LoRaWAN"
+    hardwareAbstraction -> errorHandling "Returns error codes from HAL operations"
 
     // Component connections to external systems
     communicationStack -> lorawanNetwork "Handles LoRaWAN protocol communication"
+    communicationStack -> radioHardware "Controls SX1276 via SPI and DIO pins"
+    configurationManager -> storageHardware "Reads/writes EEPROM configuration"
 
     // Level 4: Code Unit Relationships (Internal to Our System)
-    setupFunction -> configStructure "Loads device configuration from EEPROM"
-    eventHandler -> measurementJobs "Schedules measurement tasks based on LoRaWAN events"
-    measurementJobs -> sensorAPI "Triggers sensor readings for data collection"
-    sensorAPI -> i2cDriver "Communicates via I2C protocol with sensors"
-    configStructure -> boardSupport "Accesses hardware configuration and pin definitions"
-    i2cDriver -> boardSupport "Uses board-specific I2C pin configurations"
+    setupFunction -> boardSupport "Calls board_setup() for hardware initialization"
+    setupFunction -> configStructure "Calls conf_load() to load EEPROM configuration"
+    setupFunction -> lmicLibrary "Initializes LMIC with os_init(), LMIC_reset(), LMIC_startJoining()"
+    loopFunction -> lmicLibrary "Executes os_runloop_once() for LMIC scheduler"
+    
+    eventHandler -> measurementJobs "Schedules jobs: EV_JOINED->job_pingVersion, periodic->job_performMeasurements"
+    eventHandler -> downlinkProcessor "Calls processDownlink() on EV_TXCOMPLETE with data"
+    measurementJobs -> sensorAPI "job_performMeasurements calls sensors_performMeasurement(), job_fetchAndSend calls sensors_readMeasurement()"
+    measurementJobs -> lmicLibrary "Uses LMIC_setTxData2() to transmit sensor data"
+    measurementJobs -> versionHandling "job_pingVersion encodes and sends FW/HW version"
+    measurementJobs -> watchdogTimer "job_reset calls mcu_reset()"
+    
+    downlinkProcessor -> configStructure "0x10 command calls conf_setMeasurementInterval() and conf_save()"
+    downlinkProcessor -> i2cDriver "0x11 command forwards to smbus_blockWrite()"
+    downlinkProcessor -> watchdogTimer "0xDEAD command schedules mcu_reset()"
+    
+    schedulingLogic -> configStructure "Reads conf_getMeasurementInterval() and conf_getUseTTNFairUsePolicy()"
+    schedulingLogic -> lmicLibrary "Calculates airtime with calcAirTime(), checks LMICbandplan_nextTx()"
+    
+    loraCallbacks -> configStructure "os_getArtEui/DevEui/DevKey call conf_getAppEui/DevEui/AppKey()"
+    
+    sensorAPI -> i2cDriver "Calls smbus_init(), smbus_sendByte(0x36, CMD_PERFORM), smbus_blockRead(0x36, CMD_READ)"
+    
+    i2cDriver -> twiLowLevel "High-level SMBus functions use twi_start(), twi_tx(), twi_rx(), twi_stop()"
+    twiLowLevel -> errorTypes "Returns error_t codes, twi_error() translates TW_STATUS"
+    
+    boardSupport -> boardPinConfig "Reads PIN_* definitions from board config headers"
+    loraConfiguration -> boardPinConfig "Uses PIN_NSS, PIN_RST, PIN_DIO_0/1/2"
+    
+    debugMacros -> lmicLibrary "Uses os_getTime() for timestamped debug output"
 
     // Sensor function relationships - simplified for basic status detection
     sensorAPI -> wingStatusFunctions "Coordinates wing status detection [TODO: TO BE IMPLEMENTED]"
     sensorAPI -> pumpStatusFunctions "Coordinates pump status detection [TODO: TO BE IMPLEMENTED]"
     wingStatusFunctions -> i2cDriver "Uses SMBus for wing sensor communication [TODO: TO BE IMPLEMENTED]"
     pumpStatusFunctions -> i2cDriver "Uses SMBus for pump sensor communication [TODO: TO BE IMPLEMENTED]"
+    
+    // Hardware component relationships
+    sx1276Chip -> spiInterface "SX1276 communicates via SPI bus"
+    sx1276Chip -> dioLines "SX1276 signals events via DIO pins"
 }
 
 views {
@@ -318,11 +446,59 @@ views {
         include existingSensorBoard, wingRevolutionSensor, pumpingDetectionSensor
     }
 
+    view of deviceFirmware {
+        title "Firmware Components (Expanded)"
+        description "Level 3: Detailed firmware components including debug and error handling systems"
+        include deviceFirmware
+        include applicationController, sensorManager, configurationManager, communicationStack, hardwareAbstraction, debugSystem, errorHandling
+    }
+
+    view of applicationController {
+        title "Application Controller Details"
+        description "Level 4: Code units within the Application Controller component"
+        include applicationController
+        include setupFunction, loopFunction, eventHandler, measurementJobs, downlinkProcessor, schedulingLogic, loraConfiguration, loraCallbacks
+    }
+
+    view of hardwareAbstraction {
+        title "Hardware Abstraction Layer Details"
+        description "Level 4: Low-level drivers and board support code units"
+        include hardwareAbstraction
+        include i2cDriver, twiLowLevel, boardSupport, boardPinConfig, watchdogTimer
+    }
+
+    view of configurationManager {
+        title "Configuration Manager Details"
+        description "Level 4: Configuration functions and data structures"
+        include configurationManager
+        include configStructure, configDataStructure, versionHandling
+    }
+
+    view of radioHardware {
+        title "LoRa Radio Hardware Details"
+        description "Radio hardware components: SX1276 chip, SPI interface, and DIO interrupt lines"
+        include radioHardware, sx1276Chip, spiInterface, dioLines
+    }
+
     view code {
-        title "Code Diagram: Multiflexmeter"
-        description "Level 4: Code View - Shows actual functions and structures from source files"
-        include setupFunction, eventHandler, measurementJobs, loraConfiguration, sensorAPI, configStructure, configDataStructure, i2cDriver, boardSupport, watchdogTimer
-        include wingStatusFunctions, pumpStatusFunctions
-        include applicationController, sensorManager, configurationManager, hardwareAbstraction
+        title "Complete Code Diagram"
+        description "Level 4: Comprehensive code view showing all functions and structures from source files"
+        include setupFunction, loopFunction, eventHandler, measurementJobs, downlinkProcessor, schedulingLogic, loraConfiguration, loraCallbacks
+        include sensorAPI, wingStatusFunctions, pumpStatusFunctions
+        include configStructure, configDataStructure, versionHandling
+        include i2cDriver, twiLowLevel, boardSupport, boardPinConfig, watchdogTimer
+        include debugMacros, errorTypes
+        include lmicLibrary
+        include applicationController, sensorManager, configurationManager, communicationStack, hardwareAbstraction, debugSystem, errorHandling
+    }
+
+    view detailed_architecture {
+        title "Detailed System Architecture"
+        description "Complete architecture view with firmware components and hardware modules"
+        include multiFlexMeter, deviceFirmware, deviceHardware
+        include applicationController, sensorManager, configurationManager, communicationStack, hardwareAbstraction, debugSystem, errorHandling
+        include sensorHardware, radioHardware, storageHardware, powerHardware
+        include sx1276Chip, spiInterface, dioLines, eepromChip, peripheralPowerControl
+        include lorawanNetwork
     }
 }

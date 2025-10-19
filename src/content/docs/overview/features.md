@@ -148,14 +148,15 @@ Multiflexmeter 3.7.0 provides a comprehensive set of features for IoT sensor dep
 ## Hardware Variants
 
 ### Standard Version (mfm_v3)
-- ATmega1284P @ 16MHz
-- Full feature set
+- ATmega328P @ 8MHz
+- Legacy variant with limited memory
 - Standard pin configuration
 
 ### 1284P Variant (mfm_v3_m1284p)
-- Enhanced ATmega1284P features
-- Same pin compatibility
-- Alternative board definition
+- ATmega1284P @ 8MHz
+- 128KB Flash, 16KB RAM, 4KB EEPROM
+- Enhanced I/O (32 pins)
+- Current/recommended variant
 
 ## Extensibility
 

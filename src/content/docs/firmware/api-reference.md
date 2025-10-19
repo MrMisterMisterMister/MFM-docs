@@ -9,257 +9,610 @@ Complete API reference for Multiflexmeter 3.7.0 firmware functions and interface
 
 ## Configuration API
 
-### `rom_conf.cpp`
+### `rom_conf.cpp` / `rom_conf.h`
 
-#### `rom_conf_init()`
+#### `conf_load()`
 ```cpp
-void rom_conf_init();
+bool conf_load(void);
 ```
-Initializes EEPROM configuration subsystem and loads configuration into memory.
-
-**Returns:** None
-
-**Side Effects:**
-- Reads from EEPROM
-- Populates global configuration structure
-- Validates magic bytes
-
----
-
-#### `rom_conf_is_valid()`
-```cpp
-bool rom_conf_is_valid();
-```
-Checks if EEPROM contains valid configuration.
+Loads configuration from EEPROM into RAM and validates magic bytes.
 
 **Returns:** 
-- `true` - Configuration is valid
-- `false` - Configuration is invalid or corrupted
+- `true` - Configuration loaded successfully
+- `false` - Invalid magic bytes "MFM\0" or EEPROM corrupted
 
-**Validation:**
-- Checks magic bytes: `"MFM\0"`
+**Side Effects:**
+- Reads 41 bytes from EEPROM address 0x00
+- Populates static `rom_conf_t config` structure
+- Validates MAGIC field
+
+**Location:** `rom_conf.cpp:42-59`
 
 ---
 
-#### `rom_conf_get_version()`
+#### `conf_save()`
 ```cpp
-uint16_t rom_conf_get_version();
+void conf_save(void);
 ```
-Retrieves firmware version from EEPROM hardware version field.
+Saves current configuration from RAM to EEPROM.
 
-**Returns:** 16-bit encoded version number
+**Side Effects:**
+- Writes 41 bytes to EEPROM address 0x00
+- Updates MAGIC field to "MFM\0"
 
-**Format:** `proto[1]:major[5]:minor[5]:patch[5]`
+**Location:** `rom_conf.cpp:61-66`
+
+---
+
+#### `conf_getDevEui()`
+```cpp
+void conf_getDevEui(uint8_t *buf);
+```
+Copies Device EUI to provided buffer.
+
+**Parameters:**
+- `buf` - Pointer to 8-byte buffer
+
+**Format:** LSB-first (little-endian) as required by LMIC
+
+**Location:** `rom_conf.cpp:68-70`
+
+---
+
+#### `conf_getAppEui()`
+```cpp
+void conf_getAppEui(uint8_t *buf);
+```
+Copies Application EUI to provided buffer.
+
+**Parameters:**
+- `buf` - Pointer to 8-byte buffer
+
+**Format:** LSB-first (little-endian) as required by LMIC
+
+**Location:** `rom_conf.cpp:72-74`
+
+---
+
+#### `conf_getAppKey()`
+```cpp
+void conf_getAppKey(uint8_t *buf);
+```
+Copies Application Key to provided buffer.
+
+**Parameters:**
+- `buf` - Pointer to 16-byte buffer
+
+**Format:** MSB-first (big-endian)
+
+**Location:** `rom_conf.cpp:76-78`
+
+---
+
+#### `conf_getMeasurementInterval()`
+```cpp
+uint16_t conf_getMeasurementInterval(void);
+```
+Retrieves measurement interval with bounds checking.
+
+**Returns:** Interval in seconds (20-4270)
+
+**Bounds:**
+- Minimum: 20 seconds (MIN_INTERVAL)
+- Maximum: 4270 seconds (MAX_INTERVAL)
+
+**Location:** `rom_conf.cpp:80-86`
+
+---
+
+#### `conf_setMeasurementInterval()`
+```cpp
+void conf_setMeasurementInterval(uint16_t interval);
+```
+Sets measurement interval with bounds checking.
+
+**Parameters:**
+- `interval` - Interval in seconds (clamped to 20-4270)
+
+**Side Effects:**
+- Updates RAM configuration
+- Does NOT save to EEPROM (call `conf_save()` separately)
+
+**Location:** `rom_conf.cpp:88-93`
+
+---
+
+#### `conf_getUseTTNFairUsePolicy()`
+```cpp
+uint8_t conf_getUseTTNFairUsePolicy(void);
+```
+Returns TTN Fair Use Policy flag.
+
+**Returns:** 
+- `1` - Fair use policy enabled (30s/day airtime limit)
+- `0` - Fair use policy disabled
+
+**Location:** `rom_conf.cpp:95-97`
+
+---
+
+#### `conf_getFirmwareVersion()`
+```cpp
+version conf_getFirmwareVersion(void);
+```
+Returns firmware version from build flags.
+
+**Returns:** `version` struct with proto, major, minor, patch fields
+
+**Source:** Compile-time defines (FW_VERSION_MAJOR, MINOR, PATCH)
+
+**Location:** `rom_conf.cpp:99-106`
+
+---
+
+#### `conf_getHardwareVersion()`
+```cpp
+version conf_getHardwareVersion(void);
+```
+Returns hardware version from EEPROM.
+
+**Returns:** `version` struct with proto, major, minor, patch fields
+
+**Source:** EEPROM HW_VERSION field (2 bytes)
+
+**Location:** `rom_conf.cpp:108-115`
+
+---
+
+#### `versionToUint16()`
+```cpp
+uint16_t versionToUint16(version v);
+```
+Encodes version struct to 16-bit integer.
+
+**Parameters:**
+- `v` - Version structure
+
+**Returns:** 16-bit encoded version
+
+**Format:** `[proto:1][major:5][minor:5][patch:5]`
 
 **Example:**
 ```cpp
-uint16_t version = rom_conf_get_version();
-// version = 0x8467 = v1.3.7
+version fw = conf_getFirmwareVersion();
+uint16_t encoded = versionToUint16(fw);
+// v3.7.0 (release) → 0x8E00
 ```
+
+**Location:** `rom_conf.cpp:117-121`
 
 ---
 
 ## Sensor API
 
-### `sensors.cpp`
+### `sensors.cpp` / `sensors.h`
 
-#### `sensorPerform()`
+#### `sensors_init()`
 ```cpp
-uint8_t sensorPerform(uint8_t sensor_address);
+error_t sensors_init(void);
 ```
-Triggers sensor measurement by sending CMD_PERFORM (0x10).
+Initializes SMBus/I²C interface for sensor communication.
 
-**Parameters:**
-- `sensor_address` - I²C address of sensor (typically 0x36)
+**Returns:** 
+- `ERR_NONE` - Initialization successful
+- Other error codes from `smbus_init()`
 
-**Returns:**
-- `0` - Success
-- `1` - Communication error
+**Side Effects:**
+- Configures I²C hardware at 80kHz
+- Sets up TWI peripheral
 
-**Example:**
-```cpp
-if (sensorPerform(SENSOR_ADDRESS) == 0) {
-    delay(100);  // Wait for sensor processing
-}
-```
+**Location:** `sensors.cpp:45-47`
 
 ---
 
-#### `sensorRead()`
+#### `sensors_performMeasurement()`
 ```cpp
-uint8_t sensorRead(uint8_t sensor_address, int16_t* data);
+error_t sensors_performMeasurement(void);
 ```
-Reads measurement data from sensor (CMD_READ = 0x11).
-
-**Parameters:**
-- `sensor_address` - I²C address of sensor
-- `data` - Pointer to array of 8 × int16_t values
+Triggers measurement on sensor board at address 0x36 by sending CMD_PERFORM (0x10).
 
 **Returns:**
-- `0` - Success
-- `1` - Communication error
+- `ERR_NONE` - Command sent successfully
+- `ERR_SMBUS_SLAVE_NACK` - Sensor did not acknowledge
+- `ERR_SMBUS_*` - Other SMBus errors
 
-**Data Format:**
-- Array of 8 signed 16-bit integers
-- Sensor-specific interpretation
+**Protocol:**
+- Sends byte `0x10` to I²C address `0x36`
+
+**Usage:**
+```cpp
+if (sensors_performMeasurement() == ERR_NONE) {
+    // Wait 10 seconds before reading
+    delay(10000);
+}
+```
+
+**Location:** `sensors.cpp:59-61`
+
+---
+
+#### `sensors_readMeasurement()`
+```cpp
+error_t sensors_readMeasurement(uint8_t *buf, uint8_t *length);
+```
+Reads measurement data from sensor using CMD_READ (0x11) via SMBus block read.
+
+**Parameters:**
+- `buf` - Buffer to store measurement data (up to 32 bytes)
+- `length` - Input: buffer size, Output: actual bytes read
+
+**Returns:**
+- `ERR_NONE` - Data read successfully
+- `ERR_SMBUS_SLAVE_NACK` - Sensor did not respond
+- `ERR_SMBUS_*` - Other SMBus errors
+
+**Protocol:**
+- Sends command `0x11` to address `0x36`
+- Performs SMBus block read (variable length)
+- First byte from sensor indicates data length
 
 **Example:**
 ```cpp
-int16_t measurements[8];
-if (sensorRead(SENSOR_ADDRESS, measurements) == 0) {
-    // Process measurements
-    int16_t value1 = measurements[0];
-    int16_t value2 = measurements[1];
-    // ...
+uint8_t sensor_data[32];
+uint8_t data_length = sizeof(sensor_data);
+
+if (sensors_readMeasurement(sensor_data, &data_length) == ERR_NONE) {
+    // Process sensor_data[0..data_length-1]
+    // Format depends on connected sensor module
 }
 ```
+
+**Location:** `sensors.cpp:73-75`
 
 ---
 
 ## SMBus/I²C API
 
-### `smbus.cpp`
+### `smbus.cpp` / `smbus.h`
 
-#### `smBusInit()`
+#### `smbus_init()`
 ```cpp
-void smBusInit();
+error_t smbus_init(void);
 ```
-Initializes SMBus (I²C) communication.
+Initializes TWI (I²C) hardware for SMBus communication.
 
-**Returns:** None
+**Returns:** `ERR_NONE`
 
 **Configuration:**
-- Clock speed: 100kHz (standard I²C)
-- Internal pull-ups: disabled (external 4.7kΩ recommended)
+- Clock speed: 80kHz (F_SMBUS = 80000L)
+- Calculates TWBR register value
+- External 4.7kΩ pull-ups required on SDA/SCL
+
+**Location:** `smbus.cpp:108-111`
 
 ---
 
-#### `smBusWriteByte()`
+#### `smbus_sendByte()`
 ```cpp
-uint8_t smBusWriteByte(uint8_t address, uint8_t command);
+error_t smbus_sendByte(uint8_t addr, uint8_t byte);
 ```
-Writes single command byte to SMBus device.
+Performs SMBus Send Byte operation.
 
 **Parameters:**
-- `address` - 7-bit I²C address
-- `command` - Command byte to send
+- `addr` - 7-bit I²C address (not shifted)
+- `byte` - Command or data byte to send
 
 **Returns:**
-- `0` - Success
-- `1` - NAK or error
+- `ERR_NONE` - Success
+- `ERR_SMBUS_SLAVE_NACK` - Device did not acknowledge
+- `ERR_SMBUS_ARB_LOST` - Arbitration lost
+- `ERR_SMBUS_ERR` - General communication error
+
+**Protocol:** [START][ADDR+W][BYTE][STOP]
+
+**Location:** `smbus.cpp:113-127`
 
 ---
 
-#### `smBusReadWord()`
+#### `smbus_blockRead()`
 ```cpp
-uint16_t smBusReadWord(uint8_t address, uint8_t command);
+error_t smbus_blockRead(uint8_t addr, uint8_t cmd, 
+                        uint8_t *rx_buf, uint8_t *rx_length);
 ```
-Reads 16-bit word from SMBus device.
+Performs SMBus Block Read operation.
 
 **Parameters:**
-- `address` - 7-bit I²C address
-- `command` - Command byte
+- `addr` - 7-bit I²C address
+- `cmd` - Command byte
+- `rx_buf` - Buffer for received data
+- `rx_length` - Input: buffer size, Output: bytes received
 
-**Returns:** 16-bit value (little-endian)
+**Returns:**
+- `ERR_NONE` - Success
+- `ERR_SMBUS_*` - Various error codes
 
----
+**Protocol:** 
+- [START][ADDR+W][CMD][RESTART][ADDR+R][LENGTH][DATA...][STOP]
+- First received byte is data length
+- Master ACKs all bytes except last (NACKed)
 
-## Board API
-
-### `boards/mfm_v3_m1284p.cpp`
-
-#### `board_init()`
-```cpp
-void board_init();
-```
-Initializes board-specific hardware.
-
-**Side Effects:**
-- Configures GPIO pins
-- Initializes peripherals
-- Sets up power control
+**Location:** `smbus.cpp:129-163`
 
 ---
 
-#### `board_sleep()`
+#### `smbus_blockWrite()`
 ```cpp
-void board_sleep();
+error_t smbus_blockWrite(uint8_t addr, uint8_t cmd,
+                         uint8_t *tx_buf, uint8_t tx_length);
 ```
-Enters low-power sleep mode.
-
-**Power Consumption:**
-- Active: ~10mA
-- Sleep: <1mA
-
----
-
-#### `board_sensor_power(bool enable)`
-```cpp
-void board_sensor_power(bool enable);
-```
-Controls power to external sensor.
+Performs SMBus Block Write operation.
 
 **Parameters:**
-- `enable` - `true` to power on, `false` to power off
+- `addr` - 7-bit I²C address
+- `cmd` - Command byte
+- `tx_buf` - Data to transmit
+- `tx_length` - Number of bytes to send
+
+**Returns:**
+- `ERR_NONE` - Success
+- `ERR_SMBUS_*` - Various error codes
+
+**Protocol:** [START][ADDR+W][CMD][LENGTH][DATA...][STOP]
+
+**Used by:** Downlink command 0x11 to forward data to sensor modules
+
+**Location:** `smbus.cpp:165-190`
 
 ---
 
-## Watchdog API
-
-### `wdt.cpp`
-
-#### `wdt_enable()`
+#### `smbus_alertAddress()`
 ```cpp
-void wdt_enable(uint16_t timeout_ms);
+error_t smbus_alertAddress(uint8_t *addr);
 ```
-Enables watchdog timer.
+Handles SMBus Alert Response Address (ARA) protocol.
 
 **Parameters:**
-- `timeout_ms` - Timeout in milliseconds (typically 8000ms)
+- `addr` - Output: Address of alerting device
+
+**Returns:**
+- `ERR_NONE` - Alert address received
+- `ERR_SMBUS_NO_ALERT` - No device alerting
+- `ERR_SMBUS_*` - Communication error
+
+**Protocol:** 
+- Reads from special address 0x0C (SMBUS_ADDR_ARA)
+- Device responds with its address
+- Used for interrupt-driven sensor polling
+
+**Location:** `smbus.cpp:192-211`
 
 ---
 
-#### `wdt_reset()`
-```cpp
-void wdt_reset();
-```
-Resets watchdog timer (prevents reboot).
+### Low-Level TWI Functions
 
-**Usage:** Call periodically in main loop.
+These functions are internal to `smbus.cpp` and not part of the public API:
+
+- `twi_start()` - Generate START condition and address device
+- `twi_tx()` - Transmit one byte
+- `twi_rx()` - Receive one byte (with ACK/NACK)
+- `twi_stop()` - Generate STOP condition
+- `twi_error()` - Translate TWI status to error_t
+
+**Location:** `smbus.cpp:41-105`
+
+---
+
+## Board Support API
+
+### `boards/mfm_v3.cpp` and `boards/mfm_v3_m1284p.cpp`
+
+#### `board_setup()`
+```cpp
+void board_setup(void);
+```
+Initializes board-specific hardware configuration.
+
+**Variants:**
+
+**MFM V3 (ATmega328P):**
+- No special initialization required
+- Default Arduino setup sufficient
+- **Location:** `mfm_v3.cpp:41-44`
+
+**MFM V3 M1284P (ATmega1284P):**
+- Optional clock prescaler configuration (commented out)
+- Can reduce clock from 8MHz to 4MHz for power savings
+- Currently uses default 8MHz
+- **Location:** `mfm_v3_m1284p.cpp:43-51`
+
+**Example (enabling clock prescaler):**
+```cpp
+void board_setup(void) {
+    CLKPR = 1 << CLKPCE;  // Enable prescaler change
+    CLKPR = 0b0001;       // Set /2 prescaler
+}
+```
+
+---
+
+### Board Pin Definitions
+
+#### `include/board_config/mfm_v3.h`
+
+**ATmega328P Variant:**
+```cpp
+#define PIN_PERIF_PWR 2      // Peripheral power control
+#define PIN_JSN_TX 4         // JSN sensor TX
+#define PIN_JSN_RX 3         // JSN sensor RX
+#define PIN_ONE_WIRE 5       // OneWire bus
+#define PIN_BUZZER 17        // Buzzer (Analog 3)
+#define PIN_NSS 10           // LoRa chip select
+#define PIN_RST 9            // LoRa reset
+#define PIN_DIO_0 8          // LoRa DIO0
+#define PIN_DIO_1 7          // LoRa DIO1
+#define PIN_DIO_2 6          // LoRa DIO2
+```
+
+#### `include/board_config/mfm_v3_m1284p.h`
+
+**ATmega1284P Variant:**
+```cpp
+#define PIN_PERIF_PWR 20     // Peripheral power control
+#define PIN_JSN_TX 10        // JSN sensor TX
+#define PIN_JSN_RX 11        // JSN sensor RX
+#define PIN_ONE_WIRE 12      // OneWire bus
+#define PIN_BUZZER 17        // Buzzer (Analog 3)
+#define PIN_NSS 24           // LoRa chip select
+#define PIN_RST 25           // LoRa reset
+#define PIN_DIO_0 2          // LoRa DIO0
+#define PIN_DIO_1 3          // LoRa DIO1
+#define PIN_DIO_2 4          // LoRa DIO2
+#define PIN_DIO_3 0          // LoRa DIO3
+#define PIN_DIO_4 1          // LoRa DIO4
+#define PIN_DIO_5 26         // LoRa DIO5
+```
+
+---
+
+## Watchdog & Reset API
+
+### `wdt.cpp` / `wdt.h`
+
+#### `mcu_reset()`
+```cpp
+void mcu_reset(void);
+```
+Forces MCU reset using watchdog timer.
+
+**Behavior:**
+1. Sets global flag `do_reset = 1`
+2. Enables watchdog with 15ms timeout
+3. Enters infinite loop
+4. Watchdog fires and resets MCU
+
+**Usage:** Called by downlink command 0xDEAD or error recovery
+
+**Warning:** This function does not return!
+
+**Location:** `wdt.cpp:47-53`
+
+---
+
+#### `ISR(WDT_vect)`
+```cpp
+ISR(WDT_vect);
+```
+Watchdog timer interrupt service routine.
+
+**Behavior:**
+- If `do_reset == 1`: Allows reset to proceed
+- If `do_reset == 0`: Resets watchdog and disables it
+
+**Purpose:** Distinguishes intentional reset from watchdog protection
+
+**Location:** `wdt.cpp:38-45`
+
+---
+
+### Native AVR Watchdog Functions
+
+The firmware also uses standard AVR watchdog functions:
+
+```cpp
+#include <avr/wdt.h>
+
+wdt_reset();              // Reset watchdog counter
+wdt_disable();            // Disable watchdog
+wdt_enable(WDTO_15MS);    // Enable with 15ms timeout
+```
+
+**Timeouts:** WDTO_15MS, WDTO_30MS, WDTO_60MS, WDTO_120MS, WDTO_250MS, WDTO_500MS, WDTO_1S, WDTO_2S, WDTO_4S, WDTO_8S
 
 ---
 
 ## LoRaWAN Integration
 
-### LMIC Job Functions
+### `main.cpp` - Application Jobs and Event Handlers
 
-#### `do_measure()`
+#### `job_performMeasurements()`
 ```cpp
-static void do_measure(osjob_t* j);
+void job_performMeasurements(osjob_t *job);
 ```
-Job function for triggering sensor measurements.
+Job function that triggers sensor measurement.
 
-**Flow:**
-1. Power on sensor
-2. Send CMD_PERFORM
-3. Wait for processing
-4. Send CMD_READ
-5. Power off sensor
-6. Call `do_send()`
+**Actions:**
+1. Calls `sensors_performMeasurement()` to send CMD_PERFORM (0x10)
+2. Schedules `job_fetchAndSend()` after 10 seconds delay
+
+**Scheduling:** Called by `scheduleNextMeasurement()` based on interval
+
+**Location:** `main.cpp:101-112`
 
 ---
 
-#### `do_send()`
+#### `job_fetchAndSend()`
 ```cpp
-static void do_send(osjob_t* j);
+void job_fetchAndSend(osjob_t *job);
 ```
-Job function for sending LoRaWAN uplink.
+Job function that reads sensor data and transmits via LoRaWAN.
 
-**Flow:**
-1. Check if TX is ready
-2. Prepare payload (16 bytes)
-3. Queue transmission
-4. LMIC handles radio
+**Actions:**
+1. Reads measurement data with `sensors_readMeasurement()`
+2. Transmits data on FPort 1 using `LMIC_setTxData2()`
+3. Handles TXRX_PENDING case (skips if radio busy)
+
+**Location:** `main.cpp:114-147`
+
+---
+
+#### `job_pingVersion()`
+```cpp
+void job_pingVersion(osjob_t *job);
+```
+Job function that sends firmware/hardware version after join.
+
+**Actions:**
+1. Encodes firmware and hardware versions to uint16
+2. Builds 5-byte payload: [0x10][FW_MSB][FW_LSB][HW_MSB][HW_LSB]
+3. Transmits on FPort 2
+4. Schedules first measurement after 45 seconds
+
+**Trigger:** Automatically called on EV_JOINED
+
+**Location:** `main.cpp:149-167`
+
+---
+
+#### `job_reset()`
+```cpp
+void job_reset(osjob_t *job);
+```
+Job function that performs MCU reset.
+
+**Actions:**
+1. Calls `mcu_reset()` to trigger watchdog reset
+2. Function does not return
+
+**Trigger:** Scheduled by downlink command 0xDEAD after 5 second delay
+
+**Location:** `main.cpp:169-171`
+
+---
+
+#### `job_error()`
+```cpp
+void job_error(osjob_t *job);
+```
+Error state job - enters infinite sleep loop.
+
+**Actions:**
+1. Prints error message to debug output
+2. Enters infinite loop calling `os_runloop_once()`
+3. Device effectively halts
+
+**Trigger:** Called when configuration load fails
+
+**Location:** `main.cpp:173-175`
 
 ---
 
@@ -267,24 +620,113 @@ Job function for sending LoRaWAN uplink.
 ```cpp
 void onEvent(ev_t ev);
 ```
-LMIC event handler for LoRaWAN events.
+LMIC event handler for LoRaWAN protocol events.
 
-**Events:**
-- `EV_JOINING` - OTAA join in progress
-- `EV_JOINED` - Successfully joined network
-- `EV_TXCOMPLETE` - Transmission complete
-- `EV_RXCOMPLETE` - Downlink received
+**Key Events Handled:**
 
-**Downlink Handling:**
+- **`EV_JOINING`** - Debug output, join in progress
+- **`EV_JOINED`** - Schedules `job_pingVersion()` after join success
+- **`EV_TXCOMPLETE`** - Processes downlinks, schedules next measurement
+- **`EV_JOIN_TXCOMPLETE`** - Debug output for join attempt
+- **`EV_LINK_DEAD`** - Automatic rejoin on link failure
+
+**Downlink Processing:**
 ```cpp
 case EV_TXCOMPLETE:
-    if (LMIC.dataLen) {
-        // Process downlink on FPort 1
-        uint8_t* payload = LMIC.frame + LMIC.dataBeg;
-        uint16_t cmd = (payload[0] << 8) | payload[1];
-        // Handle command
+    if (LMIC.dataLen > 0) {
+        processDownlink(LMIC.frame[LMIC.dataBeg], 
+                       &LMIC.frame[LMIC.dataBeg + 1],
+                       LMIC.dataLen - 1);
     }
+    scheduleNextMeasurement();
 ```
+
+**Location:** `main.cpp:318-386`
+
+---
+
+#### `processDownlink()`
+```cpp
+void processDownlink(uint8_t cmd, uint8_t *args, uint8_t len);
+```
+Processes downlink commands received from network.
+
+**Parameters:**
+- `cmd` - Command byte (first byte of downlink)
+- `args` - Remaining payload bytes
+- `len` - Length of args
+
+**Commands:**
+- **0xDE (+ 0xAD)**: Schedule device reset in 5 seconds
+- **0x10**: Set measurement interval (args = MSB, LSB)
+- **0x11**: Forward to sensor module via SMBus
+
+**Location:** `main.cpp:248-302`
+
+---
+
+#### `scheduleNextMeasurement()`
+```cpp
+void scheduleNextMeasurement(void);
+```
+Calculates and schedules next measurement job.
+
+**Logic:**
+1. Reads interval from configuration
+2. If Fair Use Policy enabled, enforces airtime limits
+3. Checks duty cycle availability
+4. Schedules `job_performMeasurements()` at calculated time
+
+**Location:** `main.cpp:124-198`
+
+---
+
+#### `getTransmissionTime()`
+```cpp
+ostime_t getTransmissionTime(ostime_t req_time);
+```
+Enforces duty cycle compliance for transmission scheduling.
+
+**Parameters:**
+- `req_time` - Requested transmission time
+
+**Returns:** Adjusted time respecting duty cycle
+
+**Location:** `main.cpp:200-246`
+
+---
+
+### LMIC Credential Callbacks
+
+These functions are called by LMIC to retrieve OTAA credentials:
+
+#### `os_getArtEui()`
+```cpp
+void os_getArtEui(u1_t *buf);
+```
+Provides Application EUI to LMIC.
+
+**Location:** `main.cpp:391-393`
+
+---
+
+#### `os_getDevEui()`
+```cpp
+void os_getDevEui(u1_t *buf);
+```
+Provides Device EUI to LMIC.
+
+**Location:** `main.cpp:395-397`
+
+---
+
+#### `os_getDevKey()`
+```cpp
+void os_getDevKey(u1_t *buf);
+```
+Provides Application Key to LMIC.
+
+**Location:** `main.cpp:399-401`
 
 ---
 
@@ -315,85 +757,140 @@ struct __attribute__((packed)) rom_conf_t {
 
 ## Constants
 
-### Command Codes
+### Sensor Command Codes (`sensors.cpp`)
 
 ```cpp
-#define CMD_PERFORM 0x10    // Trigger measurement
-#define CMD_READ    0x11    // Read measurement data
+#define CMD_PERFORM 0x10              // Trigger measurement on sensor
+#define CMD_READ    0x11              // Read measurement data from sensor
+#define SENSOR_BOARD_ADDR 0x36        // I²C address of sensor board
 ```
 
-### Downlink Commands
+### Downlink Commands (`main.cpp`)
 
 ```cpp
-#define CMD_SET_INTERVAL 0x10    // Update measurement interval
-#define CMD_SET_MODULE   0x11    // Update module configuration
-#define CMD_RESET        0xDEAD  // Reset device
+#define DL_CMD_REJOIN   0xDE          // Reset device (requires 0xAD as second byte)
+#define DL_CMD_INTERVAL 0x10          // Update measurement interval
+#define DL_CMD_MODULE   0x11          // Forward command to sensor module
 ```
 
-### Limits
+### Configuration Limits (`config.h`)
 
 ```cpp
-#define MIN_INTERVAL  20      // Minimum interval (seconds)
-#define MAX_INTERVAL  4270    // Maximum interval (seconds)
-#define SENSOR_ADDRESS 0x36   // Default I²C address
+#define MIN_INTERVAL  20              // Minimum interval (seconds)
+#define MAX_INTERVAL  4270            // Maximum interval (seconds) 
+#define SENSOR_JSN_TIMEOUT 200        // JSN sensor timeout (ms)
+#define MIN_LORA_DR 0                 // Minimum LoRa data rate
+```
+
+### Timing Constants (`main.cpp`)
+
+```cpp
+#define MEASUREMENT_SEND_DELAY_AFTER_PERFORM_S 10    // Wait 10s between perform and read
+#define MEASUREMENT_DELAY_AFTER_PING_S 45            // Wait 45s after version ping
+#define RESET_DELAY_S 5                              // Wait 5s before reset
 ```
 
 ---
 
 ## Usage Examples
 
-### Complete Measurement Cycle
+### Complete Measurement Cycle (Actual Implementation)
 
 ```cpp
-// Power on sensor
-board_sensor_power(true);
-delay(50);  // Stabilization time
-
-// Trigger measurement
-if (sensorPerform(SENSOR_ADDRESS) == 0) {
-    delay(100);  // Sensor processing time
-    
-    // Read data
-    int16_t data[8];
-    if (sensorRead(SENSOR_ADDRESS, data) == 0) {
-        // Build LoRaWAN payload
-        uint8_t payload[16];
-        for (int i = 0; i < 8; i++) {
-            payload[i * 2] = (data[i] >> 8) & 0xFF;
-            payload[i * 2 + 1] = data[i] & 0xFF;
-        }
-        
-        // Send via LoRaWAN
-        LMIC_setTxData2(1, payload, sizeof(payload), 0);
+// From main.cpp - job_performMeasurements()
+void job_performMeasurements(osjob_t *job) {
+    error_t err = sensors_performMeasurement();
+    if (err != ERR_NONE) {
+        _debug("Sensor error\n");
+        scheduleNextMeasurement();
+        return;
     }
+    // Schedule read after 10 seconds
+    os_setTimedCallback(&main_job, 
+                       os_getTime() + sec2osticks(10),
+                       FUNC_ADDR(job_fetchAndSend));
 }
 
-// Power off sensor
-board_sensor_power(false);
+// job_fetchAndSend()
+void job_fetchAndSend(osjob_t *job) {
+    uint8_t tx_buf[32];
+    uint8_t tx_len = sizeof(tx_buf);
+    
+    error_t err = sensors_readMeasurement(tx_buf, &tx_len);
+    if (err != ERR_NONE) {
+        _debug("Read error\n");
+        scheduleNextMeasurement();
+        return;
+    }
+    
+    // Check if radio is busy
+    if (LMIC.opmode & OP_TXRXPEND) {
+        _debug("TXRX Pending...\n");
+        scheduleNextMeasurement();
+        return;
+    }
+    
+    // Transmit on FPort 1
+    LMIC_setTxData2(1, tx_buf, tx_len, 0);
+}
 ```
 
-### Processing Downlink
+### Processing Downlink (Actual Implementation)
 
 ```cpp
-// In onEvent(), case EV_TXCOMPLETE:
-if (LMIC.dataLen == 4 && LMIC.txrxFlags & TXRX_PORT) {
-    uint8_t port = LMIC.frame[LMIC.dataBeg - 1];
+// From main.cpp - processDownlink()
+void processDownlink(uint8_t cmd, uint8_t *args, uint8_t len) {
+    if (cmd == DL_CMD_REJOIN && len >= 1 && args[0] == 0xAD) {
+        // Reset command (0xDEAD)
+        _debug("Reset command received\n");
+        os_setTimedCallback(&main_job,
+                           os_getTime() + sec2osticks(RESET_DELAY_S),
+                           FUNC_ADDR(job_reset));
+        return;
+    }
     
-    if (port == 1) {  // Command port
-        uint8_t* data = LMIC.frame + LMIC.dataBeg;
-        uint16_t cmd = (data[0] << 8) | data[1];
-        uint16_t value = (data[2] << 8) | data[3];
-        
-        if (cmd == 0x10) {  // Set interval
-            if (value >= MIN_INTERVAL && value <= MAX_INTERVAL) {
-                // Update configuration
-                config.interval = value;
-                // Save to EEPROM
-                // ...
-            }
+    if (cmd == DL_CMD_INTERVAL && len >= 2) {
+        // Set interval command (0x10)
+        uint16_t new_interval = (args[0] << 8) | args[1];
+        _debugf("Changing interval: %u\n", new_interval);
+        conf_setMeasurementInterval(new_interval);
+        conf_save();
+        return;
+    }
+    
+    if (cmd == DL_CMD_MODULE && len >= 2) {
+        // Forward to module (0x11)
+        uint8_t addr = args[0];
+        uint8_t module_cmd = args[1];
+        error_t err = smbus_blockWrite(addr, module_cmd, 
+                                       &args[2], len - 2);
+        if (err != ERR_NONE) {
+            _debug("Module command failed\n");
         }
+        return;
     }
 }
+```
+
+### Reading Configuration
+
+```cpp
+// Load configuration at startup
+if (!conf_load()) {
+    // Invalid configuration
+    os_setCallback(&main_job, FUNC_ADDR(job_error));
+    return;
+}
+
+// Get credentials for LMIC
+uint8_t appeui[8], deveui[8], appkey[16];
+conf_getAppEui(appeui);
+conf_getDevEui(deveui);
+conf_getAppKey(appkey);
+
+// Get measurement settings
+uint16_t interval = conf_getMeasurementInterval();
+uint8_t fair_use = conf_getUseTTNFairUsePolicy();
 ```
 
 ---

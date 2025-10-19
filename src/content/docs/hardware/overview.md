@@ -14,7 +14,7 @@ The Multiflexmeter 3.7.0 is built around the ATmega1284P microcontroller and RFM
 ## Key Components
 
 ### 1. ATmega1284P Microcontroller
-- 8-bit AVR processor @ 16MHz
+- 8-bit AVR processor @ 8MHz
 - 128KB Flash for firmware
 - 16KB SRAM for runtime
 - 4KB EEPROM for configuration

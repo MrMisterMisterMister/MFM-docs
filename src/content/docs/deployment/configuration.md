@@ -96,16 +96,16 @@ uint8_t patch = version & 0x1F;
 
 **Purpose:** LoRaWAN Application identifier (from TTN)
 
-**Format:** 8 bytes, MSB first (big-endian)
+**Format:** 8 bytes, LSB first (little-endian)
 
 **Example:**
 ```
 TTN Console: 70B3D57ED005A8F2
-EEPROM:      [0x70, 0xB3, 0xD5, 0x7E, 0xD0, 0x05, 0xA8, 0xF2]
+EEPROM:      [0xF2, 0xA8, 0x05, 0xD0, 0x7E, 0xD5, 0xB3, 0x70]
 ```
 
 :::note[Byte Order]
-TTN displays EUIs in hexadecimal MSB-first format, which matches the EEPROM storage order directly.
+LMIC expects EUIs in LSB-first order. TTN displays EUIs MSB-first, so reverse the byte order when writing to EEPROM.
 :::
 
 ---
@@ -114,12 +114,12 @@ TTN displays EUIs in hexadecimal MSB-first format, which matches the EEPROM stor
 
 **Purpose:** Unique device identifier (from TTN)
 
-**Format:** 8 bytes, MSB first (big-endian)
+**Format:** 8 bytes, LSB first (little-endian)
 
 **Example:**
 ```
 TTN Console: 0004A30B00F8AC2D
-EEPROM:      [0x00, 0x04, 0xA3, 0x0B, 0x00, 0xF8, 0xAC, 0x2D]
+EEPROM:      [0x2D, 0xAC, 0xF8, 0x00, 0x0B, 0xA3, 0x04, 0x00]
 ```
 
 ---
@@ -147,7 +147,7 @@ Never share your Application Key! It's like a password for your device.
 
 **Purpose:** Time between measurements
 
-**Format:** 2 bytes, big-endian, **in seconds**
+**Format:** 2 bytes, little-endian, **in seconds**
 
 **Range:**
 - Minimum: 20 seconds
@@ -157,16 +157,16 @@ Never share your Application Key! It's like a password for your device.
 ```
 Interval: 300 seconds (5 minutes)
 Hex: 0x012C
-EEPROM: [0x01, 0x2C]
+EEPROM: [0x2C, 0x01]
 
 Interval: 900 seconds (15 minutes)
 Hex: 0x0384
-EEPROM: [0x03, 0x84]
+EEPROM: [0x84, 0x03]
 ```
 
 **Decoder:**
 ```cpp
-uint16_t interval = (eeprom[38] << 8) | eeprom[39];
+uint16_t interval = (uint16_t)eeprom[39] << 8 | eeprom[38];
 // interval is in seconds
 ```
 
@@ -202,7 +202,7 @@ HW_VERSION = bytes([0x08, 0x45])  # v1.2.5
 APP_EUI = bytes.fromhex('70B3D57ED005A8F2')
 DEV_EUI = bytes.fromhex('0004A30B00F8AC2D')
 APP_KEY = bytes.fromhex('5B7F1A2E3C9D8A6F4E0B2C5D8A3F1E9C')
-INTERVAL = struct.pack('>H', 300)  # 300 seconds (big-endian)
+INTERVAL = struct.pack('<H', 300)  # 300 seconds (little-endian)
 FAIR_USE = bytes([0x01])
 
 # Build EEPROM data
@@ -214,7 +214,7 @@ with open('eeprom.bin', 'wb') as f:
     f.write(eeprom)
 
 print(f"Generated {len(eeprom)} bytes")
-print(f"Interval: {struct.unpack('>H', INTERVAL)[0]} seconds")
+print(f"Interval: {struct.unpack('<H', INTERVAL)[0]} seconds")
 ```
 
 **Usage:**
@@ -284,8 +284,8 @@ Write individual fields using avrdude:
 # Write magic bytes
 echo -n "MFM" | xxd -p | avrdude -c usbasp -p m1284p -U eeprom:w:0x00:m
 
-# Write interval (300 seconds = 0x012C)
-avrdude -c usbasp -p m1284p -U eeprom:w:0x26:0x01:0x2C:m
+# Write interval (300 seconds = 0x012C), little-endian order
+avrdude -c usbasp -p m1284p -U eeprom:w:0x26:0x2C:0x01:m
 ```
 
 ---
@@ -367,19 +367,15 @@ Configuration can be updated over LoRaWAN using downlinks:
 
 **Command:** `0x10`
 
-**Payload:**
+**Payload (big-endian in downlink):**
 ```
-[0x00, 0x10, 0x01, 0x2C]
-         ^     ^     ^
-         |     |     +-- Interval LSB
-         |     +-------- Interval MSB (300 seconds)
-         +-------------- Command code
+10 01 2C
 ```
 
 **Example (TTN Console):**
 ```
 Port: 1
-Payload (hex): 00100 12C
+Payload (hex): 10 01 2C
 ```
 
 **Effect:** Updates interval to 300 seconds and saves to EEPROM

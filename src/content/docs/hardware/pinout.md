@@ -7,15 +7,6 @@ description: Complete pin assignments for Multiflexmeter 3.7.0
 
 Complete pin assignments and GPIO configuration for Multiflexmeter 3.7.0.
 
----
-title: Pin Mappings
-description: Complete pin assignments for Multiflexmeter 3.7.0
----
-
-# Pin Mappings
-
-Complete pin assignments and GPIO configuration for Multiflexmeter 3.7.0.
-
 ## Board Variants
 
 The Multiflexmeter supports two board variants with different pin assignments:

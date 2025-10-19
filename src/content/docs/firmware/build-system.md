@@ -128,21 +128,18 @@ Libraries are managed via `lib_deps` in `platformio.ini`:
 
 ```ini
 lib_deps = 
-    mcci-catena/MCCI Arduino LoRaWAN Library @ ^0.9.2
-    adafruit/Adafruit SleepyDog Library @ ^1.6.4
+    adafruit/Adafruit SleepyDog Library@^1.4.0
+    https://github.com/mcci-catena/arduino-lmic.git
 ```
 
 **Installed Libraries:**
-- **MCCI Arduino LoRaWAN** (arduino-lmic)
-  - Version: 0.9.2 or compatible
+- **MCCI Arduino LoRaWAN (arduino-lmic)**
+  - Source: Git URL (MCCI Catena repository)
   - Purpose: LoRaWAN protocol stack
-  - Size: ~30KB flash
 
 - **Adafruit SleepyDog**
-  - Version: 1.6.4 or compatible
-  - Purpose: **Declared dependency (unused)**
-  - **Note:** Listed in `platformio.ini` but not used in source code. Actual watchdog functionality is implemented in custom `wdt.cpp`
-  - Size: 0KB (not compiled in)
+  - Version spec: ^1.4.0
+  - Purpose: Declared dependency. The firmware currently implements watchdog behavior in `wdt.cpp`.
 
 ### Local Libraries
 
@@ -150,32 +147,32 @@ Custom libraries in `lib/` directory:
 
 ```
 lib/
-├── arduino-lmic/          # Modified LMIC library
-└── MedianFilter/          # Median filter for sensor data
+└── MedianFilter/          # Median filter for sensor data (not referenced by current firmware)
 ```
 
 **MedianFilter:**
 - Purpose: Statistical filtering of sensor readings
 - Files: `MedianFilter.cpp`, `MedianFilter.h`
-- Size: <1KB
 
 ## Upload Configuration
 
-### USB ASP Programmer
+### Default: Atmel-ICE (ISP)
 
-Default configuration uses USBasp:
+Default configuration uses Atmel-ICE in ISP mode (matches `platformio.ini`):
 
 ```ini
-upload_protocol = usbasp
+upload_protocol = atmelice_isp
+upload_port = usb
 upload_flags = 
-    -Pusb        # Use USB port
-    -B10         # SCK clock divider (slower for reliability)
+    -e
+    -B0.25
+board_upload.require_upload_port = no
 ```
 
 **Connection:**
-- Programmer: USBasp v2.0 or compatible
+- Programmer: Atmel-ICE (ISP)
 - Interface: 6-pin ISP header
-- Voltage: 5V (set jumper on USBasp)
+- Notes: `-B0.25` sets a fast SCK; increase if stability issues occur
 
 ### Alternative Programmers
 
@@ -192,6 +189,15 @@ upload_flags =
 
 ```ini
 upload_protocol = avrispmkii
+```
+
+#### USBasp
+
+```ini
+upload_protocol = usbasp
+upload_flags = 
+    -Pusb
+    -B10
 ```
 
 ## Fuse Settings
@@ -282,22 +288,31 @@ Custom board defined in `boards/mfm_v3_m1284p.json`:
 ```json
 {
   "build": {
-    "core": "arduino",
-    "extra_flags": "-DARDUINO_AVR_ATmega1284P",
-    "f_cpu": "16000000L",
+    "core": "MightyCore",
+    "extra_flags": [
+      "-DARDUINO_AVR_ATmega1284",
+      "-DBOARD_MFM_V3_M1284P",
+      "-DCFG_eu868=1",
+      "-DCFG_sx1276_radio=1"
+    ],
+    "f_cpu": "8000000L",
     "mcu": "atmega1284p",
     "variant": "standard"
   },
+  "debug": {
+    "simavr_target": "atmega1284p"
+  },
   "frameworks": ["arduino"],
-  "name": "Multiflexmeter 3.7.0 (ATmega1284P)",
+  "name": "ATmega1284P",
   "upload": {
     "maximum_ram_size": 16384,
-    "maximum_size": 130048,
-    "protocol": "usbasp",
-    "speed": 19200
+    "maximum_size": 131072,
+    "protocol": "stk500",
+    "require_upload_port": true,
+    "speed": 115200
   },
-  "url": "https://github.com/MrMisterMisterMister/MFM-docs",
-  "vendor": "Multiflexmeter"
+  "url": "https://www.microchip.com/wwwproducts/en/ATmega1284p",
+  "vendor": "Microchip"
 }
 ```
 
