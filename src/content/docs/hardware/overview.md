@@ -29,9 +29,10 @@ The Multiflexmeter 3.7.0 is built around the ATmega1284P microcontroller and RFM
 - 3.3V/5V compatible
 
 ### 4. Programming & Debug
-- 6-pin ISP header for firmware upload
-- FTDI-compatible UART for debugging
-- Serial output at 115200 baud
+- **J5:** 6-pin ICSP/ISP header for firmware upload (Atmel-ICE compatible)
+- **J4:** FTDI-compatible UART for debugging (115200 baud)
+- **J3:** SMBus/I²C expansion connector
+- **J1/J2:** Sensor module slots
 
 ## Block Diagram
 
@@ -57,6 +58,7 @@ The Multiflexmeter 3.7.0 is built around the ATmega1284P microcontroller and RFM
 
 ## Next Steps
 
-- [Specifications](/hardware/specifications/) - Detailed technical specs
+- [Programming & Connectors](/hardware/programming/) - How to program the board and connector details
 - [Pin Mappings](/hardware/pinout/) - Complete pin reference
+- [Specifications](/hardware/specifications/) - Detailed technical specs
 - [Schematics](/hardware/schematics/) - Hardware design files

@@ -86,29 +86,94 @@ Default sensor address: `0x36`
 |----------|--------|---------------|-------------|
 | OneWire Bus | 5 | 12 | Dallas DS18B20 temperature sensors |
 
-## Programming Interfaces
+## Board Connectors
 
-### ISP Header (6-pin)
+### J5 - ICSP/ISP Programming Header (2x3 pin header)
+
+Standard AVR ISP programming connector for flashing firmware with Atmel-ICE or compatible programmer.
 
 | Pin | Signal | Description |
 |-----|--------|-------------|
-| 1 | MISO | Master In Slave Out |
-| 2 | VCC | +5V/3.3V |
-| 3 | SCK | Serial Clock |
-| 4 | MOSI | Master Out Slave In |
-| 5 | RESET | Reset (active low) |
+| 1 | MISO | Master In Slave Out (ISP_MISO) |
+| 2 | VCC | +3.3V Power |
+| 3 | SCK | Serial Clock (ISP_SCK) |
+| 4 | GND | Ground |
+| 5 | RESET | Reset (NRST, active low) |
+| 6 | MOSI | Master Out Slave In (ISP_MOSI) |
+
+**Footprint:** `PinHeader_2x03_P2.54mm_Vertical`
+
+:::caution[Programming Voltage]
+This board operates at **3.3V**. Ensure your programmer is configured for 3.3V operation.
+:::
+
+### J4 - FTDI Debug Connector (1x6 pin header)
+
+FTDI-compatible serial debugging interface for monitoring firmware output.
+
+| Pin | Signal | Description |
+|-----|--------|-------------|
+| 1 | - | No connect |
+| 2 | TXD | AVR_TX0 (UART transmit from MCU) |
+| 3 | RXD | AVR_RX0 (UART receive to MCU) |
+| 4 | - | No connect |
+| 5 | - | No connect |
 | 6 | GND | Ground |
 
-### UART Header (6-pin FTDI)
+**Baud Rate:** 115200  
+**Footprint:** `PinSocket_1x06_P2.54mm_Vertical`
+
+:::tip[FTDI Connection]
+Connect an FTDI USB-to-Serial adapter with:
+- FTDI TX → J4 Pin 3 (RXD)
+- FTDI RX → J4 Pin 2 (TXD)
+- FTDI GND → J4 Pin 6 (GND)
+:::
+
+### J3 - SMBUS Connector (2x3 pin header)
+
+I²C/SMBus interface for external sensor modules or accessories.
 
 | Pin | Signal | Description |
 |-----|--------|-------------|
-| 1 | GND | Ground |
-| 2 | CTS | Clear To Send (not used) |
-| 3 | VCC | Power output |
-| 4 | TXD | UART transmit |
-| 5 | RXD | UART receive |
-| 6 | RTS | Request To Send (not used) |
+| 1 | SCL | I²C Clock |
+| 2 | VCC | +3.3V Power |
+| 3 | SDA | I²C Data |
+| 4 | VCC | +3.3V Power |
+| 5 | ALERT | SMBus Alert (optional) |
+| 6 | SCL | I²C Clock (duplicate) |
+
+**I²C Speed:** 80kHz (configured in firmware)  
+**Footprint:** `PinHeader_2x03_P2.54mm_Vertical`
+
+### J1 - MFM Module-Left (1x3 pin socket)
+
+Left sensor module connector slot.
+
+| Pin | Signal | Description |
+|-----|--------|-------------|
+| 1 | SCL | I²C Clock |
+| 2 | SDA | I²C Data |
+| 3 | ALERT | SMBus Alert |
+
+**Footprint:** `MFM_Module_Board_P123` (custom footprint)
+
+### J2 - MFM Module-Right (1x3 pin socket)
+
+Right sensor module connector slot.
+
+| Pin | Signal | Description |
+|-----|--------|-------------|
+| 1 | VCC | +3.3V Power |
+| 2 | SDA | I²C Data |
+| 3 | SCL | I²C Clock |
+
+**Footprint:** `PinSocket_1x03_P2.54mm_Vertical`
+
+:::note[Sensor Modules]
+J1 and J2 allow connecting external I²C sensor modules. Default sensor address is `0x36`.
+Both connectors share the same I²C bus with J3.
+:::
 
 ## Power Control
 
@@ -126,6 +191,7 @@ Use the correct pin definitions for your board variant:
 
 ## Next Steps
 
+- [Programming & Connectors](/hardware/programming/) - Detailed connector pinouts and programming guide
 - [Hardware Specifications](/hardware/specifications/) - Technical details
 - [Schematics](/hardware/schematics/) - Full schematic diagrams
-- [Development Guide](/development/development-guide/) - Working with hardware
+- [Getting Started](/guides/getting-started/) - Setup and first steps
