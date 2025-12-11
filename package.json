@@ -1,0 +1,47 @@
+{
+  "name": "starlight",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "npm run build:all",
+    "build:astro": "astro build",
+    "build:diagrams": "likec4 build -o public/diagrams --base /diagrams/",
+    "build:all": "npm run build:diagrams && npm run build:astro",
+    "preview": "astro preview",
+    "astro": "astro",
+    "likec4:start": "likec4 start",
+    "likec4:build": "likec4 build -o public/diagrams --base /diagrams/",
+    "likec4:export": "likec4 export png -o public/diagrams/exports",
+    "generate:model": "likec4 codegen typescript -o test/likec4-model.ts",
+    "generate:docs": "likec4 codegen docs-integration",
+    "test": "vitest",
+    "dev:astro": "astro dev --port 4321",
+    "dev:likec4": "likec4 start --port 5173",
+    "dev:both": "concurrently \"npm run dev:astro\" \"npm run dev:likec4\" --names \"astro,likec4\" --prefix-colors \"blue,green\"",
+    "simulator": "node simulator/device-simulator.mjs",
+    "simulator:ttn": "MODE=TTN node simulator/device-simulator.mjs",
+    "dev:dashboard": "concurrently \"npm run dev:astro\" \"npm run simulator\" --names \"server,device\" --prefix-colors \"blue,yellow\""
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.36.0",
+    "astro": "^5.6.1",
+    "astro-mermaid": "^1.1.0",
+    "ioredis": "^5.8.2",
+    "sharp": "^0.34.2"
+  },
+  "devDependencies": {
+    "@astrojs/tailwind": "^6.0.2",
+    "@astrojs/vercel": "^9.0.0",
+    "better-sqlite3": "^12.4.1",
+    "concurrently": "^8.2.0",
+    "likec4": "^1.43.0",
+    "sass": "^1.93.2",
+    "tailwindcss": "^3.4.1",
+    "vitest": "^3.2.4"
+  },
+  "overrides": {
+    "path-to-regexp": "^6.3.0"
+  }
+}

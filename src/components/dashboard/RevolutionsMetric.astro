@@ -1,0 +1,143 @@
+---
+/**
+ * Revolutions Metric Component
+ * Displays spinning and pumping rotations with time period filtering
+ * Data comes from the device's cumulative counters (total_rotations_spinning, total_rotations_pumping)
+ */
+---
+
+<div class="card">
+    <h2>
+        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+        Rotation Counters
+    </h2>
+
+    <!-- Time Period Filter Buttons -->
+    <div class="filter-buttons" role="group" aria-label="Time period filter">
+        <button class="revolution-filter active" data-period="today" aria-pressed="true">Today</button>
+        <button class="revolution-filter" data-period="month" aria-pressed="false">This Month</button>
+        <button class="revolution-filter" data-period="year" aria-pressed="false">This Year</button>
+        <button class="revolution-filter" data-period="all" aria-pressed="false">All Time</button>
+    </div>
+
+    <!-- Two separate counters: Spinning and Pumping -->
+    <div class="revolutions-dual-display">
+        <!-- Spinning Rotations -->
+        <div class="revolution-counter" id="spinningRotationsCard">
+            <div class="revolution-icon">⚙️</div>
+            <div class="revolution-data">
+                <div class="metric-value-medium" id="spinningRotationsTotal" aria-label="Total spinning rotations">0</div>
+                <div class="metric-label-small">Spinning Rotations</div>
+            </div>
+        </div>
+
+        <!-- Pumping Rotations -->
+        <div class="revolution-counter" id="pumpingRotationsCard">
+            <div class="revolution-icon">💧</div>
+            <div class="revolution-data">
+                <div class="metric-value-medium" id="pumpingRotationsTotal" aria-label="Total pumping rotations">0</div>
+                <div class="metric-label-small">Pumping Rotations</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="metric-period-label" id="revolutionsPeriod">Today</div>
+</div>
+
+<style>
+    .revolutions-dual-display {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .revolution-counter {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.25rem;
+        background: rgba(15, 23, 42, 0.4);
+        border: 1px solid rgba(100, 116, 139, 0.1);
+        border-radius: 12px;
+        transition: all 0.2s ease;
+    }
+
+    .revolution-counter:hover {
+        background: rgba(15, 23, 42, 0.6);
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    .revolution-icon {
+        font-size: 2rem;
+        width: 3rem;
+        height: 3rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(100, 116, 139, 0.1);
+        border-radius: 10px;
+    }
+
+    .revolution-data {
+        flex: 1;
+    }
+
+    .metric-value-medium {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #38bdf8;
+        line-height: 1;
+        margin-bottom: 0.25rem;
+    }
+
+    .metric-label-small {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+    }
+
+    .metric-period-label {
+        text-align: center;
+        margin-top: 1rem;
+        font-size: 0.875rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    /* Light mode overrides */
+    :global(body.light-mode) .revolution-counter {
+        background: rgba(248, 250, 252, 0.6);
+        border-color: rgba(100, 116, 139, 0.15);
+    }
+
+    :global(body.light-mode) .revolution-counter:hover {
+        background: rgba(248, 250, 252, 0.8);
+    }
+
+    :global(body.light-mode) .revolution-icon {
+        background: rgba(100, 116, 139, 0.08);
+    }
+
+    :global(body.light-mode) .metric-value-medium {
+        color: #0284c7;
+    }
+
+    :global(body.light-mode) .metric-label-small {
+        color: #64748b;
+    }
+
+    :global(body.light-mode) .metric-period-label {
+        color: #475569;
+    }
+
+    @media (max-width: 640px) {
+        .revolutions-dual-display {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>

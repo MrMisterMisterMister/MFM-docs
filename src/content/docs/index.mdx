@@ -1,0 +1,149 @@
+---
+title: Multiflexmeter 3.7.0 Documentation
+description: Comprehensive documentation for the Multiflexmeter 3.7.0 - an open-source IoT sensor platform for environmental monitoring using LoRaWAN.
+template: splash
+hero:
+  tagline: Open-source IoT sensor platform for flexible, low-cost, and frequent environmental measurements using LoRaWAN.
+  image:
+    file: ../../assets/houston.webp
+  actions:
+    - text: Quick Start Guide
+      link: /deployment/quick-start/
+      icon: right-arrow
+      variant: primary
+    - text: Interactive Diagrams
+      link: /diagrams/
+      icon: external
+      variant: secondary
+    - text: Dashboard
+      link: /devices
+      icon: rocket
+      variant: secondary
+    - text: View Architecture
+      link: /overview/architecture/
+      icon: open-book
+      variant: secondary
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## What is Multiflexmeter?
+
+Multiflexmeter 3.7.0 (MFM) is an open-source sensor platform designed for **frequent, low-cost, and flexible environmental measurements**. Built on the ATmega1284P microcontroller, it provides a robust foundation for IoT deployments using **LoRaWAN** connectivity.
+
+:::note[Current Version: 3.7.0 & Planned 3.8.0]
+Both firmware versions operate as a **sensor passthrough system**, transmitting raw sensor module data without firmware-level interpretation. This minimizes firmware complexity while allowing flexible sensor integration. The application layer (TTN decoder and backend) handles data interpretation.
+:::
+
+### Key Features
+
+<CardGrid stagger>
+	<Card title="LoRaWAN Connectivity" icon="rocket">
+		Built-in support for LoRaWAN OTAA with the RFM95 868MHz radio module, enabling long-range wireless communication.
+	</Card>
+	<Card title="Flexible Sensor Integration" icon="puzzle">
+		SMBus/I2C interface for connecting external sensor modules. Firmware acts as a passthrough, transmitting raw sensor data for application-level processing.
+	</Card>
+	<Card title="Low Power Design" icon="star">
+		Optimized for battery-powered deployments with efficient power management and configurable measurement intervals.
+	</Card>
+	<Card title="Open Source Hardware & Firmware" icon="open-book">
+		Complete hardware designs (KiCad) and C++ firmware source code (PlatformIO) available under MIT license.
+	</Card>
+</CardGrid>
+
+## Firmware Technology Stack
+
+The Multiflexmeter 3.7.0 firmware is built using modern C++ development tools:
+
+- **Language**: C++ with Arduino Framework
+- **Build System**: PlatformIO - Professional build tool for embedded systems
+- **IDE**: VS Code with PlatformIO extension (recommended)
+- **LoRaWAN Library**: MCCI Arduino-LMIC
+- **Toolchain**: AVR-GCC cross-compiler
+- **Programming**: AVRDude with ISP programmer
+
+{/* :::tip[No Python Required]
+This is a **pure C++ embedded project** built with PlatformIO. You don't need Python knowledge to work with the firmware - just C++ and familiarity with the Arduino framework.
+::: */}
+
+## Technical Specifications
+
+- **Microcontroller:** ATmega1284P (128KB Flash, 16KB SRAM, 4KB EEPROM)
+- **Radio:** RFM95 LoRa transceiver (868MHz)
+- **Connectivity:** LoRaWAN 1.0.x with OTAA
+- **Sensor Interface:** SMBus/I2C for external modules
+- **Programming:** AVRISP-compatible ISP interface
+- **Debug:** FTDI-compatible UART header
+- **Framework:** Arduino with LMIC library
+
+## Quick Links
+
+<CardGrid>
+	<Card title="Quick Start" icon="rocket">
+		Get your first Multiflexmeter device operational in minutes.
+		
+		[Start Here →](/deployment/quick-start/)
+	</Card>
+	<Card title="Hardware" icon="seti:config">
+		Detailed hardware specifications, pin mappings, and schematics.
+		
+		[Explore Hardware →](/hardware/specifications/)
+	</Card>
+	<Card title="Firmware Development" icon="seti:c">
+		Build, modify, and extend the C++ firmware with PlatformIO.
+		
+		[Development Guide →](/development/development-guide/)
+	</Card>
+	<Card title="Communication Protocol" icon="information">
+		Understand LoRaWAN messages, payload formats, and commands.
+		
+		[Protocol Docs →](/firmware/protocol/)
+	</Card>
+</CardGrid>
+
+## Use Cases
+
+The Multiflexmeter platform is ideal for:
+
+- **Environmental Monitoring:** Water level monitoring, distance measurements
+- **Infrastructure Monitoring:** Structural health, asset tracking
+- **Research Projects:** IoT experimentation and prototyping
+- **Custom Sensor Integration:** Any I2C/SMBus compatible sensor module
+
+:::tip[Sensor Module Compatibility]
+The firmware supports any sensor module at I2C address 0x36 that responds to CMD_PERFORM (0x10) and CMD_READ (0x11) commands. The data format is determined by the sensor module, not the firmware. This passthrough design is maintained in both 3.7.0 and 3.8.0 to minimize firmware changes.
+:::
+
+## Getting Help
+
+- **GitHub Repository:** [MFM Documentation](https://github.com/MrMisterMisterMister/MFM-docs)
+- **Issues & Discussion:** Use GitHub discussions for questions
+- **Documentation:** This site contains comprehensive guides and references
+
+---
+
+## Version Information
+
+**Current Release**: 3.7.0 & **Planned Release**: 3.8.0
+- **Architecture:** Sensor Passthrough (unchanged between versions)
+- Transmits raw sensor data without firmware-level interpretation
+- Data format defined by sensor module at I2C address 0x36
+- Application layer (TTN decoder + backend) handles data decoding
+- Maximum 32-byte payload via SMBus Block Read
+
+**Design Philosophy:**
+Keeping firmware simple as a passthrough minimizes complexity and allows flexible sensor integration. The sensor module encodes data, and the application layer decodes it.
+
+**Poldermill Sensor Format (Module Type 0x01):**
+- Byte 0: Module Address (0x36)
+- Byte 1: Module Type (0x01 = Poldermill)
+- Byte 2: Flags (bit 0: spinning, bit 1: pumping)
+- Bytes 3-6: Revolutions (uint32 big-endian, period count)
+
+[Learn more about data formats →](/firmware/data-formats/)
+
+---
+
+*Multiflexmeter 3.7.0 is licensed under the MIT License.*
+

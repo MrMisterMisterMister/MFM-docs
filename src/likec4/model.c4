@@ -1,0 +1,251 @@
+specification {
+    element system {
+        style {
+            color red
+            shape rectangle
+            border solid
+        }
+    }
+    element externalSystem {
+        style {
+            color green
+            shape rectangle
+            border dashed
+        }
+    }
+    element container {
+        style {
+            color indigo
+            shape rectangle
+            border solid
+        }
+    }
+    element component {
+        style {
+            color amber
+            shape rectangle
+            border solid
+        }
+    }
+    element codeUnit {
+        style {
+            color sky
+            shape rectangle
+            border solid
+        }
+    }
+}
+
+model {
+    // Physical environment being monitored
+    mallemolen = externalSystem "Mallemolen Polder Mill" {
+        title "Mallemolen (Historic Polder Mill in Gouda)"
+        description "Historic poldermill built in 1727 for water management in the Gouda polder system"
+        technology "18th Century Water Mill"
+    }
+
+    // External systems
+    lorawanNetwork = externalSystem "LoRaWAN Network" {
+        title "The Things Network (TTN)"
+        description "LoRaWAN network server receiving data via EU868 band using OTAA activation with Class A device operation"
+        technology "LoRaWAN 1.0.x (EU868, Class A)"
+    }
+
+    backendServer = externalSystem "Multiflexmeter Server" {
+        title "Central Multiflexmeter Server"
+        description "Central server receiving webhook POST requests from TTN, stores data in database, provides REST API for external systems"
+        technology "Web Server (TTN Webhook Integration + REST API)"
+    }
+
+    rijnlandServer = externalSystem "Rijnland Monitoring" {
+        title "Hoogheemraadschap van Rijnland"
+        description "Water authority monitoring system querying data via REST API with API key authentication"
+        technology "Water Management System"
+    }
+
+    // Main system
+    multiFlexMeter = system "Multiflexmeter Device" {
+        title "Multiflexmeter IoT Device"
+        description "Battery-powered ATmega1284P-based sensor device with LoRaWAN connectivity for environmental monitoring"
+        technology "Embedded IoT Device"
+
+        // Level 2: Containers
+        firmware = container "Firmware" {
+            title "Device Software"
+            description "Arduino-based C++ firmware handling sensor reading, LoRaWAN communication, and power management using custom low-power Arduino-LMIC fork"
+            technology "Arduino C++ (PlatformIO)"
+
+            // Level 3: Components
+            controller = component "Main Controller" {
+                title "Event Handler & Job Scheduler"
+                description "Event-driven architecture: handles LoRaWAN events (EV_JOINED, EV_TXCOMPLETE, EV_LINK_DEAD), schedules jobs with LMIC OS scheduler, processes downlink commands"
+                technology "Event-driven controller"
+            }
+
+            sensorInterface = component "Sensor Interface" {
+                title "Sensor Protocol Handler"
+                description "I²C protocol implementation: sends trigger command (0x10), waits 10 seconds, executes SMBus Block Read (0x11) at address 0x36"
+                technology "I²C/SMBus protocol"
+            }
+
+            settings = component "Settings Manager" {
+                title "EEPROM Configuration"
+                description "Manages EEPROM configuration with magic bytes validation, LoRaWAN credentials (DevEUI, AppEUI, AppKey), measurement interval, Fair Use Policy flag"
+                technology "EEPROM management"
+            }
+
+            networkStack = component "Network Stack" {
+                title "LoRaWAN Stack"
+                description "Custom low-power Arduino-LMIC fork: OTAA authentication, Adaptive Data Rate, uplinks on FPort 1 (sensor data) and FPort 2 (version info), downlink command processing"
+                technology "Arduino-LMIC (custom fork)"
+            }
+
+            hardwareDrivers = component "Hardware Drivers" {
+                title "Hardware Abstraction"
+                description "Controls I²C bus (80kHz SMBus), SPI radio interface, GPIO pins, watchdog timer, sleep modes for energy efficiency"
+                technology "Hardware drivers"
+            }
+        }
+
+        // Hardware Container
+        hardware = container "Hardware" {
+            title "Electronic Components"
+            description "Physical PCB with microcontroller, LoRa radio, sensor interface, and power management circuitry"
+            technology "Multiflexmeter 3.7.0 PCB"
+
+            processor = component "Processor" {
+                title "Microcontroller"
+                description "8-bit AVR RISC processor running at 8MHz with 128KB Flash, 16KB SRAM, 4KB EEPROM, 32 GPIO pins"
+                technology "ATmega1284P-AU (TQFP-44)"
+            }
+
+            sensorModule = container "Sensor Module" {
+                title "ATtiny Sensor Module"
+                description "Sensor module with ATtiny microcontroller, IR sensor, I²C slave interface at address 0x36"
+                technology "ATtiny-based I²C sensor"
+
+                attinyFirmware = component "ATtiny Firmware" {
+                    title "Sensor Module Firmware"
+                    description "Event-driven firmware: continuous event counting, I²C slave on address 0x36, snapshot on trigger, data formatting"
+                    technology "ATtiny firmware"
+
+                    twiSlave = codeUnit "TWI Slave Handler" {
+                        title "TWI Slave Handler"
+                        description "Hardware TWI module in slave mode: interrupts on address match and data requests, interprets commands, sends SMBus Block Read responses"
+                        technology "TWI interrupt handler"
+                    }
+
+                    eventCounter = codeUnit "Event Counter" {
+                        title "Event Counter"
+                        description "Continuous counting of rotation events from IR sensor, maintains running count during communication"
+                        technology "Counter logic"
+                    }
+
+                    debounceLogic = codeUnit "Debounce Logic" {
+                        title "Debounce Filter"
+                        description "Software debouncing: enforces minimum time between events, filters false triggers from mechanical contacts or optical sensors"
+                        technology "Debounce algorithm"
+                    }
+
+                    snapshotManager = codeUnit "Snapshot Manager" {
+                        title "Snapshot Buffer"
+                        description "Copies counter value to buffer on trigger command (0x10), prepares data for read command (0x11): length byte + timestamp + event count (big-endian)"
+                        technology "Data buffering"
+                    }
+                }
+
+                irSensor = component "IR Sensor" {
+                    title "IR Detector"
+                    description "Infrared sensor detecting mill blade passages, generates GPIO interrupts on detection events"
+                    technology "Optical sensor"
+                }
+            }
+
+            radio = component "Radio" {
+                title "LoRa Radio Module"
+                description "RFM95W transceiver transmitting on EU868 band (863-870MHz) with SF7-SF12, +20dBm max output, -148dBm sensitivity"
+                technology "HopeRF RFM95W-868S2"
+            }
+
+            memory = component "Storage" {
+                title "Non-volatile Memory"
+                description "Built-in EEPROM storing 41-byte configuration (DevEUI, AppEUI, AppKey, interval) persisting across power cycles"
+                technology "ATmega1284P EEPROM (4KB)"
+            }
+
+            power = component "Power Supply" {
+                title "Power Supply"
+                description "2× AA battery power system with voltage regulation"
+                technology "2× AA battery"
+            }
+        }
+    }
+
+    // System-level relationships
+    irSensor -> mallemolen "Detects rotation at"
+    multiFlexMeter -> lorawanNetwork "Sends LoRaWAN packets to"
+    lorawanNetwork -> backendServer "Forwards webhook to"
+    backendServer -> rijnlandServer "Provides API access to"
+
+    // Container-level relationships
+    firmware -> hardware "Controls via GPIO, I²C (80kHz), and SPI interfaces"
+    sensorModule -> firmware "Sends measurement data via I²C to"
+
+    // Component-level relationships
+    controller -> sensorInterface "Triggers measurement cycle"
+    controller -> networkStack "Sends uplink packets and receives downlink commands"
+    controller -> settings "Reads LoRaWAN credentials and interval from"
+
+    sensorInterface -> sensorModule "Sends I²C commands (0x10, 0x11) to"
+    networkStack -> radio "Transmits LoRaWAN frames via SPI to"
+    settings -> memory "Reads/writes EEPROM config in"
+    hardwareDrivers -> processor "Controls pins, timers, and watchdog of"
+    radio -> lorawanNetwork "Transmits via"
+
+    // Sensor module internal relationships
+    irSensor -> debounceLogic "Generates GPIO interrupt to"
+    debounceLogic -> eventCounter "Increments after debounce"
+    twiSlave -> snapshotManager "Triggers snapshot on command 0x10"
+    eventCounter -> snapshotManager "Provides count value to"
+    snapshotManager -> twiSlave "Provides buffer data for read"
+}
+
+views {
+    view index {
+        title "System Context"
+        description "Level 1: Multiflexmeter device monitors mill environment and transmits sensor data via LoRaWAN to central server, which provides API access to Rijnland"
+        include mallemolen, multiFlexMeter, lorawanNetwork, backendServer, rijnlandServer
+    }
+
+    view of multiFlexMeter {
+        title "Container View"
+        description "Level 2: Arduino C++ firmware running on ATmega1284P controls RFM95W radio and communicates with ATtiny sensor module via I²C"
+        include multiFlexMeter, firmware, hardware, sensorModule
+        include processor, radio, memory, power
+        include mallemolen, lorawanNetwork, backendServer
+    }
+
+    view of firmware {
+        title "Component View - MFM Firmware"
+        description "Level 3: Event handler orchestrates sensor interface (I²C 80kHz), network stack (LoRaWAN OTAA), settings manager (EEPROM), and hardware drivers"
+        include firmware, hardware, sensorModule
+        include controller, sensorInterface, settings, networkStack, hardwareDrivers
+        include processor, radio, memory, power
+        include mallemolen, lorawanNetwork, backendServer
+    }
+
+    view of sensorModule {
+        title "Component View - Sensor Interface Detail"
+        description "Level 4: ATtiny firmware with TWI slave handler, event counter, debounce logic, and snapshot manager processing IR sensor events"
+        include sensorModule, attinyFirmware, irSensor
+        include twiSlave, eventCounter, debounceLogic, snapshotManager
+        include mallemolen, firmware
+    }
+
+    view dataFlow {
+        title "Data Flow"
+        description "Complete data path from sensor to Rijnland: IR sensor → ATtiny → MFM → LoRaWAN → TTN → Central Server → REST API → Rijnland monitoring"
+        include irSensor, sensorModule, multiFlexMeter, lorawanNetwork, backendServer, rijnlandServer
+        include mallemolen
+    }
+}

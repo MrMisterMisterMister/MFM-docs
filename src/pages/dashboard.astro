@@ -1,0 +1,110 @@
+---
+/**
+ * Real-time Multiflexmeter Dashboard
+ *
+ * Displays live sensor data from the Mallemolen poldermill using Chart.js
+ * and Server-Sent Events (SSE) for real-time updates
+ */
+
+export const prerender = false;
+
+import { dataStore } from '../lib/dataStore';
+import { getDeviceDisplayId, getDeviceDisplayName } from '../lib/deviceIdentifier';
+import '../styles/main.scss';
+
+// Import dashboard components
+import MultiflexmeterHeader from '../components/MultiflexmeterHeader.astro';
+import DashboardHeader from '../components/dashboard/DashboardHeader.astro';
+import WindmillStatus from '../components/dashboard/WindmillStatus.astro';
+import RevolutionsMetric from '../components/dashboard/RevolutionsMetric.astro';
+// import SensorChart from '../components/dashboard/SensorChart.astro'; // Hidden for now
+import DeviceInfo from '../components/dashboard/DeviceInfo.astro';
+import ActivityLog from '../components/dashboard/ActivityLog.astro';
+import DashboardScripts from '../components/dashboard/DashboardScripts.astro';
+
+// Get device parameter from URL
+const url = new URL(Astro.request.url);
+const selectedDeviceEui = url.searchParams.get('device');
+
+const devicesRaw = await dataStore.getDevices();
+
+// Add display IDs to devices for anonymous display
+const devices = devicesRaw.map(device => ({
+    ...device,
+    displayId: getDeviceDisplayId(device.devEui),
+    displayName: getDeviceDisplayName(device)
+}));
+
+// Get all recent readings (client-side will handle filtering by selected device)
+const recentReadings = await dataStore.getRecentReadings(100);
+
+const selectedDevice = selectedDeviceEui
+    ? devices.find(d => d.devEui === selectedDeviceEui)
+    : devices[0];
+
+const title = selectedDevice
+    ? `${selectedDevice.displayName} - Dashboard`
+    : 'Multiflexmeter Dashboard - Real-time Monitoring';
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Real-time monitoring dashboard for Multiflexmeter poldermill sensors with live data visualization and analytics">
+  <title>{title}</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <script is:inline src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script is:inline src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-page">
+  <MultiflexmeterHeader currentPage="dashboard" />
+  <div class="dashboard-container">
+    <!-- Header with device selector -->
+    <DashboardHeader devices={devices} selectedDeviceEui={selectedDeviceEui} />
+
+    <!-- Main Grid -->
+    <div class="dashboard-grid">
+      <!-- Sensor Data Chart - Hidden for now -->
+      <!-- <div class="grid-col-8">
+        <SensorChart />
+      </div> -->
+
+      <!-- Left Column: Status + Revolutions (stacked) -->
+      <div class="grid-col-6">
+        <!-- Poldermill Status -->
+        <WindmillStatus />
+
+        <!-- Revolutions -->
+        <div style="margin-top: 20px;">
+          <RevolutionsMetric />
+        </div>
+      </div>
+
+      <!-- Right Column: Device Info -->
+      <div class="grid-col-6">
+        <DeviceInfo />
+      </div>
+
+      <!-- Activity Log -->
+      <div class="grid-col-12">
+        <ActivityLog />
+      </div>
+    </div>
+
+    <footer>
+      <p>Multiflexmeter v3.7 - Open Source IoT Environmental Monitoring</p>
+      <p class="devices-footer-links">
+            <a href="/">← Back to Documentation</a> | <a href="/devices" class="devices-footer-link-spacing">View All Devices Overview →</a>
+      </p>
+    </footer>
+  </div>
+
+  <!-- Dashboard JavaScript -->
+  <DashboardScripts initialReadings={recentReadings} devices={devices} selectedDeviceEui={selectedDeviceEui} />
+</body>
+</html>

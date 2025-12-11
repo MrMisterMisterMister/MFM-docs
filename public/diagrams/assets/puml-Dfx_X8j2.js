@@ -1,0 +1,1 @@
+import{_ as t}from"./main-Bs_kv9Iy.js";import"./vendors-CxZ5fJlJ.js";import"./e-CNyLuABu.js";import"./i-CIbIH0i1.js";import"./o-L4NkZ0gT.js";let i={"mfm-docs":()=>t(()=>import("./puml-BXHD_NSw.js"),[])};async function p(o){const r=i[o];if(!r)throw new Error("Unknown projectId: "+o);return await r()}export{p as loadPumlSources,i as loadPumlSourcesFn};

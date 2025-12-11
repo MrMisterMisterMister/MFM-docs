@@ -1,0 +1,54 @@
+---
+/**
+ * Device Info Component
+ * Displays device information and statistics
+ */
+---
+
+<div class="card">
+    <h2>
+        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+        </svg>
+        Device Information
+    </h2>
+    <div class="device-info" id="deviceInfo">
+        <div class="info-row">
+            <span class="info-label">Device ID</span>
+            <span class="info-value">-</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Hardware</span>
+            <span class="info-value">-</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Firmware</span>
+            <span class="info-value">-</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Signal Strength</span>
+            <span class="info-value signal-strength" id="signalStrength">
+                <span class="signal-bars">
+                    <div class="signal-bar signal-bar-1"></div>
+                    <div class="signal-bar signal-bar-2"></div>
+                    <div class="signal-bar signal-bar-3"></div>
+                    <div class="signal-bar signal-bar-4"></div>
+                </span>
+                N/A
+            </span>
+        </div>
+    </div>
+
+    <div class="stats-grid stats-grid-2">
+        <div class="stat-item">
+            <div class="stat-label">Spinning</div>
+            <div class="stat-value" id="spinningCount">--</div>
+            <div class="stat-unit">times</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Pumping</div>
+            <div class="stat-value" id="pumpingCount">--</div>
+            <div class="stat-unit">times</div>
+        </div>
+    </div>
+</div>

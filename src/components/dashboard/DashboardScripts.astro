@@ -1,0 +1,742 @@
+---
+/**
+ * Dashboard Scripts Component
+ * Contains all JavaScript logic for dashboard functionality
+ */
+interface Props {
+    initialReadings: any[];
+    devices: any[];
+    selectedDeviceEui?: string | null;
+}
+
+const { initialReadings, devices, selectedDeviceEui } = Astro.props;
+---
+
+<!-- Embed initial data -->
+<script id="initial-data" type="application/json" set:html={JSON.stringify({
+    readings: initialReadings,
+    devices: devices,
+    selectedDeviceEui: selectedDeviceEui
+})} />
+
+<script is:inline>
+  function initDashboard() {
+    if (typeof Chart === 'undefined') {
+      console.log('Chart.js not loaded yet, retrying...');
+      setTimeout(initDashboard, 100);
+      return;
+    }
+
+    console.log('Initializing dashboard...');
+
+    // Parse initial data
+    const initialData = JSON.parse(document.getElementById('initial-data').textContent);
+    console.log('Initial readings:', initialData.readings?.length);
+    console.log('Initial devices:', initialData.devices?.length);
+    console.log('Selected device:', initialData.selectedDeviceEui);
+
+    // Initialize data - store all readings first
+    let allReadings = (initialData.readings || []).sort((a, b) =>
+      new Date(b.timestamp) - new Date(a.timestamp)
+    );
+    let allDevices = initialData.devices || [];
+    let currentDeviceEui = initialData.selectedDeviceEui || allDevices[0]?.devEui || null;
+    let deviceInfo = allDevices.find(d => d.devEui === currentDeviceEui) || allDevices[0] || null;
+
+    // Filter readings for the selected device
+    let readings = currentDeviceEui
+      ? allReadings.filter(r => r.devEui === currentDeviceEui)
+      : allReadings.slice();
+    let activityLog = [];
+    const maxActivityItems = 20;
+    let currentPeriod = 'minutes';
+    let revolutionPeriod = 'today';
+
+    // Time filter buttons (for chart)
+    const timeFilters = document.querySelectorAll('.time-filter');
+    timeFilters.forEach(filter => {
+      filter.addEventListener('click', (e) => {
+        // Remove active class and update aria-pressed for all filters
+        timeFilters.forEach(f => {
+          f.classList.remove('active');
+          f.setAttribute('aria-pressed', 'false');
+        });
+        // Add active class and update aria-pressed for selected filter
+        e.target.classList.add('active');
+        e.target.setAttribute('aria-pressed', 'true');
+        currentPeriod = e.target.dataset.period;
+        updateChartData(); // Update chart when period changes
+      });
+    });
+
+    // Revolution period filter buttons
+    const revolutionFilters = document.querySelectorAll('.revolution-filter');
+    revolutionFilters.forEach(filter => {
+      filter.addEventListener('click', (e) => {
+        // Remove active class and update aria-pressed for all filters
+        revolutionFilters.forEach(f => {
+          f.classList.remove('active');
+          f.setAttribute('aria-pressed', 'false');
+        });
+        // Add active class and update aria-pressed for selected filter
+        e.target.classList.add('active');
+        e.target.setAttribute('aria-pressed', 'true');
+        revolutionPeriod = e.target.dataset.period;
+        updateRevolutions(); // Update revolutions when period changes
+      });
+    });
+
+    // Device selector handling
+    const deviceSelect = document.getElementById('deviceSelect');
+    const locationSubtitle = document.getElementById('locationSubtitle');
+    if (deviceSelect && allDevices.length > 1) {
+      deviceSelect.addEventListener('change', (e) => {
+        const newDeviceEui = e.target.value;
+
+        // Update URL with new device parameter
+        const url = new URL(window.location.href);
+        url.searchParams.set('device', newDeviceEui);
+        window.history.pushState({}, '', url);
+
+        // Update current device
+        currentDeviceEui = newDeviceEui;
+        deviceInfo = allDevices.find(d => d.devEui === currentDeviceEui);
+
+        // Update location subtitle
+        if (locationSubtitle && deviceInfo) {
+          const locationText = deviceInfo.locationName && deviceInfo.locationCity
+            ? `${deviceInfo.locationName} - ${deviceInfo.locationCity}`
+            : 'Historic Poldermill Monitoring';
+          locationSubtitle.textContent = locationText;
+        }
+
+        // Filter readings by device from full dataset
+        const filteredReadings = allReadings.filter(r => r.devEui === currentDeviceEui);
+        // Sort DESC (newest first)
+        readings = filteredReadings.sort((a, b) =>
+          new Date(b.timestamp) - new Date(a.timestamp)
+        );
+
+        // Update all UI components with new device data
+        updateChartData();
+        updateRevolutions();
+        updateDeviceInfo();
+
+        // Update status indicators with the latest reading for this device
+        if (readings.length > 0) {
+          updateStatusIndicators(readings[0]);
+        }
+
+        addActivity(`Switched to device ${deviceInfo?.displayName || deviceInfo?.displayId || 'Unknown'}`);
+      });
+      // Set initial device (already set by server-side rendering)
+      deviceSelect.value = currentDeviceEui;
+    }
+
+    // Chart.js setup - Revolution Trends (optional - only if chart exists)
+    const ctx = document.getElementById('revolutionsChart');
+    let chart = null;
+
+    if (ctx) {
+      const revolutionGradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
+      revolutionGradient.addColorStop(0, 'rgba(52, 211, 153, 0.4)');
+      revolutionGradient.addColorStop(1, 'rgba(52, 211, 153, 0.0)');
+
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          datasets: [
+            {
+              label: 'Revolutions',
+              data: [],
+              borderColor: '#34d399',
+              backgroundColor: revolutionGradient,
+              borderWidth: 2,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              yAxisID: 'y',
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false,
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                color: '#cbd5e1',
+                font: {
+                  size: 13,
+                  weight: '600',
+                  family: 'Inter'
+                },
+                padding: 16,
+                usePointStyle: true,
+                pointStyle: 'circle'
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(15, 23, 42, 0.95)',
+              titleColor: '#e2e8f0',
+              bodyColor: '#cbd5e1',
+              borderColor: 'rgba(100, 116, 139, 0.2)',
+              borderWidth: 1,
+              padding: 12,
+              displayColors: true,
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label) {
+                    label += ': ';
+                  }
+                  label += context.parsed.y + ' revolutions';
+                  return label;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              type: 'time',
+              time: {
+                unit: 'hour', // Default, will be updated dynamically
+                displayFormats: {
+                  minute: 'HH:mm',
+                  hour: 'HH:mm',
+                  day: 'MMM DD',
+                  month: 'MMM YYYY',
+                  year: 'YYYY'
+                }
+              },
+              grid: {
+                color: 'rgba(148, 163, 184, 0.1)',
+                drawBorder: false
+              },
+              ticks: {
+                color: '#64748b',
+                font: {
+                  size: 11,
+                  family: 'Inter'
+                }
+              },
+              title: {
+                display: true,
+                text: 'Time',
+                color: '#94a3b8',
+                font: {
+                  size: 12,
+                  weight: '600',
+                  family: 'Inter'
+                }
+              }
+            },
+            y: {
+              type: 'linear',
+              display: true,
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(148, 163, 184, 0.1)',
+                drawBorder: false
+              },
+              ticks: {
+                color: '#34d399',
+                font: {
+                  size: 11,
+                  weight: '600',
+                  family: 'Inter'
+                },
+                callback: function(value) {
+                  return Math.round(value);
+                }
+              },
+              title: {
+                display: true,
+                text: 'Revolutions',
+                color: '#94a3b8',
+                font: {
+                  size: 12,
+                  weight: '700',
+                  family: 'Inter'
+                }
+              }
+            }
+          }
+        }
+      });
+    } // End chart initialization conditional
+
+    // Update chart data - Show revolutions per measurement period
+    function updateChartData() {
+      if (!chart) return; // Skip if chart not initialized
+
+      const revolutionsByPeriod = new Map();
+
+      // Filter readings based on current time period
+      const now = Date.now();
+      let timeWindowMs;
+
+      switch (currentPeriod) {
+        case 'minutes':
+          timeWindowMs = 60 * 60 * 1000; // Show last hour
+          break;
+        case 'hours':
+          timeWindowMs = 24 * 60 * 60 * 1000; // Show last 24 hours
+          break;
+        case 'days':
+          timeWindowMs = 30 * 24 * 60 * 60 * 1000; // Show last 30 days
+          break;
+        case 'months':
+          timeWindowMs = 365 * 24 * 60 * 60 * 1000; // Show last year
+          break;
+        case 'years':
+          timeWindowMs = 5 * 365 * 24 * 60 * 60 * 1000; // Show last 5 years
+          break;
+        default:
+          timeWindowMs = 60 * 60 * 1000;
+      }
+
+      const cutoffTime = now - timeWindowMs;
+      const filteredReadings = readings.filter(r => {
+        const readingTime = new Date(r.timestamp).getTime();
+        return readingTime >= cutoffTime;
+      });
+
+      // Sort readings by timestamp (ASC - oldest first)
+      const sortedReadings = [...filteredReadings].sort((a, b) =>
+        new Date(a.timestamp) - new Date(b.timestamp)
+      );
+
+      // Determine time bucket grouping based on current period
+      function getTimeKey(timestamp) {
+        const date = new Date(timestamp);
+        switch (currentPeriod) {
+          case 'minutes':
+            date.setSeconds(0, 0);
+            break;
+          case 'hours':
+            date.setMinutes(0, 0, 0);
+            break;
+          case 'days':
+            date.setHours(0, 0, 0, 0);
+            break;
+          case 'months':
+            date.setDate(1);
+            date.setHours(0, 0, 0, 0);
+            break;
+          case 'years':
+            date.setMonth(0, 1);
+            date.setHours(0, 0, 0, 0);
+            break;
+          default:
+            date.setMinutes(0, 0, 0);
+        }
+        return date.getTime();
+      }
+
+      // Group readings by time buckets
+      const readingsByBucket = new Map();
+      sortedReadings.forEach(reading => {
+        const timeKey = getTimeKey(reading.timestamp);
+        if (!readingsByBucket.has(timeKey)) {
+          readingsByBucket.set(timeKey, []);
+        }
+        readingsByBucket.get(timeKey).push(reading);
+      });
+
+      // Sum revolutions per bucket (each reading contains period count)
+      readingsByBucket.forEach((bucketReadings, timeKey) => {
+        // Sum all revolutions in this bucket
+        const totalRevolutions = bucketReadings.reduce((sum, reading) => {
+          return sum + (reading.revolutions || 0);
+        }, 0);
+        revolutionsByPeriod.set(timeKey, totalRevolutions);
+      });
+
+      // Convert to chart data format
+      const revolutionData = Array.from(revolutionsByPeriod.entries()).map(([timestamp, count]) => ({
+        x: new Date(timestamp),
+        y: count
+      }));
+
+      // Sort by timestamp for proper display
+      revolutionData.sort((a, b) => a.x - b.x);
+
+      // Update chart x-axis unit based on period
+      let timeUnit = 'hour';
+      let displayFormat = 'HH:mm';
+      switch (currentPeriod) {
+        case 'minutes':
+          timeUnit = 'minute';
+          displayFormat = 'HH:mm';
+          break;
+        case 'hours':
+          timeUnit = 'hour';
+          displayFormat = 'HH:mm';
+          break;
+        case 'days':
+          timeUnit = 'day';
+          displayFormat = 'MMM DD';
+          break;
+        case 'months':
+          timeUnit = 'month';
+          displayFormat = 'MMM YYYY';
+          break;
+        case 'years':
+          timeUnit = 'year';
+          displayFormat = 'YYYY';
+          break;
+      }
+
+      chart.options.scales.x.time.unit = timeUnit;
+      chart.options.scales.x.time.displayFormats[timeUnit] = displayFormat;
+      chart.data.datasets[0].data = revolutionData;
+      chart.update('none');
+    }
+
+    // Calculate statistics
+    function calculateStats() {
+      if (readings.length === 0) return;
+
+      // Count spinning and pumping occurrences
+      const spinningCount = readings.filter(r => r.spinning).length;
+      const pumpingCount = readings.filter(r => r.pumping).length;
+
+      document.getElementById('spinningCount').textContent = spinningCount;
+      document.getElementById('pumpingCount').textContent = pumpingCount;
+    }
+
+    // Update revolutions display - show spinning and pumping rotation counters
+    // The device sends cumulative total_rotations_spinning and total_rotations_pumping
+    function updateRevolutions() {
+      const spinningEl = document.getElementById('spinningRotationsTotal');
+      const pumpingEl = document.getElementById('pumpingRotationsTotal');
+      const periodEl = document.getElementById('revolutionsPeriod');
+
+      if (readings.length === 0) {
+        if (spinningEl) spinningEl.textContent = '0';
+        if (pumpingEl) pumpingEl.textContent = '0';
+        if (periodEl) periodEl.textContent = 'No data';
+        return;
+      }
+
+      let periodStartTime;
+      let periodLabel = 'All Time';
+      let filteredReadings = readings;
+
+      // Determine period start time and filter readings
+      if (revolutionPeriod === 'today') {
+        periodStartTime = new Date();
+        periodStartTime.setHours(0, 0, 0, 0);
+        filteredReadings = readings.filter(r => new Date(r.timestamp) >= periodStartTime);
+        periodLabel = 'Today';
+      } else if (revolutionPeriod === 'month') {
+        periodStartTime = new Date();
+        periodStartTime.setDate(1);
+        periodStartTime.setHours(0, 0, 0, 0);
+        filteredReadings = readings.filter(r => new Date(r.timestamp) >= periodStartTime);
+        periodLabel = 'This Month';
+      } else if (revolutionPeriod === 'year') {
+        periodStartTime = new Date();
+        periodStartTime.setMonth(0, 1);
+        periodStartTime.setHours(0, 0, 0, 0);
+        filteredReadings = readings.filter(r => new Date(r.timestamp) >= periodStartTime);
+        periodLabel = 'This Year';
+      }
+      // else: revolutionPeriod === 'all' uses all readings
+
+      // Calculate rotations for the selected period
+      let spinningRotations = 0;
+      let pumpingRotations = 0;
+
+      if (filteredReadings.length > 0) {
+        // Sum all revolutions in the filtered period
+        // Each reading's revolutions field represents spinning rotations
+        spinningRotations = filteredReadings.reduce((sum, r) => sum + (r.revolutions || 0), 0);
+
+        // Use actual pumpingRevolutions from the sensor data
+        pumpingRotations = filteredReadings.reduce((sum, r) => sum + (r.pumpingRevolutions || 0), 0);
+      }
+
+      if (spinningEl) spinningEl.textContent = spinningRotations.toLocaleString();
+      if (pumpingEl) pumpingEl.textContent = pumpingRotations.toLocaleString();
+      if (periodEl) periodEl.textContent = periodLabel;
+    }
+
+    // Update status indicators and revolutions
+    function updateStatusIndicators(reading) {
+      updateRevolutions();
+
+      // Control poldermill icon animation
+      const poldermillIcon = document.querySelector('.poldermill-icon');
+      if (poldermillIcon) {
+        poldermillIcon.classList.toggle('spinning', reading.spinning);
+      }
+
+      // Update spinning status
+      const spinningEl = document.getElementById('spinningStatus');
+      spinningEl.className = reading.spinning ? 'status-indicator active' : 'status-indicator inactive';
+      spinningEl.innerHTML = reading.spinning
+        ? `<div class="status-icon"><span class="spinning-icon">⚙️</span></div>
+           <div class="status-text">
+             <div class="status-text-main">Spinning</div>
+             <div class="status-text-sub">Active</div>
+           </div>`
+        : `<div class="status-icon">⚙️</div>
+           <div class="status-text">
+             <div class="status-text-main">Stopped</div>
+             <div class="status-text-sub">No wind</div>
+           </div>`;
+
+      // Update pumping status
+      const pumpingEl = document.getElementById('pumpingStatus');
+      pumpingEl.className = reading.pumping ? 'status-indicator active' : 'status-indicator inactive';
+      pumpingEl.innerHTML = reading.pumping
+        ? `<div class="status-icon"><span class="dripping-icon">💧</span></div>
+           <div class="status-text">
+             <div class="status-text-main">Pumping</div>
+             <div class="status-text-sub">Active</div>
+           </div>`
+        : `<div class="status-icon">💧</div>
+           <div class="status-text">
+             <div class="status-text-main">Idle</div>
+             <div class="status-text-sub">Standby</div>
+           </div>`;
+
+      // Update last update time
+      document.getElementById('lastUpdate').textContent = new Date(reading.timestamp).toLocaleString();
+
+      calculateStats();
+    }
+
+    // Update signal strength
+    function updateSignalStrength(rssi) {
+      if (!rssi) return;
+
+      const bars = document.querySelectorAll('.signal-bar');
+      const signalText = document.getElementById('signalStrength');
+
+      // Determine signal quality
+      let activeCount = 0;
+      if (rssi >= -70) activeCount = 4; // Excellent
+      else if (rssi >= -80) activeCount = 3; // Good
+      else if (rssi >= -90) activeCount = 2; // Fair
+      else if (rssi >= -100) activeCount = 1; // Poor
+
+      bars.forEach((bar, index) => {
+        if (index < activeCount) {
+          bar.classList.add('active');
+        } else {
+          bar.classList.remove('active');
+        }
+      });
+
+      const qualityText = activeCount >= 3 ? 'Excellent' : activeCount >= 2 ? 'Good' : activeCount >= 1 ? 'Fair' : 'Poor';
+      signalText.childNodes[1].textContent = ` ${rssi} dBm (${qualityText})`;
+    }
+
+    // Update device info
+    function updateDeviceInfo() {
+      if (!deviceInfo) return;
+
+      const infoContainer = document.getElementById('deviceInfo');
+      const rows = infoContainer.querySelectorAll('.info-row');
+
+      // Display anonymous device ID instead of DevEUI to prevent spoofing
+      rows[0].querySelector('.info-value').textContent = deviceInfo.displayId || '-';
+
+      // Only show hardware version if it exists
+      if (deviceInfo.hwVersion) {
+        rows[1].querySelector('.info-value').textContent = `v${deviceInfo.hwVersion}`;
+        rows[1].style.display = 'flex';
+      } else {
+        rows[1].style.display = 'none';
+      }
+
+      // Only show firmware version if it exists
+      if (deviceInfo.fwVersion) {
+        rows[2].querySelector('.info-value').textContent = `v${deviceInfo.fwVersion}`;
+        rows[2].style.display = 'flex';
+      } else {
+        rows[2].style.display = 'none';
+      }
+
+      // Display anonymous device ID in header
+      document.getElementById('deviceEui').textContent = deviceInfo.displayId || '-';
+
+      // Update location subtitle with device context
+      const locationSubtitle = document.getElementById('locationSubtitle');
+      if (locationSubtitle) {
+        const locationText = deviceInfo.locationName && deviceInfo.locationCity
+          ? `${deviceInfo.locationName} - ${deviceInfo.locationCity}`
+          : deviceInfo.displayName || deviceInfo.displayId || '-';
+        locationSubtitle.textContent = locationText;
+      }
+
+      if (readings.length > 0) {
+        const lastReading = readings[readings.length - 1];
+        if (lastReading.rssi) {
+          updateSignalStrength(lastReading.rssi);
+        }
+      }
+    }
+
+    // Add activity log entry
+    function addActivity(message) {
+      const now = new Date();
+      activityLog.unshift({
+        time: now.toLocaleTimeString(),
+        message: message
+      });
+
+      if (activityLog.length > maxActivityItems) {
+        activityLog = activityLog.slice(0, maxActivityItems);
+      }
+
+      const logContainer = document.getElementById('activityLog');
+      logContainer.innerHTML = activityLog.map(item => `
+        <div class="activity-item">
+          <div class="activity-time">${item.time}</div>
+          <div class="activity-text">${item.message}</div>
+        </div>
+      `).join('');
+    }
+
+    // Initialize with historical data
+    if (readings.length > 0) {
+      const latestReading = readings[0]; // Readings are sorted DESC, so [0] is newest
+      updateChartData();
+      updateRevolutions();
+      updateStatusIndicators(latestReading);
+      updateDeviceInfo();
+      addActivity(`Loaded ${readings.length} historical readings`);
+    }
+
+    // SSE connection
+    let eventSource;
+    let reconnectTimeout;
+
+    function connect() {
+      console.log('Connecting to SSE stream...');
+
+      eventSource = new EventSource('/api/stream');
+
+      eventSource.onopen = () => {
+        console.log('SSE connected');
+        document.getElementById('connectionStatus').textContent = 'Connected';
+        document.getElementById('connectionDot').classList.add('connected');
+        document.getElementById('connectionDot').classList.remove('disconnected');
+        addActivity('Connected to live data stream');
+      };
+
+      eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.type === 'connected') {
+          console.log('Server acknowledged connection');
+        } else if (data.type === 'history') {
+          console.log('Received history:', data.readings.length, 'readings');
+          // Store all history in allReadings
+          allReadings = data.readings.sort((a, b) =>
+            new Date(b.timestamp) - new Date(a.timestamp)
+          );
+          // Filter for current device
+          readings = currentDeviceEui
+            ? allReadings.filter(r => r.devEui === currentDeviceEui)
+            : allReadings.slice();
+          if (readings.length > 0) {
+            updateChartData();
+            updateStatusIndicators(readings[0]); // readings[0] is newest
+            updateDeviceInfo();
+          }
+        } else if (data.type === 'reading') {
+          console.log('New reading:', data.reading);
+
+          // Always add to full dataset
+          allReadings.unshift(data.reading);
+          if (allReadings.length > 200) {
+            allReadings = allReadings.slice(0, 200);
+          }
+
+          // Only update UI if it's for the current device (or if no device filter)
+          if (!currentDeviceEui || data.reading.devEui === currentDeviceEui) {
+            readings.unshift(data.reading); // Add to beginning (maintain DESC order)
+
+            // Keep only most recent 200 readings for current device
+            if (readings.length > 200) {
+              readings = readings.slice(0, 200);
+            }
+
+            updateChartData();
+            updateStatusIndicators(data.reading);
+            updateDeviceInfo();
+
+            addActivity(
+              `New reading: Spinning: ${data.reading.spinning ? 'ON' : 'OFF'}, ` +
+              `Pumping: ${data.reading.pumping ? 'ON' : 'OFF'}`
+            );
+          }
+        }
+      };
+
+      eventSource.onerror = (error) => {
+        console.error('SSE error:', error);
+        document.getElementById('connectionStatus').textContent = 'Disconnected';
+        document.getElementById('connectionDot').classList.remove('connected');
+        document.getElementById('connectionDot').classList.add('disconnected');
+        addActivity('Connection lost, reconnecting...');
+
+        eventSource.close();
+
+        // Reconnect after 5 seconds
+        reconnectTimeout = setTimeout(() => {
+          connect();
+        }, 5000);
+      };
+    }
+
+    // Start connection
+    connect();
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      if (eventSource) {
+        eventSource.close();
+      }
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
+    });
+
+    console.log('Dashboard initialized successfully');
+  }
+
+  // Start initialization with retry
+  let initAttempts = 0;
+  const maxAttempts = 50;
+
+  function tryInit() {
+    initAttempts++;
+    if (typeof Chart !== 'undefined') {
+      initDashboard();
+    } else if (initAttempts < maxAttempts) {
+      setTimeout(tryInit, 100);
+    } else {
+      console.error('Failed to load Chart.js after', maxAttempts, 'attempts');
+    }
+  }
+
+  // Wait for DOM to be ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', tryInit);
+  } else {
+    tryInit();
+  }
+</script>

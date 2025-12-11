@@ -1,0 +1,973 @@
+/* Dashboard Custom Styles - SCSS */
+/* Note: Variables, base styles, animations, header, and shared components are imported via main.scss */
+@use "colors" as *;
+
+/* Dashboard-specific component styles */
+
+.glass-card {
+    @apply bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-500/10;
+    box-shadow:
+        0 10px 15px -3px $shadow-md-dark,
+        0 4px 6px -2px $shadow-sm-dark;
+    transition: all 0.3s ease;
+
+    /* &:hover {
+        @apply border-slate-500/20;
+        transform: translateY(-2px);
+        box-shadow:
+            0 20px 25px -5px $shadow-lg-dark,
+            0 10px 10px -5px $shadow-md-dark;
+    } */
+}
+
+.glass-header {
+    // @apply bg-slate-975/80 backdrop-blur-md rounded-2xl border border-slate-500/10;
+    background: $slate-975;
+    border: 1px solid $slate-800;
+    box-shadow:
+        0 20px 25px -5px $shadow-md-dark,
+        0 10px 10px -5px $shadow-sm-dark;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+
+    // &::before {
+    //     content: '';
+    //     position: absolute;
+    //     top: 0;
+    //     left: 0;
+    //     right: 0;
+    //     height: 3px;
+    //     background: $gradient-bg-blue;
+    // }
+}
+
+.gradient-text {
+    background: $gradient-text-dark;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.metric-card {
+    @apply text-center p-8 rounded-2xl border;
+    background: $gradient-card-dark;
+    border-color: rgba($blue-500, 0.2);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+
+    /* &:hover {
+        transform: scale(1.02);
+        border-color: rgba($blue-500, 0.4);
+    } */
+
+    // &::before {
+    //     content: '';
+    //     position: absolute;
+    //     top: 0;
+    //     left: 0;
+    //     right: 0;
+    //     height: 2px;
+    //     background: linear-gradient(90deg, transparent, $blue-500, transparent);
+    // }
+}
+
+/* Status bar */
+.status-item {
+    @apply flex items-center gap-2.5 px-4 py-2.5 bg-slate-800/60 border border-slate-500/10 rounded-lg text-sm font-medium;
+    transition: all 0.3s ease;
+
+    /* &:hover {
+        @apply bg-slate-800/80 border-slate-500/20;
+        transform: translateY(-2px);
+    } */
+}
+
+/* Connection status dot */
+.status-dot {
+    @apply w-3 h-3 rounded-full relative;
+
+    &.connected {
+        @apply bg-emerald-400;
+        // box-shadow: 0 0 16px $glow-emerald;
+    }
+
+    &.disconnected {
+        @apply bg-orange-500;
+        box-shadow: 0 0 12px $glow-orange;
+    }
+}
+
+/* Status indicators */
+.status-card {
+    @apply p-6 rounded-xl bg-slate-950/40 border border-slate-500/10;
+    transition: all 0.3s ease;
+
+    /* &:hover {
+        @apply bg-slate-950/60 border-slate-500/20;
+    } */
+
+    .status-card-label {
+        @apply text-slate-400 text-xs uppercase tracking-wider font-semibold mb-3;
+    }
+}
+
+.status-indicator {
+    @apply flex items-center gap-3 text-base font-semibold;
+
+    .status-icon {
+        @apply w-12 h-12 rounded-xl flex items-center justify-center text-2xl;
+        transition: all 0.3s ease;
+    }
+
+    &.active .status-icon {
+        @apply bg-slate-700/50 text-emerald-400;
+    }
+
+    &.inactive .status-icon {
+        @apply bg-slate-700/30 text-slate-500;
+    }
+
+    .status-text-main {
+        @apply text-slate-100 text-base font-bold;
+    }
+
+    .status-text-sub {
+        @apply text-slate-500 text-xs mt-0.5;
+    }
+}
+
+/* Metric change indicators */
+.metric-change {
+    @apply mt-3 text-xs font-semibold inline-flex items-center gap-1 px-3 py-1 rounded-full;
+
+    &.up {
+        @apply text-cyan-400 bg-cyan-500/10;
+    }
+
+    &.down {
+        @apply text-orange-400 bg-orange-500/10;
+    }
+}
+
+/* Small metric display */
+.metric-small {
+    @apply text-center p-6 rounded-xl bg-slate-950/40 border border-slate-500/10;
+    transition: all 0.3s ease;
+
+    /* &:hover {
+        @apply bg-slate-950/60 border-slate-500/20;
+    } */
+
+    .metric-label {
+        @apply text-slate-400 text-xs uppercase tracking-wider font-semibold mb-2;
+    }
+
+    .metric-value-small {
+        @apply text-3xl font-bold text-cyan-400 mb-1;
+    }
+
+    .metric-subtitle {
+        @apply text-slate-500 text-xs;
+    }
+}
+
+/* Device info rows */
+.info-row {
+    @apply flex justify-between items-center p-3 bg-slate-950/30 rounded-lg border border-slate-500/5;
+    transition: all 0.2s ease;
+
+    /* &:hover {
+        @apply bg-slate-950/50 border-slate-500/10;
+    } */
+
+    .info-label {
+        @apply text-slate-400 text-sm font-medium;
+    }
+
+    .info-value {
+        @apply text-slate-100 text-sm font-bold font-mono;
+    }
+}
+
+/* Signal strength */
+.signal-strength {
+    @apply flex items-center gap-2;
+}
+
+.signal-bars {
+    @apply flex gap-1 items-end;
+}
+
+.signal-bar {
+    @apply bg-slate-500/30 rounded-sm transition-all;
+    width: 4px;
+
+    &.active {
+        @apply bg-cyan-400;
+        box-shadow: 0 0 8px $glow-cyan;
+    }
+
+    /* Individual bar heights */
+    &.signal-bar-1 {
+        height: 8px;
+    }
+
+    &.signal-bar-2 {
+        height: 12px;
+    }
+
+    &.signal-bar-3 {
+        height: 16px;
+    }
+
+    &.signal-bar-4 {
+        height: 20px;
+    }
+}
+
+/* Statistics grid */
+.stats-grid {
+    @apply grid grid-cols-3 gap-4 mt-5;
+}
+
+.stats-grid-2 {
+    @apply grid grid-cols-2 gap-4 mt-5;
+}
+
+@media (max-width: 640px) {
+    .stats-grid,
+    .stats-grid-2 {
+        @apply grid-cols-1;
+    }
+}
+
+.stat-item {
+    @apply text-center p-4 bg-slate-950/30 rounded-xl border border-slate-500/5;
+
+    .stat-label {
+        @apply text-slate-500 text-xs uppercase tracking-wider mb-1.5 font-semibold;
+    }
+
+    .stat-value {
+        @apply text-slate-100 text-xl font-bold;
+    }
+
+    .stat-unit {
+        @apply text-slate-400 text-xs font-medium;
+    }
+}
+
+/* Chart container */
+.chart-container {
+    @apply relative mt-5;
+    height: 320px;
+
+    &.chart-container-large {
+        height: 400px;
+    }
+}
+
+/* Chart gradients - defined in JS but referenced here for documentation */
+.chart-temp-gradient {
+    /* Created programmatically in dashboard.astro */
+}
+
+.chart-humidity-gradient {
+    /* Created programmatically in dashboard.astro */
+}
+
+/* Custom scrollbar for activity log */
+.activity-log {
+    &::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+        @apply bg-slate-950/30 rounded;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        @apply bg-slate-500/30 rounded;
+
+        /* &:hover {
+            @apply bg-slate-500/50;
+        } */
+    }
+}
+
+/* Activity log */
+.activity-log {
+    @apply max-h-80 overflow-y-auto mt-4;
+}
+
+.activity-item {
+    @apply p-3 mb-2 bg-slate-950/30 rounded-lg text-sm;
+    // border-left: 3px solid $blue-500;
+    animation: slideIn 0.3s ease;
+    border-radius: 4px;
+
+
+    .activity-time {
+        @apply text-slate-500 text-xs mb-1;
+    }
+
+    .activity-text {
+        @apply text-slate-300;
+    }
+}
+
+/* Loading spinner */
+.loading {
+    @apply text-center py-10 text-slate-500;
+}
+
+.spinner {
+    @apply w-10 h-10 mx-auto mb-4 border-4 border-slate-500/20 border-t-cyan-500 rounded-full;
+    animation: rotate 1s linear infinite;
+}
+
+/* Footer */
+footer {
+    @apply text-center py-8 text-sm mt-8;
+    color: $text-secondary-dark;
+
+    a {
+        @apply no-underline font-semibold;
+        color: $cyan-400;
+        transition: color 0.2s ease;
+
+        /* &:hover {
+            color: $cyan-400;
+        } */
+    }
+}
+
+/* Grid Layout */
+.dashboard-grid {
+    @apply grid grid-cols-12 gap-6 mb-6;
+}
+
+.grid-col-4 { grid-column: span 4; }
+.grid-col-6 { grid-column: span 6; }
+.grid-col-8 { grid-column: span 8; }
+.grid-col-12 { grid-column: span 12; }
+
+/* Mobile and Tablet Responsive Styles */
+@media (max-width: 1200px) {
+    .grid-col-4, .grid-col-6, .grid-col-8 {
+        grid-column: span 12;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Reduce padding on smaller screens */
+    .dashboard-container {
+        padding: 1rem;
+    }
+
+    .card {
+        padding: 1.25rem;
+        border-radius: 1rem;
+    }
+
+    header {
+        padding: 1.25rem;
+        margin-bottom: 1.25rem;
+
+        h1 {
+            font-size: 1.75rem;
+        }
+
+        .subtitle {
+            font-size: 0.875rem;
+        }
+    }
+
+    /* Chart adjustments */
+    .chart-container {
+        height: 250px;
+
+        &.chart-container-large {
+            height: 280px;
+        }
+    }
+
+    /* Metrics */
+    .metric-value {
+        font-size: 2.5rem;
+    }
+
+    .metric-unit {
+        font-size: 1rem;
+    }
+
+    /* Status grid */
+    .status-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    /* Filter buttons */
+    .filter-buttons,
+    .revolutions-filters {
+        gap: 0.5rem;
+    }
+
+    .time-filter,
+    .revolution-filter {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+    }
+
+    /* Device info */
+    .device-info {
+        gap: 0.5rem;
+    }
+
+    .info-row {
+        padding: 0.625rem;
+        font-size: 0.8125rem;
+
+        .info-label,
+        .info-value {
+            font-size: 0.8125rem;
+        }
+    }
+
+    /* Activity log */
+    .activity-log {
+        max-height: 300px;
+    }
+
+    .activity-item {
+        padding: 0.625rem;
+        font-size: 0.8125rem;
+    }
+
+    /* Footer */
+    footer {
+        font-size: 0.75rem;
+        padding: 1.5rem 0;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Extra small screens */
+    .dashboard-container {
+        padding: 0.75rem;
+    }
+
+    .card {
+        padding: 1rem;
+    }
+
+    header {
+        padding: 1rem;
+
+        h1 {
+            font-size: 1.5rem;
+        }
+
+        .status-bar {
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+    }
+
+    .status-item {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+    }
+
+    .metric-value {
+        font-size: 2rem;
+    }
+
+    .filter-buttons,
+    .revolutions-filters {
+        justify-content: flex-start;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 0.5rem;
+
+        /* Custom scrollbar for filter buttons on mobile */
+        &::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        &::-webkit-scrollbar-track {
+            background: rgba($slate-500, 0.1);
+            border-radius: 4px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: rgba($slate-500, 0.3);
+            border-radius: 4px;
+        }
+    }
+
+    .time-filter,
+    .revolution-filter {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+}
+
+/* Container */
+.container {
+    @apply max-w-7xl mx-auto;
+}
+
+/* Header */
+header {
+    @apply glass-header p-7 mb-6;
+
+    h1 {
+        @apply text-slate-100 text-3xl font-extrabold mb-2 gradient-text;
+        letter-spacing: -0.025em;
+    }
+
+    .subtitle {
+        @apply text-slate-400 text-base flex items-center gap-2;
+    }
+
+    .status-bar {
+        @apply flex gap-4 mt-5 flex-wrap;
+    }
+}
+
+/* Card */
+.card {
+    @apply glass-card p-7;
+    border-radius: 0;
+
+    h2 {
+        @apply text-slate-100 text-lg font-bold mb-5 flex items-center gap-3;
+        letter-spacing: -0.025em;
+
+        .icon {
+            @apply w-6 h-6 text-cyan-400;
+        }
+    }
+}
+
+/* Metric labels and values */
+.metric-label {
+    @apply text-slate-400 text-xs uppercase tracking-wide font-semibold mb-3;
+}
+
+.metric-value {
+    @apply text-slate-100 text-5xl font-extrabold leading-none mb-2 gradient-text;
+}
+
+.metric-unit {
+    @apply text-slate-500 text-lg font-medium;
+}
+
+/* Device info */
+.device-info {
+    @apply grid gap-3;
+}
+
+/* Status grid layout */
+.status-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+/* Revolutions time filters */
+.revolutions-filters {
+    @apply flex gap-2 mb-4 justify-center flex-wrap;
+}
+
+.time-filter,
+.revolution-filter {
+    @apply px-4 py-2 rounded-lg text-sm font-medium;
+    background: $filter-bg-dark;
+    border: 1px solid $filter-border-dark;
+    color: $filter-text-dark;
+    transition: all 0.2s ease;
+    cursor: pointer;
+
+    &.active {
+        background: $filter-active-bg-dark;
+        border-color: $filter-active-border-dark;
+        color: $filter-active-text-dark;
+    }
+}
+
+.filter-buttons {
+    @apply flex gap-2 mb-4 justify-center flex-wrap;
+}
+
+/* Revolutions grid (like draaiendemolens.nl) */
+.revolutions-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    padding: 1rem 0;
+}
+
+.revolution-metric {
+    text-align: center;
+    padding: 1rem;
+    background: rgba($slate-950, 0.4);
+    border-radius: 12px;
+    border: 1px solid $border-primary-dark;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: rgba($slate-950, 0.6);
+        border-color: rgba($blue-500, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .metric-value-small {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: $blue-500;
+        margin-bottom: 0.5rem;
+        line-height: 1;
+    }
+
+    .metric-subtitle {
+        font-size: 0.875rem;
+        color: $slate-400;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+}
+
+@media (max-width: 768px) {
+    .revolutions-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+/* ============================================
+   Light Mode Overrides
+   ============================================ */
+
+body.light-mode {
+    /* Glass effects */
+    .glass-card {
+        background: $white !important;
+        border: 1px solid rgba($slate-300, 0.8) !important;
+        box-shadow:
+            0 4px 6px rgba($slate-900, 0.1),
+            0 2px 4px rgba($slate-900, 0.06) !important;
+    }
+
+    .glass-header {
+        background: $white !important;
+        border: 1px solid rgba($slate-300, 0.7) !important;
+        box-shadow:
+            0 4px 6px rgba($slate-900, 0.1),
+            0 2px 4px rgba($slate-900, 0.06) !important;
+
+        &::before {
+            background: $gradient-bg-blue !important;
+        }
+    }
+
+    /* Text and headings */
+    .gradient-text {
+        background: $gradient-text-light !important;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    h1, h2, h3 {
+        color: $text-primary-light;
+    }
+
+    /* Cards and containers */
+    .card {
+        background: $white !important;
+        border: 1px solid rgba($slate-300, 0.8) !important;
+
+        h2 {
+            color: $text-primary-light;
+        }
+    }
+
+    .metric-card {
+        background: linear-gradient(135deg, rgba($blue-50, 0.8) 0%, rgba($sky-50, 0.4) 100%) !important;
+        border: 1px solid rgba($blue-300, 0.4) !important;
+    }
+
+    /* Status items */
+    .status-item {
+        background: rgba($slate-100, 0.9) !important;
+        border: 1px solid rgba($slate-300, 0.6) !important;
+        color: $slate-700;
+    }
+
+    .status-card {
+        background: $white !important;
+        border: 1px solid rgba($slate-300, 0.6) !important;
+        box-shadow:
+            0 1px 3px rgba($slate-900, 0.08),
+            0 1px 2px rgba($slate-900, 0.05) !important;
+
+        .status-card-label {
+            color: $slate-600;
+        }
+    }
+
+    /* Metrics */
+    .metric-small {
+        background: $white !important;
+        border: 1px solid rgba($slate-300, 0.6) !important;
+        box-shadow:
+            0 1px 3px rgba($slate-900, 0.08),
+            0 1px 2px rgba($slate-900, 0.05) !important;
+
+        .metric-label {
+            color: $slate-600;
+        }
+
+        .metric-subtitle {
+            color: $slate-500;
+        }
+    }
+
+    .metric-label {
+        color: $slate-600;
+    }
+
+    .metric-value {
+        color: $text-primary-light;
+    }
+
+    .metric-unit {
+        color: $slate-600;
+    }
+
+    /* Info rows */
+    .info-row {
+        background: rgba($slate-100, 0.5) !important;
+        border: 1px solid rgba($slate-300, 0.5) !important;
+
+        .info-label {
+            color: $slate-600;
+        }
+
+        .info-value {
+            color: $text-primary-light;
+        }
+    }
+
+    /* Activity log */
+    .activity-item {
+        background: rgba($slate-100, 0.5) !important;
+        border: 1px solid rgba($slate-300, 0.4) !important;
+
+        .activity-time {
+            color: $slate-500;
+        }
+
+        .activity-text {
+            color: $slate-700;
+        }
+    }
+
+    .activity-log {
+        &::-webkit-scrollbar-track {
+            background: rgba($slate-100, 0.5);
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: rgba($slate-500, 0.3);
+        }
+    }
+
+    /* Time filters and revolution filters */
+    .time-filter,
+    .revolution-filter {
+        background: $filter-bg-light;
+        border-color: $filter-border-light;
+        color: $filter-text-light;
+
+        &.active {
+            background: $filter-active-bg-light;
+            border-color: $filter-active-border-light;
+            color: $filter-active-text-light;
+        }
+    }
+
+    /* Footer */
+    footer {
+        color: $text-secondary-light;
+
+        a {
+            color: $blue-500;
+        }
+    }
+
+    /* Devices table */
+    .devices-table {
+        thead {
+            background: rgba($slate-100, 0.8);
+            border-bottom-color: rgba($blue-500, 0.2);
+        }
+
+        th {
+            color: $slate-700;
+        }
+
+        tbody tr {
+            border-bottom-color: rgba($slate-500, 0.15);
+        }
+
+        td {
+            color: $slate-800;
+        }
+    }
+
+    .device-eui {
+        background: rgba($slate-100, 0.8);
+        color: $slate-700;
+    }
+
+    .device-name {
+        color: $text-primary-light;
+    }
+
+    .version-cell {
+        color: $slate-600;
+    }
+
+    time {
+        color: $slate-600;
+    }
+
+    .no-data {
+        color: $slate-400;
+    }
+
+    /* Status badges */
+    .status-badge {
+        &.online {
+            background: rgba($emerald-400, 0.15);
+            color: $emerald-600;
+            border-color: rgba($emerald-400, 0.3);
+        }
+
+        &.offline {
+            background: rgba($slate-500, 0.15);
+            color: $slate-600;
+            border-color: rgba($slate-500, 0.3);
+        }
+    }
+
+    /* Activity indicators */
+    .activity-indicator {
+        &.active {
+            background: rgba($emerald-400, 0.1);
+            border-color: rgba($emerald-400, 0.3);
+        }
+
+        &.inactive {
+            background: rgba($slate-500, 0.08);
+            border-color: rgba($slate-500, 0.15);
+        }
+    }
+
+    /* View button */
+    .view-button {
+        background: rgba($blue-500, 0.08);
+        border-color: rgba($blue-500, 0.25);
+        color: $blue-600;
+    }
+
+    /* Status indicators */
+    .status-indicator {
+        .status-text-main {
+            color: $text-primary-light;
+        }
+
+        .status-text-sub {
+            color: $slate-600;
+        }
+
+        &.active .status-icon {
+            background: rgba($emerald-400, 0.15) !important;
+            color: $emerald-600 !important;
+        }
+
+        &.inactive .status-icon {
+            background: rgba($slate-500, 0.15) !important;
+            color: $slate-400 !important;
+        }
+    }
+
+    /* Stats */
+    .stat-item {
+        background: $white !important;
+        border: 1px solid rgba($slate-300, 0.5) !important;
+        box-shadow:
+            0 1px 3px rgba($slate-900, 0.08),
+            0 1px 2px rgba($slate-900, 0.05) !important;
+
+        .stat-label {
+            color: $slate-600;
+        }
+
+        .stat-value {
+            color: $text-primary-light;
+        }
+
+        .stat-unit {
+            color: $slate-600;
+        }
+    }
+
+    /* Signal bars */
+    .signal-bar {
+        background: $signal-bar-inactive-light;
+
+        &.active {
+            background: $signal-bar-active-light;
+            box-shadow: 0 0 8px $glow-blue;
+        }
+    }
+
+    /* Loading */
+    .loading {
+        color: #64748b;
+    }
+
+    .spinner {
+        border-color: rgba($slate-500, 0.2);
+        border-top-color: $blue-500;
+    }
+
+    /* Revolution metric cards */
+    .revolution-metric {
+        background: $white !important;
+        border: 1px solid rgba($slate-300, 0.6) !important;
+        box-shadow:
+            0 1px 3px rgba($slate-900, 0.08),
+            0 1px 2px rgba($slate-900, 0.05) !important;
+
+        &:hover {
+            background: rgba($blue-50, 0.3) !important;
+            border-color: rgba($blue-400, 0.4) !important;
+            transform: translateY(-2px);
+            box-shadow:
+                0 4px 6px rgba($slate-900, 0.1),
+                0 2px 4px rgba($slate-900, 0.06) !important;
+        }
+
+        .metric-subtitle {
+            color: $slate-600;
+        }
+    }
+}

@@ -1,0 +1,11 @@
+{
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "astro",
+  "outputDirectory": "dist",
+  "regions": ["iad1"],
+  "env": {
+    "SITE_URL": "https://mfm-docs.vercel.app"
+  }
+}

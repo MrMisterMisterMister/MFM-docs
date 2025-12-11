@@ -1,0 +1,91 @@
+---
+/**
+ * Dashboard Header Component
+ * Displays title, device selector, and connection status
+ */
+interface Props {
+    devices: Array<{
+        devEui: string;
+        locationName?: string;
+        locationCity?: string;
+    }>;
+    selectedDeviceEui?: string | null;
+}
+
+const { devices, selectedDeviceEui } = Astro.props;
+
+// Get the selected device or first device as default
+const selectedDevice = selectedDeviceEui
+    ? devices.find(d => d.devEui === selectedDeviceEui) || devices[0]
+    : devices[0];
+
+// Debug log to check location data
+console.log('Selected device:', selectedDevice);
+console.log('Location name:', selectedDevice?.locationName);
+console.log('Location city:', selectedDevice?.locationCity);
+
+const locationText = selectedDevice?.locationName && selectedDevice?.locationCity
+    ? `${selectedDevice.locationName} - ${selectedDevice.locationCity}`
+    : 'Historic Poldermill Monitoring - no location set';
+---
+
+<header role="banner">
+    <div class="dashboard-header-top">
+        <h1 class="dashboard-header-title">Multiflexmeter Dashboard</h1>
+        <!-- Device Selector -->
+        {devices.length > 1 && (
+            <div class="dashboard-header-device-selector">
+                <label for="deviceSelect" class="dashboard-header-device-label">
+                    Device:
+                </label>
+                <select
+                    id="deviceSelect"
+                    class="dashboard-header-device-select"
+                    aria-label="Select device to monitor"
+                    data-devices={JSON.stringify(devices.map(d => ({
+                        devEui: d.devEui,
+                        locationName: d.locationName,
+                        locationCity: d.locationCity
+                    })))}
+                >
+                    {devices.map((device) => (
+                        <option
+                            value={device.devEui}
+                            selected={device.devEui === selectedDeviceEui || (!selectedDeviceEui && device === devices[0])}
+                        >
+                            {device.locationName || device.devEui}
+                        </option>
+                    ))}
+                </select>
+            </div>
+        )}
+    </div>
+    <p class="subtitle" id="locationSubtitle">
+        {locationText}
+    </p>
+    <div class="status-bar" role="status" aria-live="polite">
+        <div class="status-item">
+            <div class="status-dot" id="connectionDot" aria-label="Connection status indicator"></div>
+            <span id="connectionStatus">Connecting...</span>
+        </div>
+        <div class="status-item">
+            <svg class="icon dashboard-header-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+            </svg>
+            <span>Device: <strong id="deviceEui">-</strong></span>
+        </div>
+        <div class="status-item">
+            <svg class="icon dashboard-header-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Last Update: <strong id="lastUpdate">-</strong></span>
+        </div>
+        <!-- Data Points - Temporarily disabled -->
+        <!-- <div class="status-item">
+            <svg class="icon dashboard-header-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+            </svg>
+            <span>Data Points: <strong id="dataPoints">0</strong></span>
+        </div> -->
+    </div>
+</header>

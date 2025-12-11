@@ -1,0 +1,77 @@
+---
+/**
+ * Multiflexmeter Header Component
+ * Starlight-style navigation bar with light/dark mode toggle and breadcrumb navigation
+ */
+import '../styles/_header.scss';
+
+interface Props {
+    currentPage?: 'home' | 'devices' | 'dashboard';
+}
+
+const { currentPage = 'home' } = Astro.props;
+---
+
+<header class="mfm-header">
+    <div class="mfm-header-content">
+        <div class="mfm-header-left">
+            <a href="/" class="mfm-site-title" aria-label="Multiflexmeter home">
+                <span class="mfm-site-title-text">Multiflexmeter</span>
+            </a>
+        </div>
+
+        <div class="mfm-header-right">
+            <button 
+                id="theme-toggle" 
+                class="theme-toggle"
+                aria-label="Toggle dark mode"
+                aria-pressed="true"
+                type="button"
+            >
+                <svg class="theme-icon sun-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <svg class="theme-icon moon-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+        </div>
+    </div>
+</header>
+
+<script>
+    // Theme toggle functionality
+    function initThemeToggle() {
+        const themeToggle = document.getElementById('theme-toggle');
+        if (!themeToggle) return;
+
+        // Check for saved theme preference or default to 'dark'
+        const savedTheme = localStorage.getItem('mfm-theme') || 'dark';
+        
+        // Apply initial theme
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-mode');
+            themeToggle.setAttribute('aria-pressed', 'false');
+            themeToggle.setAttribute('aria-label', 'Toggle light mode');
+        } else {
+            document.body.classList.remove('light-mode');
+            themeToggle.setAttribute('aria-pressed', 'true');
+            themeToggle.setAttribute('aria-label', 'Toggle dark mode');
+        }
+
+        // Toggle theme on button click
+        themeToggle.addEventListener('click', () => {
+            const isLightMode = document.body.classList.toggle('light-mode');
+            themeToggle.setAttribute('aria-pressed', isLightMode ? 'false' : 'true');
+            themeToggle.setAttribute('aria-label', isLightMode ? 'Toggle light mode' : 'Toggle dark mode');
+            localStorage.setItem('mfm-theme', isLightMode ? 'light' : 'dark');
+        });
+    }
+
+    // Initialize on page load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initThemeToggle);
+    } else {
+        initThemeToggle();
+    }
+</script>

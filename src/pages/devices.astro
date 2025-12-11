@@ -1,0 +1,199 @@
+---
+/**
+ * Devices Overview Page
+ * Shows all devices with links to individual dashboards
+ */
+
+export const prerender = false;
+
+import { dataStore } from '../lib/dataStore';
+import '../styles/main.scss';
+import MultiflexmeterHeader from '../components/MultiflexmeterHeader.astro';
+import { renderActivityStatus } from '../lib/renderActivityStatus';
+import { getDeviceDisplayId, getDeviceDisplayName } from '../lib/deviceIdentifier';
+
+const devices = await dataStore.getDevices();
+const title = 'Multiflexmeter Devices - Overview';
+
+// Get all recent readings
+const allReadings = await dataStore.getRecentReadings(100);
+
+// Get latest reading for each device to show status
+const devicesWithStatus = devices.map((device) => {
+    const latestReading = allReadings.find(r => r.devEui === device.devEui);
+
+    return {
+        devEui: device.devEui, // Keep for internal routing
+        displayId: getDeviceDisplayId(device.devEui),
+        hwVersion: device.hwVersion,
+        fwVersion: device.fwVersion,
+        lastSeen: device.lastSeen,
+        name: getDeviceDisplayName(device),
+        location: device.locationCity || 'Netherlands',
+        latestReading
+    };
+});
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title}</title>
+    <meta name="description" content="Real-time monitoring of poldermill sensors across multiple locations">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-page">
+    <MultiflexmeterHeader currentPage="devices" />
+    <div class="dashboard-container">
+        <header class="devices-page-header glass-header">
+            <h1 class="dashboard-header-title">
+                Multiflexmeter Devices
+            </h1>
+            <p class="devices-page-subtitle">
+                Real-time monitoring of poldermill sensors across multiple locations
+            </p>
+            <div class="devices-page-stats">
+                <div class="status-item">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+                    </svg>
+                    <span>Total Devices: <strong>{devices.length}</strong></span>
+                </div>
+            </div>
+        </header>
+
+        {devices.length > 0 ? (
+            <div class="card">
+                <table class="devices-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Device</th>
+                            <th scope="col">Device ID</th>
+                            <th scope="col">Version</th>
+                            <th scope="col">Activity</th>
+                            <th scope="col">Last Update</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {devicesWithStatus.map((device) => (
+                            <tr data-dev-eui={device.devEui}>
+                                <td>
+                                    <div class="device-name-cell">
+                                        <span class="device-name">{device.name}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <code class="device-eui">{device.displayId}</code>
+                                </td>
+                                <td>
+                                    <div class="version-cell">
+                                        <span>HW v{device.hwVersion || '-'}</span>
+                                        <span class="version-separator">/</span>
+                                        <span>FW v{device.fwVersion || '-'}</span>
+                                    </div>
+                                </td>
+                                {device.latestReading ? (
+                                    <>
+                                        <td>
+                                            <div class="activity-cell" set:html={renderActivityStatus(device.latestReading)} />
+                                        </td>
+                                        <td>
+                                            <time datetime={device.latestReading.timestamp}>
+                                                {new Date(device.latestReading.timestamp).toLocaleString()}
+                                            </time>
+                                        </td>
+                                    </>
+                                ) : (
+                                    <>
+                                        <td><div class="activity-cell" set:html={renderActivityStatus(null)} /></td>
+                                        <td><span class="no-data">Never</span></td>
+                                    </>
+                                )}
+                                
+                                <td>
+                                    <a href={`/dashboard?device=${device.devEui}`} class="view-button" aria-label={`View dashboard for ${device.name || device.devEui}`}>
+                                        View Dashboard
+                                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </a>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        ) : (
+            <div class="card devices-empty-state">
+                <p class="devices-empty-message">
+                    No devices registered yet. {import.meta.env.DEV ? 'Start the simulator to add devices.' : 'Devices will appear when they connect via TTN.'}
+                </p>
+            </div>
+        )}
+
+        <footer class="devices-footer">
+            <p>Multiflexmeter v3.7 - Open Source IoT Environmental Monitoring</p>
+            <p class="devices-footer-links">
+                <a href="/">← Back to Documentation</a> | <a href="/dashboard" class="devices-footer-link-spacing">View All Devices Dashboard →</a>
+            </p>
+        </footer>
+    </div>
+
+    <!-- Real-time updates via SSE -->
+    <script>
+        import { renderActivityStatus } from '../lib/renderActivityStatus';
+
+        const deviceLastSeen = new Map();
+        const eventSource = new EventSource('/api/stream');
+
+        eventSource.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'reading') {
+                updateDeviceStatus(data.reading);
+            }
+        };
+
+        eventSource.onerror = (error) => {
+            console.error('SSE connection error:', error);
+        };
+
+        const updateDeviceStatus = (reading: any) => {
+            deviceLastSeen.set(reading.devEui, new Date(reading.timestamp));
+
+            // Find row by data-dev-eui attribute (internal use only, not displayed)
+            const rows = document.querySelectorAll('.devices-table tbody tr');
+            rows.forEach(row => {
+                const rowDevEui = row.getAttribute('data-dev-eui');
+                if (rowDevEui === reading.devEui) {
+                    // Update last update time
+                    const timeElement = row.querySelector('time');
+                    if (timeElement) {
+                        timeElement.setAttribute('datetime', reading.timestamp);
+                        timeElement.textContent = new Date(reading.timestamp).toLocaleString();
+                    }
+
+                    // Update activity indicators using shared function
+                    const activityCell = row.querySelector('.activity-cell');
+                    if (activityCell) {
+                        activityCell.innerHTML = renderActivityStatus(reading);
+                    }
+                }
+            });
+        }
+
+        // Note: Device IDs displayed in the table are anonymous hashes, not real DevEUIs
+        // DevEUI is only used internally (data-dev-eui attribute) for matching updates
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            eventSource.close();
+        });
+    </script>
+</body>
+</html>

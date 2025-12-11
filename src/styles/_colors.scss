@@ -1,0 +1,340 @@
+// ==============================================
+// COLOR SYSTEM - Multiflexmeter Dashboard
+// ==============================================
+// Centralized color palette for consistent theming
+// All colors are organized by category and usage
+// ==============================================
+
+// ==============================================
+// Base Color Palette
+// ==============================================
+
+// Slate (Neutral Grays)
+$slate-995: #111217;
+$slate-975: #23262f;
+$slate-950: #0f172a;
+$slate-925: #17181c;
+$slate-900: #1e293b;
+$slate-800: #334155;
+$slate-700: #475569;
+$slate-600: #64748b;
+$slate-500: #94a3b8;
+$slate-400: #94a3b8;
+$slate-300: #cbd5e1;
+$slate-200: #e2e8f0;
+$slate-100: #f1f5f9;
+$slate-50: #f8fafc;
+
+// Blue (Primary)
+$blue-800: #1e40af;
+$blue-700: #1d4ed8;
+$blue-600: #2563eb;
+$blue-500: #3b82f6;
+$blue-400: #60a5fa;
+$blue-300: #b3c7ff;
+$blue-50: #eff6ff;
+
+// Sky Blue
+$sky-500: #0ea5e9;
+$sky-400: #38bdf8;
+$sky-50: #f0f9ff;
+
+// Cyan (Accent)
+$cyan-700: #0369a1;
+$cyan-500: #06b6d4;
+$cyan-400: #22d3ee;
+
+// Emerald (Success)
+$emerald-600: #059669;
+$emerald-400: #34d399;
+$emerald-300: #52d3aa;
+
+// Orange (Warning)
+$orange-600: #ea580c;
+$orange-500: #f97316;
+
+// Pure Colors
+$white: #ffffff;
+$black: #000000;
+
+// ==============================================
+// Semantic Color Variables (Dark Mode)
+// ==============================================
+
+// Background Colors
+$bg-primary-dark: $slate-950;
+$bg-secondary-dark: $slate-900;
+$bg-card-dark: rgba($slate-800, 0.8);
+$bg-card-hover-dark: rgba($slate-800, 0.9);
+$bg-glass-dark: rgba($slate-800, 0.8);
+$bg-glass-header-dark: rgba($slate-800, 0.8);
+$bg-nav-dark: rgba($slate-950, 0.95);
+
+// Gradient Background Colors
+$bg-gradient-blue-1-dark: rgba($blue-500, 0.15);
+$bg-gradient-blue-2-dark: rgba($sky-500, 0.15);
+$bg-gradient-cyan-dark: rgba($cyan-500, 0.1);
+
+// Border Colors
+$border-primary-dark: rgba($slate-500, 0.1);
+$border-secondary-dark: rgba($slate-500, 0.2);
+$border-hairline-dark: rgba($blue-500, 0.15);
+
+// Text Colors
+$text-primary-dark: $slate-200;
+$text-secondary-dark: $slate-400;
+$text-tertiary-dark: $slate-500;
+$text-accent-dark: $blue-400;
+$text-muted-dark: $slate-600;
+
+// Status Colors
+$status-success-dark: $emerald-400;
+$status-warning-dark: $orange-500;
+$status-info-dark: $cyan-400;
+
+// Component Colors (Dark Mode)
+$card-bg-dark: rgba($slate-800, 0.8);
+$card-border-dark: rgba($slate-500, 0.1);
+$input-bg-dark: rgba($slate-950, 0.8);
+$input-border-dark: rgba($slate-600, 0.3);
+$button-primary-bg-dark: rgba($blue-500, 0.1);
+$button-primary-border-dark: rgba($blue-500, 0.3);
+
+// Shadow Colors (Dark Mode)
+$shadow-sm-dark: rgba($black, 0.2);
+$shadow-md-dark: rgba($black, 0.3);
+$shadow-lg-dark: rgba($black, 0.4);
+
+// ==============================================
+// Semantic Color Variables (Light Mode)
+// ==============================================
+
+// Background Colors
+$bg-primary-light: $slate-50;
+$bg-secondary-light: $white;
+$bg-card-light: rgba($white, 0.9);
+$bg-card-hover-light: rgba($white, 0.95);
+$bg-glass-light: rgba($white, 0.9);
+$bg-glass-header-light: rgba($white, 0.95);
+$bg-nav-light: rgba($white, 0.95);
+
+// Gradient Background Colors
+$bg-gradient-blue-1-light: rgba($blue-500, 0.08);
+$bg-gradient-blue-2-light: rgba($sky-500, 0.08);
+$bg-gradient-cyan-light: rgba($cyan-500, 0.05);
+
+// Border Colors
+$border-primary-light: rgba($slate-500, 0.2);
+$border-secondary-light: rgba($slate-500, 0.3);
+$border-hairline-light: rgba($blue-500, 0.1);
+
+// Text Colors
+$text-primary-light: $slate-900;
+$text-secondary-light: $slate-600;
+$text-tertiary-light: $slate-500;
+$text-accent-light: $blue-500;
+$text-muted-light: $slate-400;
+
+// Status Colors
+$status-success-light: $emerald-600;
+$status-warning-light: $orange-600;
+$status-info-light: $cyan-700;
+
+// Component Colors (Light Mode)
+$card-bg-light: rgba($white, 0.9);
+$card-border-light: rgba($slate-200, 0.5);
+$input-bg-light: rgba($white, 0.9);
+$input-border-light: rgba($slate-500, 0.3);
+$button-primary-bg-light: rgba($blue-500, 0.08);
+$button-primary-border-light: rgba($blue-500, 0.25);
+
+// Shadow Colors (Light Mode)
+$shadow-sm-light: rgba($black, 0.05);
+$shadow-md-light: rgba($black, 0.08);
+$shadow-lg-light: rgba($black, 0.1);
+
+// ==============================================
+// Gradient Definitions
+// ==============================================
+
+// Text Gradients
+$gradient-text-dark: linear-gradient(135deg, $white 0%, $slate-300 100%);
+$gradient-text-light: linear-gradient(135deg, $slate-950 0%, $slate-800 100%);
+$gradient-text-animated: linear-gradient(135deg, $emerald-400 0%, $cyan-500 50%, $blue-500 100%);
+
+// Background Gradients
+$gradient-bg-blue: linear-gradient(90deg, $blue-500, $sky-500, $cyan-500);
+
+// Card Gradients (Dark)
+$gradient-card-dark: linear-gradient(135deg, rgba($blue-500, 0.1) 0%, rgba($sky-500, 0.05) 100%);
+
+// Card Gradients (Light)
+$gradient-card-light: linear-gradient(135deg, rgba($blue-500, 0.05) 0%, rgba($sky-500, 0.02) 100%);
+
+// Info Card Backgrounds
+$gradient-info-dark: rgba($sky-500, 0.1);
+$gradient-info-light: rgba($sky-500, 0.08);
+
+// ==============================================
+// Special Effect Colors
+// ==============================================
+
+// Glow/Shadow effects
+$glow-emerald: rgba($emerald-400, 0.6);
+$glow-cyan: rgba($cyan-400, 0.6);
+$glow-orange: rgba($orange-500, 0.5);
+$glow-blue: rgba($blue-500, 0.4);
+
+// Backdrop blur backgrounds
+$backdrop-dark: rgba($slate-950, 0.6);
+$backdrop-light: rgba($slate-100, 0.6);
+
+// Overlay colors
+$overlay-dark: rgba($slate-950, 0.4);
+$overlay-light: rgba($slate-50, 0.5);
+
+// ==============================================
+// Component-Specific Color Variables
+// ==============================================
+
+// Status Indicators
+$status-online-bg-dark: rgba($emerald-400, 0.2);
+$status-online-border-dark: rgba($emerald-400, 0.4);
+$status-online-text-dark: $emerald-400;
+
+$status-offline-bg-dark: rgba($slate-500, 0.2);
+$status-offline-border-dark: rgba($slate-500, 0.4);
+$status-offline-text-dark: $slate-500;
+
+$status-online-bg-light: rgba($emerald-400, 0.15);
+$status-online-border-light: rgba($emerald-400, 0.3);
+$status-online-text-light: $emerald-600;
+
+$status-offline-bg-light: rgba($slate-500, 0.15);
+$status-offline-border-light: rgba($slate-500, 0.3);
+$status-offline-text-light: $slate-600;
+
+// Activity Indicators
+$activity-active-bg-dark: rgba($emerald-400, 0.1);
+$activity-active-border-dark: rgba($emerald-400, 0.4);
+
+$activity-inactive-bg-dark: rgba($slate-500, 0.1);
+$activity-inactive-border-dark: rgba($slate-500, 0.2);
+
+$activity-active-bg-light: rgba($emerald-400, 0.1);
+$activity-active-border-light: rgba($emerald-400, 0.3);
+
+$activity-inactive-bg-light: rgba($slate-500, 0.08);
+$activity-inactive-border-light: rgba($slate-500, 0.15);
+
+// Signal Strength
+$signal-bar-inactive-dark: rgba($slate-500, 0.3);
+$signal-bar-active-dark: $cyan-400;
+
+$signal-bar-inactive-light: rgba($slate-500, 0.2);
+$signal-bar-active-light: $blue-500;
+
+// Metric Change Indicators
+$metric-up-bg-dark: rgba($cyan-500, 0.1);
+$metric-up-text-dark: $cyan-400;
+
+$metric-down-bg-dark: rgba($orange-500, 0.1);
+$metric-down-text-dark: $orange-500;
+
+// Filter Buttons
+$filter-bg-dark: rgba($slate-800, 0.4);
+$filter-border-dark: rgba($slate-500, 0.2);
+$filter-text-dark: $slate-500;
+
+$filter-active-bg-dark: rgba($cyan-500, 0.2);
+$filter-active-border-dark: rgba($cyan-500, 0.5);
+$filter-active-text-dark: $cyan-400;
+
+$filter-bg-light: rgba($slate-100, 0.6);
+$filter-border-light: rgba($slate-500, 0.3);
+$filter-text-light: $slate-600;
+
+$filter-active-bg-light: rgba($blue-500, 0.15);
+$filter-active-border-light: rgba($blue-500, 0.5);
+$filter-active-text-light: $blue-600;
+
+// Scrollbar Colors
+$scrollbar-track-dark: rgba($slate-950, 0.3);
+$scrollbar-thumb-dark: rgba($slate-500, 0.3);
+$scrollbar-thumb-hover-dark: rgba($slate-500, 0.5);
+
+$scrollbar-track-light: rgba($slate-100, 0.5);
+$scrollbar-thumb-light: rgba($slate-500, 0.3);
+$scrollbar-thumb-hover-light: rgba($slate-500, 0.5);
+
+// Device EUI Badge
+$device-eui-bg-dark: rgba($slate-950, 0.6);
+$device-eui-text-dark: $slate-300;
+
+$device-eui-bg-light: rgba($slate-100, 0.8);
+$device-eui-text-light: $slate-700;
+
+// Table Colors
+$table-header-bg-dark: rgba($slate-950, 0.6);
+$table-header-border-dark: rgba($blue-500, 0.3);
+
+$table-header-bg-light: rgba($slate-100, 0.8);
+$table-header-border-light: rgba($blue-500, 0.2);
+
+$table-row-border-dark: rgba($slate-500, 0.1);
+$table-row-hover-dark: rgba($blue-500, 0.05);
+
+$table-row-border-light: rgba($slate-500, 0.15);
+$table-row-hover-light: rgba($blue-500, 0.03);
+
+// ==============================================
+// CSS Custom Properties for Starlight Theme
+// ==============================================
+
+:root {
+    /* Dark mode (default) - Match dashboard blue tone */
+    --sl-color-bg-nav: #{$bg-nav-dark};
+    --sl-color-hairline-shade: #{$border-hairline-dark};
+    --sl-color-text-accent: #{$text-accent-dark};
+    --sl-color-white: #{$text-primary-dark};
+    --sl-color-gray-2: #{$slate-400};
+    --sl-color-gray-3: #{$slate-600};
+    --sl-color-gray-6: #{rgba($slate-900, 0.6)};
+}
+
+body.light-mode {
+    /* Light mode */
+    --sl-color-bg-nav: #{$bg-nav-light};
+    --sl-color-hairline-shade: #{$border-hairline-light};
+    --sl-color-text-accent: #{$text-accent-light};
+    --sl-color-white: #{$text-primary-light};
+    --sl-color-gray-2: #{$slate-600};
+    --sl-color-gray-3: #{$slate-400};
+    --sl-color-gray-6: #{rgba($slate-200, 0.8)};
+}
+
+// ==============================================
+// Color Usage Guidelines
+// ==============================================
+//
+// Base Colors:
+// - Use slate-* for neutral UI elements
+// - Use blue-* for primary actions and links
+// - Use cyan-* for accent elements and highlights
+// - Use emerald-* for success states
+// - Use orange-* for warning states
+//
+// Semantic Variables:
+// - Prefer semantic variables ($bg-primary-dark) over base colors
+// - This allows easy theme switching and consistency
+//
+// Dark/Light Mode:
+// - Always define both -dark and -light variants
+// - Use semantic variables in components
+// - Let the mode class (body.light-mode) handle switching
+//
+// Opacity:
+// - Use rgba() for transparent overlays
+// - Defined opacities: 0.05, 0.08, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 0.95
+//
+// ==============================================

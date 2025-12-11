@@ -1,0 +1,1 @@
+import{j as t}from"./vendors-CxZ5fJlJ.js";const c={};function e(n){const o=c[n.node.icon??""];return o?t.jsx(o,n):null}function s(n){switch(n){case"mfm-docs":return e;default:throw new Error("Unknown projectId: "+n)}}function i({projectId:n,...o}){const r=s(n);return t.jsx(r,o)}export{i as ProjectIcons};

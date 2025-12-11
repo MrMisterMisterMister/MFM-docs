@@ -1,0 +1,390 @@
+// ==============================================
+// DEVICES PAGE STYLES
+// ==============================================
+// Styles for the devices overview page
+// ==============================================
+@use "colors" as *;
+
+/* Devices page specific styles */
+.devices-page-header {
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.devices-page-subtitle {
+    color: $slate-400;
+    font-size: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.devices-page-stats {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.devices-empty-state {
+    text-align: center;
+    padding: 3rem;
+}
+
+.devices-empty-message {
+    color: $slate-400;
+    font-size: 1.125rem;
+}
+
+.devices-footer {
+    margin-top: 3rem;
+}
+
+.devices-footer-links {
+    margin-top: 0.5rem;
+}
+
+.devices-footer-link-spacing {
+    margin-left: 0.75rem;
+}
+
+/* Light mode overrides for devices page */
+body.light-mode .devices-page-subtitle {
+    color: $slate-600;
+}
+
+body.light-mode .devices-empty-message {
+    color: $slate-600;
+}
+
+body.light-mode .devices-table {
+    background: $white !important;
+    border: 1px solid rgba($slate-300, 0.6) !important;
+    border-radius: 4px;
+    box-shadow:
+        0 1px 3px rgba($slate-900, 0.08),
+        0 1px 2px rgba($slate-900, 0.05) !important;
+}
+
+body.light-mode .devices-table thead {
+    background: rgba($slate-100, 0.8) !important;
+    border-bottom: 2px solid rgba($slate-300, 0.8) !important;
+}
+
+body.light-mode .devices-table th {
+    color: $slate-700;
+}
+
+body.light-mode .devices-table tbody tr {
+    border-bottom: 1px solid rgba($slate-300, 0.5);
+}
+
+body.light-mode .devices-table td {
+    color: $slate-800;
+}
+
+body.light-mode .device-name {
+    color: $slate-900;
+}
+
+body.light-mode .device-eui {
+    background: rgba($slate-100, 0.9) !important;
+    color: $slate-700;
+    border: 1px solid rgba($slate-300, 0.5) !important;
+}
+
+body.light-mode .version-cell {
+    color: $slate-600;
+}
+
+body.light-mode time {
+    color: $slate-600;
+}
+
+body.light-mode .no-data {
+    color: $slate-500;
+}
+
+/* Screen reader only class for accessibility */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+.devices-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.devices-table thead {
+    background: $slate-995;
+    border-bottom: 2px solid $table-header-border-dark;
+}
+
+.devices-table th {
+    padding: 16px;
+    text-align: left;
+    font-weight: 600;
+    color: $slate-300;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 12px;
+}
+
+.devices-table tbody tr {
+    border-bottom: 1px solid $table-row-border-dark;
+    transition: background-color 0.2s ease;
+}
+
+.devices-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+/* Removed hover effect for WCAG compliance */
+/* .devices-table tbody tr:hover {
+    background: $table-row-hover-dark;
+} */
+
+.devices-table td {
+    padding: 16px;
+    color: $text-primary-dark;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.online {
+    background: $status-online-bg-dark;
+    color: $status-online-text-dark;
+    border: 1px solid $status-online-border-dark;
+}
+
+.status-badge.offline {
+    background: $status-offline-bg-dark;
+    color: $status-offline-text-dark;
+    border: 1px solid $status-offline-border-dark;
+}
+
+.device-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.poldermill-icon-small {
+    font-size: 20px;
+    display: inline-block;
+}
+
+.poldermill-icon-small.spinning {
+    animation: spin 8s linear infinite;
+}
+
+.device-name {
+    font-weight: 600;
+    color: $slate-100;
+}
+
+.device-eui {
+    font-family: 'Courier New', monospace;
+    background: $device-eui-bg-dark;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: $device-eui-text-dark;
+}
+
+.version-cell {
+    display: flex;
+    gap: 8px;
+    font-size: 13px;
+    color: $slate-400;
+}
+
+.version-separator {
+    color: $slate-600;
+}
+
+.activity-cell {
+    display: flex;
+    gap: 12px;
+}
+
+.activity-indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid;
+}
+
+.activity-indicator.active {
+    background: $activity-active-bg-dark;
+    border-color: $activity-active-border-dark;
+}
+
+.activity-indicator.inactive {
+    background: $activity-inactive-bg-dark;
+    border-color: $activity-inactive-border-dark;
+}
+
+.activity-icon {
+    font-size: 16px;
+}
+
+.no-data {
+    color: $slate-600;
+    font-style: italic;
+}
+
+time {
+    color: $slate-400;
+    font-size: 13px;
+}
+
+.view-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: $button-primary-bg-dark;
+    border: 1px solid $button-primary-border-dark;
+    border-radius: 8px;
+    color: $blue-500;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+/* Removed hover effect for WCAG compliance */
+/* .view-button:hover {
+    background: rgba($blue-500, 0.2);
+    border-color: rgba($blue-500, 0.5);
+} */
+
+.view-button:focus {
+    outline: 2px solid $blue-500;
+    outline-offset: 2px;
+}
+
+.view-button .icon {
+    width: 16px;
+    height: 16px;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 1024px) {
+    .devices-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 768px) {
+    .devices-page-header {
+        padding: 1.25rem;
+    }
+
+    .devices-page-subtitle {
+        font-size: 0.875rem;
+    }
+
+    .devices-page-stats {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .devices-table th,
+    .devices-table td {
+        padding: 12px 8px;
+        font-size: 12px;
+    }
+
+    .view-button {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .device-eui {
+        font-size: 11px;
+        padding: 3px 6px;
+    }
+
+    .version-cell {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .version-separator {
+        display: none;
+    }
+
+    .activity-cell {
+        gap: 8px;
+    }
+
+    .activity-indicator {
+        width: 28px;
+        height: 28px;
+    }
+
+    .activity-icon {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .devices-page-header {
+        padding: 1rem;
+    }
+
+    .devices-page-subtitle {
+        font-size: 0.8125rem;
+    }
+
+    .status-item {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+    }
+
+    .devices-table {
+        font-size: 11px;
+    }
+
+    .devices-table th,
+    .devices-table td {
+        padding: 10px 6px;
+        font-size: 11px;
+    }
+
+    .device-name {
+        font-size: 12px;
+    }
+
+    .view-button {
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+
+    .view-button .icon {
+        width: 14px;
+        height: 14px;
+    }
+}

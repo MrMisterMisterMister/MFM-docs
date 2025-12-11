@@ -1,0 +1,38 @@
+/* Base styles and resets */
+@use "colors" as *;
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body.dashboard-page {
+    // font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    background: $slate-995;
+    background-image:
+        radial-gradient(at 40% 20%, $bg-gradient-blue-1-dark 0px, transparent 50%),
+        radial-gradient(at 80% 0%, $bg-gradient-blue-2-dark 0px, transparent 50%),
+        radial-gradient(at 0% 50%, $bg-gradient-cyan-dark 0px, transparent 50%);
+    min-height: 100vh;
+    padding: 24px;
+    padding-top: calc(4rem + 24px); /* Account for fixed header */
+    color: $text-primary-dark;
+    overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Light mode styles */
+body.dashboard-page.light-mode {
+    background: $bg-primary-light;
+    background-image:
+        radial-gradient(at 40% 20%, $bg-gradient-blue-1-light 0px, transparent 50%),
+        radial-gradient(at 80% 0%, $bg-gradient-blue-2-light 0px, transparent 50%),
+        radial-gradient(at 0% 50%, $bg-gradient-cyan-light 0px, transparent 50%);
+    color: $text-primary-light;
+}
+
+.dashboard-container {
+    @apply max-w-7xl mx-auto;
+}

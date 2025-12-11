@@ -1,0 +1,100 @@
+/* Dashboard Header Component Styles */
+@use "colors" as *;
+
+.dashboard-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.dashboard-header-title {
+    margin: 0;
+}
+
+.dashboard-header-device-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.dashboard-header-device-label {
+    color: $slate-400;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.dashboard-header-device-select {
+    background: $slate-900;
+    border: 1px solid $slate-800;
+    border-radius: 0.2rem;
+    padding: 0.5rem 2rem 0.5rem 0.75rem;
+    color: $slate-400;
+    font-size: 0.875rem;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20"><path stroke="%23e2e8f0" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 8l4 4 4-4"/></svg>');
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1rem;
+
+    &:focus {
+        outline: 2px solid $blue-500;
+        outline-offset: 2px;
+    }
+}
+
+.dashboard-header-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Light mode */
+body.light-mode {
+    .dashboard-header-device-label {
+        color: $slate-600;
+    }
+
+    .dashboard-header-device-select {
+        background-color: $input-bg-light;
+        border-color: $input-border-light;
+        color: $text-primary-light;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20"><path stroke="%231e293b" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 8l4 4 4-4"/></svg>');
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1rem;
+    }
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .dashboard-header-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .dashboard-header-device-selector {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .dashboard-header-device-select {
+        flex: 1;
+        max-width: none;
+        min-width: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-header-device-label {
+        font-size: 0.75rem;
+    }
+
+    .dashboard-header-device-select {
+        font-size: 0.75rem;
+        padding: 0.5rem 1.75rem 0.5rem 0.625rem;
+    }
+}

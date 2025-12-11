@@ -1,0 +1,229 @@
+/* Dashboard Components - Shared card and layout styles */
+@use "colors" as *;
+
+/* Glass-effect card */
+.card {
+    // @apply bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-500/10;
+    background-color: $slate-975 !important;
+    border: 1px solid $slate-800 !important;
+    border-radius: 4px !important;
+    padding: 24px;
+    box-shadow: 0 4px 24px $shadow-md-dark;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+
+    h2 {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: $text-primary-dark;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .icon {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+    }
+}
+
+/* Glass header */
+.glass-header {
+    // @apply bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-500/10;
+    background-color: $slate-975;
+    border: 1px solid $slate-800;
+    padding: 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 24px $shadow-sm-dark;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .card {
+        padding: 16px;
+
+        h2 {
+            font-size: 16px;
+            margin-bottom: 16px;
+        }
+
+        .icon {
+            width: 18px;
+            height: 18px;
+        }
+    }
+
+    .glass-header {
+        padding: 20px;
+        margin-bottom: 16px;
+    }
+
+    .info-card {
+        padding: 24px 16px;
+        margin: 24px 0;
+
+        h3 {
+            font-size: 16px;
+        }
+
+        p {
+            font-size: 13px;
+        }
+    }
+
+    .status-item {
+        padding: 8px 12px;
+        font-size: 0.8125rem;
+
+        .icon {
+            width: 16px;
+            height: 16px;
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .card {
+        padding: 14px;
+
+        h2 {
+            font-size: 15px;
+            margin-bottom: 14px;
+        }
+
+        .icon {
+            width: 16px;
+            height: 16px;
+        }
+    }
+
+    .glass-header {
+        padding: 16px;
+        margin-bottom: 12px;
+    }
+
+    .info-card {
+        padding: 20px 14px;
+
+        h3 {
+            font-size: 15px;
+        }
+
+        p {
+            font-size: 12px;
+        }
+    }
+}
+
+.gradient-text {
+    background: $gradient-text-animated;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% 200%;
+    animation: gradient-shift 8s ease infinite;
+}
+
+@keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* Info/Warning cards */
+.info-card {
+    @apply text-center p-8 rounded-2xl border;
+    background: $gradient-info-dark;
+    border-color: rgba($sky-500, 0.3);
+    color: $cyan-500;
+    margin: 32px 0;
+
+    h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    p {
+        font-size: 14px;
+        opacity: 0.9;
+    }
+}
+
+.loading-card {
+    @apply text-center p-8 rounded-2xl border border-slate-500/20;
+    background: $backdrop-dark;
+}
+
+/* Status indicators */
+.status-item {
+    @apply flex items-center gap-2.5 px-4 py-2.5 bg-slate-800/60 border border-slate-500/10 rounded-lg text-sm font-medium;
+
+    .icon {
+        width: 18px;
+        height: 18px;
+        color: $blue-500;
+    }
+}
+
+.status-dot {
+    @apply w-3 h-3 rounded-full relative;
+
+    &.connected {
+        @apply bg-emerald-400;
+        // box-shadow: 0 0 12px $glow-emerald;
+
+        &::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: inherit;
+            // animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+    }
+
+    &.disconnected {
+        @apply bg-orange-500;
+        box-shadow: 0 0 8px $glow-orange;
+    }
+}
+
+/* Light mode overrides for components */
+body.light-mode {
+    .card {
+        background: $white !important;
+        border: 1px solid rgba($slate-300, 0.8) !important;
+        box-shadow:
+            0 1px 3px rgba($slate-900, 0.12),
+            0 1px 2px rgba($slate-900, 0.08) !important;
+
+        h2 {
+            color: $text-primary-light;
+        }
+    }
+
+    .glass-header {
+        background: $white !important;
+        border: 1px solid rgba($slate-300, 0.7) !important;
+        box-shadow:
+            0 2px 4px rgba($slate-900, 0.1),
+            0 1px 2px rgba($slate-900, 0.06) !important;
+    }
+
+    .info-card {
+        background: rgba($sky-50, 0.5) !important;
+        border: 1px solid rgba($sky-400, 0.3) !important;
+        color: $status-info-light;
+    }
+
+    .loading-card {
+        background: $white !important;
+        border: 1px solid rgba($slate-300, 0.6) !important;
+    }
+
+    .status-item {
+        background: rgba($slate-100, 0.8) !important;
+        border: 1px solid rgba($slate-300, 0.6) !important;
+    }
+}

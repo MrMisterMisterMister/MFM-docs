@@ -1,0 +1,18 @@
+@use "sass:meta";
+// ==============================================
+// MAIN STYLESHEET - Multiflexmeter Dashboard
+// ==============================================
+// This file imports all modular SCSS partials
+// for better organization and maintainability.
+// ==============================================
+
+// Import modular partials
+// Note: Each partial imports colors as needed using @use "colors" as *
+@include meta.load-css("colors");          // Centralized color system (CSS custom properties)
+@include meta.load-css("base");            // Reset, typography, body styles
+@include meta.load-css("animations");      // Keyframes & transitions
+@include meta.load-css("header");          // Site header & navigation
+@include meta.load-css("components");      // Shared components (cards, status, etc.)
+@include meta.load-css("dashboard-header"); // Dashboard header component
+@include meta.load-css("dashboard");       // Dashboard-specific styles
+@include meta.load-css("devices");         // Devices page styles

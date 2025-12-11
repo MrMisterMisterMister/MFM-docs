@@ -1,0 +1,1 @@
+import{_ as t}from"./main-oysPGuBH.js";import"./vendors-CxZ5fJlJ.js";import"./e-CNyLuABu.js";import"./i-CIbIH0i1.js";import"./o-L4NkZ0gT.js";let i={"mfm-docs":()=>t(()=>import("./d2-B1KlUpgH.js"),[])};async function p(o){const r=i[o];if(!r)throw new Error("Unknown projectId: "+o);return await r()}export{p as loadD2Sources,i as loadD2SourcesFn};

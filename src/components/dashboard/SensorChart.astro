@@ -1,0 +1,28 @@
+---
+/**
+ * Sensor Data Chart Component
+ * Displays time-series chart for revolution counter data
+ */
+---
+
+<div class="card">
+    <h2>
+        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+        </svg>
+        Revolution Trends
+    </h2>
+
+    <!-- Time Period Filter Buttons -->
+    <div class="filter-buttons" role="group" aria-label="Chart time period filter">
+        <button class="time-filter active" data-period="minutes" aria-pressed="true">Hour</button>
+        <button class="time-filter" data-period="hours" aria-pressed="false">Day</button>
+        <button class="time-filter" data-period="days" aria-pressed="false">Month</button>
+        <button class="time-filter" data-period="months" aria-pressed="false">Year</button>
+        <button class="time-filter" data-period="years" aria-pressed="false">5 Years</button>
+    </div>
+
+    <div class="chart-container chart-container-large" role="img" aria-label="Line chart showing poldermill revolutions over time">
+        <canvas id="revolutionsChart" aria-label="Interactive chart displaying revolution trends"></canvas>
+    </div>
+</div>
