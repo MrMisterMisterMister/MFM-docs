@@ -9,10 +9,10 @@
  *  - TTN: Sends data via TTN HTTP Integration API
  *  - LOCAL: Sends data directly to local Astro endpoint (bypasses TTN)
  *
- * Data Format (matches firmware):
+ * Data Format (matches new decoder):
  *  - FPort 2: Version info (sent on startup)
- *  - FPort 3: Status with cumulative rotation counters
- * 
+ *  - FPort 3: RPM and ind (in_bedrijf) status
+ *
  * Environment Variables:
  *  - NUM_DEVICES: Number of devices to simulate (default: 3)
  *  - INTERVAL: Milliseconds between measurements per device (default: 10000)
@@ -56,96 +56,60 @@ const DEVICE_LOCATIONS = [
 // Sensor data generators
 class SensorSimulator {
   constructor() {
-  this.isSpinning = false;
-  this.isPumping = false;
-  this.revolutions = 0;
+  this.ind = false; // in_bedrijf (in operation)
+  this.rpm = 0.0;
   this.time = 0;
-  // Cumulative rotation counters (never reset)
-  this.totalRotationsSpinning = 0;
-  this.totalRotationsPumping = 0;
   }
 
   /**
-   * Simulate poldermill spinning (based on "wind conditions")
+   * Simulate in_bedrijf (in operation) status and RPM
    */
-  generateSpinning() {
+  generateStatus() {
   // Change state randomly with some persistence
   if (Math.random() < 0.1) {
-      this.isSpinning = Math.random() > 0.1; // 90% chance of spinning
+      this.ind = Math.random() > 0.3; // 70% chance of being in operation
   }
 
-  return this.isSpinning;
-  }
-
-  /**
-   * Count revolutions for current measurement period
-   */
-  countRevolutionsForPeriod() {
-  // Simulate revolutions based on whether mill is spinning
-  if (this.isSpinning) {
-      // Simulate 10-50 revolutions per measurement interval
-      return Math.floor(Math.random() * 41) + 10;
+  // Generate RPM based on status
+  if (this.ind) {
+      // In operation: 0.60 to 12.30 RPM (matching decoder examples)
+      this.rpm = (Math.random() * 11.7) + 0.6; // Random between 0.6 and 12.3
   } else {
-      // Mill not spinning - might have coasted a bit
-      return Math.floor(Math.random() * 3); // 0-2 revolutions
+      // Not in operation
+      this.rpm = 0.0;
   }
+
+  return { ind: this.ind, rpm: this.rpm };
   }
 
   /**
-   * Simulate pumping (only happens when spinning)
-   */
-  generatePumping() {
-  if (!this.isSpinning) {
-      this.isPumping = false;
-  } else if (Math.random() < 0.15) {
-      this.isPumping = Math.random() > 0.1; // 90% chance when spinning
-  }
-  return this.isPumping;
-  }
-
-  /**
-   * Generate complete measurement packet (FPort 3 format with cumulative counters)
+   * Generate complete measurement packet (FPort 3 format: ind + RPM)
+   * Matches new decoder format:
+   * - Byte 0: ind (0x00 = false, 0x01 = true)
+   * - Bytes 1-2: RPM × 100 (uint16, big-endian)
    */
   generateMeasurement() {
   this.time += CONFIG.simulation.interval / 1000;
 
-  const spinning = this.generateSpinning();
-  const pumping = this.generatePumping();
-  const revolutionsThisPeriod = this.countRevolutionsForPeriod();
+  const { ind, rpm } = this.generateStatus();
 
-  // Update cumulative counters
-  if (spinning) {
-      this.totalRotationsSpinning += revolutionsThisPeriod;
-  }
-  if (pumping) {
-      this.totalRotationsPumping += revolutionsThisPeriod;
-  }
+  // FPort 3 format: 3 bytes
+  // Byte 0: ind (in_bedrijf - 0x00 = false, 0x01 = true)
+  // Bytes 1-2: RPM × 100 (uint16, big-endian)
+  const buffer = Buffer.alloc(3);
 
-  // FPort 3 format: 9 bytes
-  // Byte 0: status flags (bit 0 = spinning, bit 1 = pumping)
-  // Bytes 1-4: total_rotations_pumping (uint32 LE)
-  // Bytes 5-8: total_rotations_spinning (uint32 LE)
-  const buffer = Buffer.alloc(9);
+  // Byte 0: ind
+  buffer.writeUInt8(ind ? 0x01 : 0x00, 0);
 
-  // Byte 0: status flags
-  let status = 0;
-  if (spinning) status |= 0x01;
-  if (pumping) status |= 0x02;
-  buffer.writeUInt8(status, 0);
-
-  // Bytes 1-4: total_rotations_pumping (uint32 LE)
-  buffer.writeUInt32LE(this.totalRotationsPumping, 1);
-
-  // Bytes 5-8: total_rotations_spinning (uint32 LE)
-  buffer.writeUInt32LE(this.totalRotationsSpinning, 5);
+  // Bytes 1-2: RPM × 100 (uint16 BE)
+  const rpmHundredths = Math.round(rpm * 100);
+  buffer.writeUInt16BE(rpmHundredths, 1);
 
   return {
       buffer,
       decoded: {
-    spinning,
-    pumping,
-    total_rotations_spinning: this.totalRotationsSpinning,
-    total_rotations_pumping: this.totalRotationsPumping
+    ind,
+    rpm: Math.round(rpm * 100) / 100 // Round to 2 decimals
       }
   };
   }
@@ -258,7 +222,7 @@ class LocalSender {
       console.log(`[${this.deviceInfo.name}] Sent TTN format to ${CONFIG.local.endpoint} - FPort ${fPort}, ${payload.length} bytes`);
       console.log(`        Device: ${message.end_device_ids.dev_eui}`);
       if (decoded) {
-    console.log(`        Decoded: spinning=${decoded.spinning}, pumping=${decoded.pumping}, spin_rot=${decoded.total_rotations_spinning}, pump_rot=${decoded.total_rotations_pumping}`);
+    console.log(`        Decoded: ind=${decoded.ind}, rpm=${decoded.rpm}`);
       }
   } catch (error) {
       console.error(`[${this.deviceInfo.name} ERROR] ${error.message}`);

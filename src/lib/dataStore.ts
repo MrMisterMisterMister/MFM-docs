@@ -27,7 +27,7 @@ export interface UplinkMessage {
   altitude?: number;   // GPS coordinates from TTN
 }
 
-export type DataStoreEvent = 
+export type DataStoreEvent =
   | { type: 'reading'; data: SensorReading }
   | { type: 'device'; data: DeviceInfo };
 
@@ -37,9 +37,9 @@ class DataStore {
   private maxCacheSize = 200;
 
   /**
-         * Process uplink message
-         * Expects pre-decoded payload from the LoRaWAN server (TTN)
-         */
+	 * Process uplink message
+	 * Expects pre-decoded payload from the LoRaWAN server (TTN)
+	 */
   async processUplink(message: UplinkMessage) {
   const { devEui, devAddr, fPort, payload, receivedAt, rssi, snr, latitude, longitude, altitude } = message;
 
@@ -67,17 +67,17 @@ class DataStore {
   // Perform reverse geocoding asynchronously (non-blocking)
   if (latitude !== undefined && longitude !== undefined) {
       if (needsReverseGeocoding(latitude, longitude, existingDevice?.latitude, existingDevice?.longitude)) {
-    console.log(`GPS coordinates changed, performing reverse geocoding in background...`);
-    // Clear old location names since coordinates changed
-    locationName = undefined;
-    locationCity = undefined;
-    locationCountry = undefined;
-    
-    // Fire and forget - don't block the request
-    reverseGeocode(latitude, longitude).then(geocodeResult => {
+	console.log(`GPS coordinates changed, performing reverse geocoding in background...`);
+	// Clear old location names since coordinates changed
+	locationName = undefined;
+	locationCity = undefined;
+	locationCountry = undefined;
+
+	// Fire and forget - don't block the request
+	reverseGeocode(latitude, longitude).then(geocodeResult => {
           if (geocodeResult) {
-      // Update device location asynchronously
-      const updatedDevice: DeviceInfo = {
+	  // Update device location asynchronously
+	  const updatedDevice: DeviceInfo = {
               devEui,
               devAddr: existingDevice?.devAddr || devAddr,
               hwVersion: existingDevice?.hwVersion,
@@ -89,21 +89,21 @@ class DataStore {
               locationCity: geocodeResult.locationCity,
               locationCountry: geocodeResult.locationCountry,
               lastSeen: receivedAt,
-      };
+	  };
 
-      db.upsertDevice(updatedDevice)
+	  db.upsertDevice(updatedDevice)
               .then(() => {
-        // Notify SSE listeners about device update
-        this.notifyListeners({ type: 'device', data: updatedDevice });
-        console.log(`Device location updated and notified: ${geocodeResult.locationCity || 'Unknown'}`);
+		// Notify SSE listeners about device update
+		this.notifyListeners({ type: 'device', data: updatedDevice });
+		console.log(`Device location updated and notified: ${geocodeResult.locationCity || 'Unknown'}`);
               })
               .catch(err => console.error('Failed to update geocoded location:', err));
 
-      console.log(`Reverse geocoded (${latitude}, ${longitude}) → ${geocodeResult.locationCity || 'Unknown'}`);
+	  console.log(`Reverse geocoded (${latitude}, ${longitude}) → ${geocodeResult.locationCity || 'Unknown'}`);
           }
-    }).catch(err => console.error('Reverse geocoding failed:', err));
+	}).catch(err => console.error('Reverse geocoding failed:', err));
       } else if (existingDevice?.locationName) {
-    console.log(`Using cached location: ${existingDevice.locationName} - ${existingDevice.locationCity}`);
+	console.log(`Using cached location: ${existingDevice.locationName} - ${existingDevice.locationCity}`);
       }
   }
 
@@ -111,24 +111,24 @@ class DataStore {
   // TTN decoder format: { fw_version: '...', hw_version: '...' }
   if (decoded.fw_version !== undefined && decoded.hw_version !== undefined) {
       await db.upsertDevice({
-    devEui,
-    devAddr,
-    hwVersion: decoded.hw_version,
-    fwVersion: decoded.fw_version,
-    latitude,
-    longitude,
-    altitude,
-    locationName,
-    locationCity,
-    locationCountry,
-    lastSeen: receivedAt,
+	devEui,
+	devAddr,
+	hwVersion: decoded.hw_version,
+	fwVersion: decoded.fw_version,
+	latitude,
+	longitude,
+	altitude,
+	locationName,
+	locationCity,
+	locationCountry,
+	lastSeen: receivedAt,
       });
       console.log(`Device ${devEui} - HW: ${decoded.hw_version}, FW: ${decoded.fw_version}`);
       if (latitude && longitude) {
-    console.log(`   GPS: (${latitude}, ${longitude})`);
+	console.log(`   GPS: (${latitude}, ${longitude})`);
       }
       if (locationName || locationCity) {
-    console.log(`   Location: ${locationName || ''} - ${locationCity || ''} - ${locationCountry || ''}`);
+	console.log(`   Location: ${locationName || ''} - ${locationCity || ''} - ${locationCountry || ''}`);
       }
       return;
   }
@@ -150,31 +150,21 @@ class DataStore {
 
   // Store measurement data
   // FPort 1: Distance and temperature
-  // FPort 3: Status with rotation counters
+  // FPort 3: RPM and ind (in_bedrijf) status
 
   const hasDistanceTemp = decoded.distance !== undefined || decoded.temperature !== undefined;
-  const hasStatusData = decoded.spinning !== undefined || decoded.pumping !== undefined;
-  const hasRotationData = decoded.total_rotations_spinning !== undefined ||
-                               decoded.total_rotations_pumping !== undefined ||
-                               decoded.revolutions !== undefined;
+  const hasRpmData = decoded.rpm !== undefined || decoded.ind !== undefined;
 
-  if (hasDistanceTemp || hasStatusData || hasRotationData) {
-      // Use total_rotations_spinning as primary revolutions count, fallback to revolutions field
-      const revolutions = decoded.total_rotations_spinning ?? decoded.revolutions ?? 0;
-      // Use total_rotations_pumping for pumping rotations
-      const pumpingRevolutions = decoded.total_rotations_pumping ?? 0;
-
+  if (hasDistanceTemp || hasRpmData) {
       const reading: SensorReading = {
-    devEui,
-    timestamp: receivedAt,
-    revolutions,
-    pumpingRevolutions,
-    spinning: decoded.spinning ?? false,
-    pumping: decoded.pumping ?? false,
-    distance: decoded.distance,
-    temperature: decoded.temperature,
-    rssi,
-    snr,
+	devEui,
+	timestamp: receivedAt,
+	ind: decoded.ind ?? false,
+	rpm: decoded.rpm,
+	distance: decoded.distance,
+	temperature: decoded.temperature,
+	rssi,
+	snr,
       };
 
       // Insert into database
@@ -183,7 +173,7 @@ class DataStore {
       // Update cache
       this.recentCache.push(reading);
       if (this.recentCache.length > this.maxCacheSize) {
-    this.recentCache.shift();
+	this.recentCache.shift();
       }
 
       // Notify listeners (for SSE)
@@ -193,12 +183,12 @@ class DataStore {
       let logMessage = `${devEui} | `;
 
       if (hasDistanceTemp) {
-    logMessage += `Distance: ${decoded.distance ?? 'N/A'}mm, Temperature: ${decoded.temperature?.toFixed(1) ?? 'N/A'}°C | `;
+	logMessage += `Distance: ${decoded.distance ?? 'N/A'}mm, Temperature: ${decoded.temperature?.toFixed(1) ?? 'N/A'}°C | `;
       }
 
-      if (hasStatusData || hasRotationData) {
-    logMessage += `Rotations: ${revolutions} (spin), ${pumpingRevolutions} (pump) | ` +
-                             `Spinning: ${reading.spinning}, Pumping: ${reading.pumping} | `;
+      if (hasRpmData) {
+	logMessage += `RPM: ${(decoded.rpm ?? 0).toFixed(2)} | ` +
+                         `In Bedrijf: ${reading.ind} | `;
       }
 
       logMessage += `RSSI: ${rssi || 'N/A'}, SNR: ${snr?.toFixed(1) || 'N/A'}`;
@@ -257,9 +247,9 @@ class DataStore {
   private notifyListeners(event: DataStoreEvent) {
   this.listeners.forEach(listener => {
       try {
-    listener(event);
+	listener(event);
       } catch (error) {
-    console.error('Error notifying listener:', error);
+	console.error('Error notifying listener:', error);
       }
   });
   }

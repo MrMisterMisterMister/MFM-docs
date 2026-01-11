@@ -15,7 +15,6 @@ import '../styles/main.scss';
 // Import dashboard components
 import MultiflexmeterHeader from '../components/MultiflexmeterHeader.astro';
 import DashboardHeader from '../components/dashboard/DashboardHeader.astro';
-import WindmillStatus from '../components/dashboard/WindmillStatus.astro';
 import RevolutionsMetric from '../components/dashboard/RevolutionsMetric.astro';
 // import SensorChart from '../components/dashboard/SensorChart.astro'; // Hidden for now
 import DeviceInfo from '../components/dashboard/DeviceInfo.astro';
@@ -74,15 +73,9 @@ const title = selectedDevice
         <SensorChart />
       </div> -->
 
-      <!-- Left Column: Status + Revolutions (stacked) -->
+      <!-- Left Column: Operational Status (includes In Bedrijf + RPM) -->
       <div class="grid-col-6">
-        <!-- Poldermill Status -->
-        <WindmillStatus />
-
-        <!-- Revolutions -->
-        <div style="margin-top: 20px;">
-          <RevolutionsMetric />
-        </div>
+        <RevolutionsMetric />
       </div>
 
       <!-- Right Column: Device Info -->

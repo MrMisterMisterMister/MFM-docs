@@ -124,10 +124,10 @@ class SQLiteAdapter implements DatabaseInterface {
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     dev_eui TEXT NOT NULL,
     timestamp TEXT NOT NULL,
-    revolutions INTEGER NOT NULL,
-    pumping_revolutions INTEGER NOT NULL DEFAULT 0,
-    spinning INTEGER NOT NULL,
-    pumping INTEGER NOT NULL,
+    ind INTEGER NOT NULL DEFAULT 0,
+    rpm REAL,
+    distance INTEGER,
+    temperature REAL,
     rssi INTEGER,
     snr REAL,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -135,45 +135,26 @@ class SQLiteAdapter implements DatabaseInterface {
       )
   `);
 
-  // Migration: Add revolutions column and remove temperature/humidity if needed
+  // Migration: Add ind and rpm columns if needed
   try {
       const columns = this.db.pragma('table_info(readings)');
-      const hasRevolutions = columns.some((col: any) => col.name === 'revolutions');
-      const hasPumpingRevolutions = columns.some((col: any) => col.name === 'pumping_revolutions');
-      const hasTemperature = columns.some((col: any) => col.name === 'temperature');
+      const columnNames = columns.map((col: any) => col.name);
 
-      if (!hasRevolutions && hasTemperature) {
-    // Need to migrate: SQLite doesn't support DROP COLUMN, so create new table
-    console.log('Migrating readings table: removing temperature/humidity, adding revolutions');
-    this.db.exec(`
-          CREATE TABLE readings_new (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      dev_eui TEXT NOT NULL,
-      timestamp TEXT NOT NULL,
-      revolutions INTEGER NOT NULL DEFAULT 0,
-      pumping_revolutions INTEGER NOT NULL DEFAULT 0,
-      spinning INTEGER NOT NULL,
-      pumping INTEGER NOT NULL,
-      rssi INTEGER,
-      snr REAL,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (dev_eui) REFERENCES devices(dev_eui)
-          );
-          INSERT INTO readings_new (id, dev_eui, timestamp, revolutions, pumping_revolutions, spinning, pumping, rssi, snr, created_at)
-          SELECT id, dev_eui, timestamp, 0, 0, spinning, pumping, rssi, snr, created_at FROM readings;
-          DROP TABLE readings;
-          ALTER TABLE readings_new RENAME TO readings;
-    `);
-    console.log('Migration complete');
-      } else if (!hasRevolutions) {
-    this.db.exec('ALTER TABLE readings ADD COLUMN revolutions INTEGER NOT NULL DEFAULT 0');
-    console.log('Added revolutions column to readings table');
+      if (!columnNames.includes('ind')) {
+    this.db.exec('ALTER TABLE readings ADD COLUMN ind INTEGER NOT NULL DEFAULT 0');
+    console.log('Added ind column to readings table');
       }
-
-      // Add pumping_revolutions column if missing
-      if (!hasPumpingRevolutions) {
-    this.db.exec('ALTER TABLE readings ADD COLUMN pumping_revolutions INTEGER NOT NULL DEFAULT 0');
-    console.log('Added pumping_revolutions column to readings table');
+      if (!columnNames.includes('rpm')) {
+    this.db.exec('ALTER TABLE readings ADD COLUMN rpm REAL');
+    console.log('Added rpm column to readings table');
+      }
+      if (!columnNames.includes('distance')) {
+    this.db.exec('ALTER TABLE readings ADD COLUMN distance INTEGER');
+    console.log('Added distance column to readings table');
+      }
+      if (!columnNames.includes('temperature')) {
+    this.db.exec('ALTER TABLE readings ADD COLUMN temperature REAL');
+    console.log('Added temperature column to readings table');
       }
   } catch (error) {
       console.error('Error during readings table migration:', error);
@@ -206,7 +187,7 @@ class SQLiteAdapter implements DatabaseInterface {
 
   this.readings = {
       insert: this.db.prepare(`
-    INSERT INTO readings (dev_eui, timestamp, revolutions, pumping_revolutions, spinning, pumping, rssi, snr)
+    INSERT INTO readings (dev_eui, timestamp, ind, rpm, distance, temperature, rssi, snr)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `),
       getRecent: this.db.prepare(`
@@ -216,7 +197,6 @@ class SQLiteAdapter implements DatabaseInterface {
       getStats: this.db.prepare(`
     SELECT
           COUNT(*) as count,
-          MAX(revolutions) as total_revolutions,
           AVG(rssi) as avg_rssi,
           MIN(timestamp) as first_reading,
           MAX(timestamp) as last_reading
@@ -285,10 +265,10 @@ class SQLiteAdapter implements DatabaseInterface {
   this.readings.insert.run(
       reading.devEui,
       reading.timestamp,
-      reading.revolutions,
-      reading.pumpingRevolutions || 0,
-      reading.spinning ? 1 : 0,
-      reading.pumping ? 1 : 0,
+      reading.ind ? 1 : 0,
+      reading.rpm || null,
+      reading.distance || null,
+      reading.temperature || null,
       reading.rssi || null,
       reading.snr || null
   );
@@ -300,10 +280,10 @@ class SQLiteAdapter implements DatabaseInterface {
   return rows.map((row: any) => ({
       devEui: row.dev_eui,
       timestamp: row.timestamp,
-      revolutions: row.revolutions,
-      pumpingRevolutions: row.pumping_revolutions || 0,
-      spinning: row.spinning === 1,
-      pumping: row.pumping === 1,
+      ind: row.ind === 1,
+      rpm: row.rpm || undefined,
+      distance: row.distance || undefined,
+      temperature: row.temperature || undefined,
       rssi: row.rssi || undefined,
       snr: row.snr || undefined,
   }));
@@ -315,10 +295,10 @@ class SQLiteAdapter implements DatabaseInterface {
   return rows.map((row: any) => ({
       devEui: row.dev_eui,
       timestamp: row.timestamp,
-      revolutions: row.revolutions,
-      pumpingRevolutions: row.pumping_revolutions || 0,
-      spinning: row.spinning === 1,
-      pumping: row.pumping === 1,
+      ind: row.ind === 1,
+      rpm: row.rpm || undefined,
+      distance: row.distance || undefined,
+      temperature: row.temperature || undefined,
       rssi: row.rssi || undefined,
       snr: row.snr || undefined,
   }));
@@ -329,7 +309,6 @@ class SQLiteAdapter implements DatabaseInterface {
   const stats = this.readings.getStats.get(devEui);
   return {
       count: stats.count || 0,
-      totalRevolutions: stats.total_revolutions || 0,
       avgRssi: stats.avg_rssi || 0,
       firstReading: stats.first_reading || null,
       lastReading: stats.last_reading || null,

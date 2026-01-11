@@ -52,12 +52,10 @@ redis.on('reconnecting', () => {
 
 export interface SensorReading {
   timestamp: string;
-  revolutions: number;           // total_rotations_spinning
-  pumpingRevolutions: number;    // total_rotations_pumping
-  spinning: boolean;
-  pumping: boolean;
-  distance?: number;             // distance in mm (from fPort 1)
-  temperature?: number;          // temperature in Celsius (from fPort 1)
+  ind: boolean;                  // in_bedrijf (in operation) - from FPort 3
+  rpm?: number;                  // RPM from decoder (FPort 3)
+  distance?: number;             // distance in mm (from FPort 1)
+  temperature?: number;          // temperature in Celsius (from FPort 1)
   rssi?: number;
   snr?: number;
   devEui: string;
@@ -167,10 +165,8 @@ class KVDataStore {
   const fields: Record<string, string> = {
       'devEui': reading.devEui,
       'timestamp': reading.timestamp,
-      'revolutions': reading.revolutions.toString(),
-      'pumpingRevolutions': reading.pumpingRevolutions.toString(),
-      'spinning': reading.spinning ? '1' : '0',
-      'pumping': reading.pumping ? '1' : '0',
+      'ind': reading.ind ? '1' : '0',
+      'rpm': (reading.rpm ?? 0).toString(),
       'rssi': (reading.rssi || 0).toString(),
       'snr': (reading.snr || 0).toString()
   };
@@ -265,10 +261,8 @@ class KVDataStore {
     readings.push({
           devEui: data.devEui,
           timestamp: data.timestamp,
-          revolutions: parseInt(data.revolutions || '0'),
-          pumpingRevolutions: parseInt(data.pumpingRevolutions || '0'),
-          spinning: data.spinning === 1 || data.spinning === '1',
-          pumping: data.pumping === 1 || data.pumping === '1',
+          ind: data.ind === 1 || data.ind === '1',
+          rpm: data.rpm ? parseFloat(data.rpm) : undefined,
           distance: data.distance ? parseInt(data.distance) : undefined,
           temperature: data.temperature ? parseFloat(data.temperature) : undefined,
           rssi: data.rssi ? parseInt(data.rssi) : undefined,
@@ -289,7 +283,6 @@ class KVDataStore {
   if (readings.length === 0) {
       return {
     count: 0,
-    totalRevolutions: 0,
     avgRssi: 0,
     firstReading: null,
     lastReading: null,
@@ -297,11 +290,9 @@ class KVDataStore {
   }
 
   const rssis = readings.filter(r => r.rssi).map(r => r.rssi!);
-  const latestRevolutions = readings[0]?.revolutions || 0;
 
   return {
       count: readings.length,
-      totalRevolutions: latestRevolutions,
       avgRssi: rssis.length > 0 ? rssis.reduce((a, b) => a + b, 0) / rssis.length : 0,
       firstReading: readings[readings.length - 1]?.timestamp,
       lastReading: readings[0]?.timestamp,

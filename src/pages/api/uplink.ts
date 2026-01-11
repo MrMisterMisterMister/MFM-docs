@@ -162,9 +162,13 @@ async function handleLocalMessage(body: any) {
 }
 
 /**
- * GET endpoint - returns current status (requires authentication)
+ * GET endpoint - returns device data and readings (requires authentication)
+ * Query parameters:
+ * - device: filter by device EUI
+ * - limit: number of readings to return (default: 10, max: 100)
+ * - fields: comma-separated list of fields to include (e.g., "inb,spinningRpm,pumpingRpm")
  */
-export const GET: APIRoute = async ({ request }) => {
+export const GET: APIRoute = async ({ request, url }) => {
   // Require authentication for GET endpoint
   const isAuthenticated = verifyBasicAuth(request, true);
 
@@ -173,14 +177,47 @@ export const GET: APIRoute = async ({ request }) => {
     return createUnauthorizedResponse('API');
   }
 
+  // Parse query parameters
+  const deviceEui = url.searchParams.get('device');
+  const limitParam = url.searchParams.get('limit');
+  const fieldsParam = url.searchParams.get('fields');
+
+  const limit = limitParam ? Math.min(parseInt(limitParam), 100) : 10;
+  const requestedFields = fieldsParam ? fieldsParam.split(',').map(f => f.trim()) : null;
+
+  let readings;
+
+  if (deviceEui) {
+    // Get readings for specific device
+    readings = await dataStore.getDeviceReadings(deviceEui, limit);
+  } else {
+    // Get recent readings across all devices
+    readings = await dataStore.getRecentReadings(limit);
+  }
+
   const devices = await dataStore.getDevices();
-  const recentReadings = await dataStore.getRecentReadings(10);
+
+  // Filter fields if requested
+  let filteredReadings = readings;
+  if (requestedFields && requestedFields.length > 0) {
+    filteredReadings = readings.map(reading => {
+      const filtered: any = { devEui: reading.devEui, timestamp: reading.timestamp };
+      requestedFields.forEach(field => {
+        if (field in reading) {
+          filtered[field] = (reading as any)[field];
+        }
+      });
+      return filtered;
+    });
+  }
 
   return new Response(
     JSON.stringify({
       status: 'running',
       deviceCount: devices.length,
-      recentReadingsCount: recentReadings.length,
+      devices: devices,
+      readingsCount: filteredReadings.length,
+      readings: filteredReadings,
     }),
     { status: 200, headers: { 'Content-Type': 'application/json' } }
   );

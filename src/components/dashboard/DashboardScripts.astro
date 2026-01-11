@@ -50,7 +50,6 @@ const { initialReadings, devices, selectedDeviceEui } = Astro.props;
     let activityLog = [];
     const maxActivityItems = 20;
     let currentPeriod = 'minutes';
-    let revolutionPeriod = 'today';
 
     // Time filter buttons (for chart)
     const timeFilters = document.querySelectorAll('.time-filter');
@@ -69,22 +68,7 @@ const { initialReadings, devices, selectedDeviceEui } = Astro.props;
       });
     });
 
-    // Revolution period filter buttons
-    const revolutionFilters = document.querySelectorAll('.revolution-filter');
-    revolutionFilters.forEach(filter => {
-      filter.addEventListener('click', (e) => {
-        // Remove active class and update aria-pressed for all filters
-        revolutionFilters.forEach(f => {
-          f.classList.remove('active');
-          f.setAttribute('aria-pressed', 'false');
-        });
-        // Add active class and update aria-pressed for selected filter
-        e.target.classList.add('active');
-        e.target.setAttribute('aria-pressed', 'true');
-        revolutionPeriod = e.target.dataset.period;
-        updateRevolutions(); // Update revolutions when period changes
-      });
-    });
+    // RPM display - no filter buttons needed (shows current values)
 
     // Device selector handling
     const deviceSelect = document.getElementById('deviceSelect');
@@ -119,7 +103,7 @@ const { initialReadings, devices, selectedDeviceEui } = Astro.props;
 
         // Update all UI components with new device data
         updateChartData();
-        updateRevolutions();
+        updateRpm();
         updateDeviceInfo();
 
         // Update status indicators with the latest reading for this device
@@ -147,7 +131,7 @@ const { initialReadings, devices, selectedDeviceEui } = Astro.props;
         data: {
           datasets: [
             {
-              label: 'Revolutions',
+              label: 'RPM',
               data: [],
               borderColor: '#34d399',
               backgroundColor: revolutionGradient,
@@ -197,7 +181,7 @@ const { initialReadings, devices, selectedDeviceEui } = Astro.props;
                   if (label) {
                     label += ': ';
                   }
-                  label += context.parsed.y + ' revolutions';
+                  label += context.parsed.y.toFixed(2) + ' RPM';
                   return label;
                 }
               }
@@ -259,7 +243,7 @@ const { initialReadings, devices, selectedDeviceEui } = Astro.props;
               },
               title: {
                 display: true,
-                text: 'Revolutions',
+                text: 'RPM',
                 color: '#94a3b8',
                 font: {
                   size: 12,
@@ -341,7 +325,7 @@ const { initialReadings, devices, selectedDeviceEui } = Astro.props;
         return date.getTime();
       }
 
-      // Group readings by time buckets
+      // Group readings by time buckets and calculate average RPM per bucket
       const readingsByBucket = new Map();
       sortedReadings.forEach(reading => {
         const timeKey = getTimeKey(reading.timestamp);
@@ -351,13 +335,14 @@ const { initialReadings, devices, selectedDeviceEui } = Astro.props;
         readingsByBucket.get(timeKey).push(reading);
       });
 
-      // Sum revolutions per bucket (each reading contains period count)
+      // Average RPM per bucket
       readingsByBucket.forEach((bucketReadings, timeKey) => {
-        // Sum all revolutions in this bucket
-        const totalRevolutions = bucketReadings.reduce((sum, reading) => {
-          return sum + (reading.revolutions || 0);
-        }, 0);
-        revolutionsByPeriod.set(timeKey, totalRevolutions);
+        // Calculate average RPM in this bucket
+        const validRpms = bucketReadings.filter(r => r.rpm !== undefined && r.rpm !== null);
+        const avgRpm = validRpms.length > 0
+          ? validRpms.reduce((sum, reading) => sum + (reading.rpm || 0), 0) / validRpms.length
+          : 0;
+        revolutionsByPeriod.set(timeKey, avgRpm);
       });
 
       // Convert to chart data format
@@ -405,103 +390,41 @@ const { initialReadings, devices, selectedDeviceEui } = Astro.props;
     function calculateStats() {
       if (readings.length === 0) return;
 
-      // Count spinning and pumping occurrences
-      const spinningCount = readings.filter(r => r.spinning).length;
-      const pumpingCount = readings.filter(r => r.pumping).length;
+      // Count ind (in bedrijf) occurrences
+      const indCount = readings.filter(r => r.ind).length;
 
-      document.getElementById('spinningCount').textContent = spinningCount;
-      document.getElementById('pumpingCount').textContent = pumpingCount;
+      const indCountEl = document.getElementById('indCount');
+      if (indCountEl) indCountEl.textContent = indCount;
     }
 
-    // Update revolutions display - show spinning and pumping rotation counters
-    // The device sends cumulative total_rotations_spinning and total_rotations_pumping
-    function updateRevolutions() {
-      const spinningEl = document.getElementById('spinningRotationsTotal');
-      const pumpingEl = document.getElementById('pumpingRotationsTotal');
-      const periodEl = document.getElementById('revolutionsPeriod');
+    // Update RPM display - show current pumping RPM from latest reading
+    function updateRpm() {
+      const rpmEl = document.getElementById('rpm');
 
       if (readings.length === 0) {
-        if (spinningEl) spinningEl.textContent = '0';
-        if (pumpingEl) pumpingEl.textContent = '0';
-        if (periodEl) periodEl.textContent = 'No data';
+        if (rpmEl) rpmEl.textContent = '0.0';
         return;
       }
 
-      let periodStartTime;
-      let periodLabel = 'All Time';
-      let filteredReadings = readings;
+      // Get latest reading (readings are sorted DESC, so [0] is newest)
+      const latestReading = readings[0];
 
-      // Determine period start time and filter readings
-      if (revolutionPeriod === 'today') {
-        periodStartTime = new Date();
-        periodStartTime.setHours(0, 0, 0, 0);
-        filteredReadings = readings.filter(r => new Date(r.timestamp) >= periodStartTime);
-        periodLabel = 'Today';
-      } else if (revolutionPeriod === 'month') {
-        periodStartTime = new Date();
-        periodStartTime.setDate(1);
-        periodStartTime.setHours(0, 0, 0, 0);
-        filteredReadings = readings.filter(r => new Date(r.timestamp) >= periodStartTime);
-        periodLabel = 'This Month';
-      } else if (revolutionPeriod === 'year') {
-        periodStartTime = new Date();
-        periodStartTime.setMonth(0, 1);
-        periodStartTime.setHours(0, 0, 0, 0);
-        filteredReadings = readings.filter(r => new Date(r.timestamp) >= periodStartTime);
-        periodLabel = 'This Year';
-      }
-      // else: revolutionPeriod === 'all' uses all readings
+      const rpm = latestReading.rpm || 0;
 
-      // Calculate rotations for the selected period
-      let spinningRotations = 0;
-      let pumpingRotations = 0;
-
-      if (filteredReadings.length > 0) {
-        // Sum all revolutions in the filtered period
-        // Each reading's revolutions field represents spinning rotations
-        spinningRotations = filteredReadings.reduce((sum, r) => sum + (r.revolutions || 0), 0);
-
-        // Use actual pumpingRevolutions from the sensor data
-        pumpingRotations = filteredReadings.reduce((sum, r) => sum + (r.pumpingRevolutions || 0), 0);
-      }
-
-      if (spinningEl) spinningEl.textContent = spinningRotations.toLocaleString();
-      if (pumpingEl) pumpingEl.textContent = pumpingRotations.toLocaleString();
-      if (periodEl) periodEl.textContent = periodLabel;
+      if (rpmEl) rpmEl.textContent = rpm.toFixed(1);
     }
 
-    // Update status indicators and revolutions
+    // Update status indicators and RPM
     function updateStatusIndicators(reading) {
-      updateRevolutions();
+      updateRpm();
 
-      // Control poldermill icon animation
-      const poldermillIcon = document.querySelector('.poldermill-icon');
-      if (poldermillIcon) {
-        poldermillIcon.classList.toggle('spinning', reading.spinning);
-      }
-
-      // Update spinning status
-      const spinningEl = document.getElementById('spinningStatus');
-      spinningEl.className = reading.spinning ? 'status-indicator active' : 'status-indicator inactive';
-      spinningEl.innerHTML = reading.spinning
-        ? `<div class="status-icon"><span class="spinning-icon">⚙️</span></div>
-           <div class="status-text">
-             <div class="status-text-main">Spinning</div>
-             <div class="status-text-sub">Active</div>
-           </div>`
-        : `<div class="status-icon">⚙️</div>
-           <div class="status-text">
-             <div class="status-text-main">Stopped</div>
-             <div class="status-text-sub">No wind</div>
-           </div>`;
-
-      // Update pumping status
-      const pumpingEl = document.getElementById('pumpingStatus');
-      pumpingEl.className = reading.pumping ? 'status-indicator active' : 'status-indicator inactive';
-      pumpingEl.innerHTML = reading.pumping
+      // Update in bedrijf (operation) status
+      const indEl = document.getElementById('pumpingStatus'); // Keep ID for backwards compatibility
+      indEl.className = reading.ind ? 'status-indicator active' : 'status-indicator inactive';
+      indEl.innerHTML = reading.ind
         ? `<div class="status-icon"><span class="dripping-icon">💧</span></div>
            <div class="status-text">
-             <div class="status-text-main">Pumping</div>
+             <div class="status-text-main">In Bedrijf</div>
              <div class="status-text-sub">Active</div>
            </div>`
         : `<div class="status-icon">💧</div>
@@ -613,7 +536,7 @@ const { initialReadings, devices, selectedDeviceEui } = Astro.props;
     if (readings.length > 0) {
       const latestReading = readings[0]; // Readings are sorted DESC, so [0] is newest
       updateChartData();
-      updateRevolutions();
+      updateRpm();
       updateStatusIndicators(latestReading);
       updateDeviceInfo();
       addActivity(`Loaded ${readings.length} historical readings`);
@@ -679,8 +602,8 @@ const { initialReadings, devices, selectedDeviceEui } = Astro.props;
             updateDeviceInfo();
 
             addActivity(
-              `New reading: Spinning: ${data.reading.spinning ? 'ON' : 'OFF'}, ` +
-              `Pumping: ${data.reading.pumping ? 'ON' : 'OFF'}`
+              `New reading: In Bedrijf: ${data.reading.ind ? 'ON' : 'OFF'}, ` +
+              `RPM: ${(data.reading.rpm || 0).toFixed(1)}`
             );
           }
         }

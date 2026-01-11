@@ -34,6 +34,7 @@
   "devDependencies": {
     "@astrojs/tailwind": "^6.0.2",
     "@astrojs/vercel": "^9.0.0",
+    "baseline-browser-mapping": "^2.9.14",
     "better-sqlite3": "^12.4.1",
     "concurrently": "^8.2.0",
     "likec4": "^1.43.0",
