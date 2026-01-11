@@ -63,6 +63,7 @@ class SensorSimulator {
 
   /**
    * Simulate in_bedrijf (in operation) status and RPM
+   * RULE: if rpm > 0, ind MUST be true; if rpm = 0, ind MUST be false
    */
   generateStatus() {
   // Change state randomly with some persistence
@@ -77,6 +78,14 @@ class SensorSimulator {
   } else {
       // Not in operation
       this.rpm = 0.0;
+  }
+
+  // CRITICAL: Enforce rule - if rpm > 0, ind MUST be true
+  if (this.rpm > 0) {
+      this.ind = true;
+  } else {
+      // if rpm = 0, ind MUST be false
+      this.ind = false;
   }
 
   return { ind: this.ind, rpm: this.rpm };

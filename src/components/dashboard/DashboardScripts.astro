@@ -411,30 +411,24 @@ const { initialReadings, devices, selectedDeviceEui } = Astro.props;
 
       const rpm = latestReading.rpm || 0;
 
-      if (rpmEl) rpmEl.textContent = rpm.toFixed(1);
+      if (rpmEl) rpmEl.textContent = rpm.toFixed(2);
     }
 
     // Update status indicators and RPM
     function updateStatusIndicators(reading) {
       updateRpm();
 
-      // Update in bedrijf (operation) status
-      const indEl = document.getElementById('pumpingStatus'); // Keep ID for backwards compatibility
-      indEl.className = reading.ind ? 'status-indicator active' : 'status-indicator inactive';
-      indEl.innerHTML = reading.ind
-        ? `<div class="status-icon"><span class="dripping-icon">💧</span></div>
-           <div class="status-text">
-             <div class="status-text-main">In Bedrijf</div>
-             <div class="status-text-sub">Active</div>
-           </div>`
-        : `<div class="status-icon">💧</div>
-           <div class="status-text">
-             <div class="status-text-main">Idle</div>
-             <div class="status-text-sub">Standby</div>
-           </div>`;
+      // Update ind (in bedrijf) display
+      const indValueEl = document.getElementById('indValue');
+      if (indValueEl) {
+        indValueEl.textContent = reading.ind ? 'true' : 'false';
+      }
 
       // Update last update time
-      document.getElementById('lastUpdate').textContent = new Date(reading.timestamp).toLocaleString();
+      const lastUpdateEl = document.getElementById('lastUpdate');
+      if (lastUpdateEl) {
+        lastUpdateEl.textContent = new Date(reading.timestamp).toLocaleString();
+      }
 
       calculateStats();
     }
@@ -603,7 +597,7 @@ const { initialReadings, devices, selectedDeviceEui } = Astro.props;
 
             addActivity(
               `New reading: In Bedrijf: ${data.reading.ind ? 'ON' : 'OFF'}, ` +
-              `RPM: ${(data.reading.rpm || 0).toFixed(1)}`
+              `RPM: ${(data.reading.rpm || 0).toFixed(2)}`
             );
           }
         }
