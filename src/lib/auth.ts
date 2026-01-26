@@ -3,29 +3,18 @@
  *
  * Provides secure Basic Authentication verification with constant-time comparison
  * to prevent timing attacks.
- *
- * Supports two credential types:
- * - WEBHOOK_USERNAME/WEBHOOK_PASSWORD: For TTN webhook endpoints
- * - API_USERNAME/API_PASSWORD: For public API endpoints
  */
 
 import { timingSafeEqual } from 'crypto';
-
-export type AuthType = 'webhook' | 'api';
 
 /**
  * Verify Basic Authentication using constant-time comparison
  *
  * @param request - The incoming HTTP request
  * @param skipInDev - Whether to skip auth in development mode (default: true)
- * @param authType - Which credentials to verify against ('webhook' or 'api', default: 'webhook')
  * @returns true if authenticated, false otherwise
  */
-export function verifyBasicAuth(
-  request: Request,
-  skipInDev: boolean = true,
-  authType: AuthType = 'webhook'
-): boolean {
+export function verifyBasicAuth(request: Request, skipInDev: boolean = true): boolean {
   // Skip authentication in DEV mode if requested
   if (skipInDev && import.meta.env.DEV) {
     return true;
@@ -43,22 +32,13 @@ export function verifyBasicAuth(
     const credentials = Buffer.from(base64Credentials, 'base64').toString('utf-8');
     const [username, password] = credentials.split(':');
 
-    // Get expected credentials from environment based on auth type
-    let expectedUsername: string | undefined;
-    let expectedPassword: string | undefined;
-
-    if (authType === 'api') {
-      expectedUsername = process.env.API_USERNAME;
-      expectedPassword = process.env.API_PASSWORD;
-    } else {
-      expectedUsername = process.env.WEBHOOK_USERNAME;
-      expectedPassword = process.env.WEBHOOK_PASSWORD;
-    }
+    // Get expected credentials from environment
+    const expectedUsername = process.env.WEBHOOK_USERNAME;
+    const expectedPassword = process.env.WEBHOOK_PASSWORD;
 
     // Verify credentials are configured
     if (!expectedUsername || !expectedPassword) {
-      const envPrefix = authType === 'api' ? 'API' : 'WEBHOOK';
-      console.warn(`WARNING: ${envPrefix}_USERNAME or ${envPrefix}_PASSWORD not configured`);
+      console.warn('WARNING: WEBHOOK_USERNAME or WEBHOOK_PASSWORD not configured');
       return false;
     }
 
