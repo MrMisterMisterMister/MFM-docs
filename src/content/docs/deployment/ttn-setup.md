@@ -210,84 +210,72 @@ This decoder uses the **The Things Stack (TTN v3) format** (`decodeUplink(input)
  * into human-readable JSON objects displayed in TTN Console.
  *
  * SUPPORTED FPORTS:
- * - FPort 1: Poldermill sensor measurement data (7 bytes)
- * - FPort 2: Device version information (5 bytes)
- *
- * The firmware acts as a passthrough - it transmits raw sensor module data
- * without interpretation. This decoder extracts structured data from the
- * sensor module's binary format.
+ * - FPort 1: Distance sensor payload (distance in mm, temperature as float)
+ * - FPort 2: Device version information (firmware and hardware versions)
+ * - FPort 3: RPM measurement payload (rotation speed)
  *
  * @param {Object} input - TTN uplink input object
- * @param {number} input.fPort - LoRaWAN FPort (1 = measurements, 2 = version)
+ * @param {number} input.fPort - LoRaWAN FPort (1 = distance/temp, 2 = version, 3 = RPM)
  * @param {Array<number>} input.bytes - Raw payload bytes (0-255)
  * @returns {Object} Decoded data or errors
  */
-function decodeUplink(input) {
-  // FPort 1: Poldermill sensor measurement data (7 bytes)
-  if (input.fPort === 1 && input.bytes.length >= 7) {
-    // PAYLOAD FORMAT: <Module Addr> <Module Type> <Flags> <Revolutions (uint32 BE)>
-    // Format specified in Multiflexmeter-3.7.0 firmware readme.md:64-66
-    //
-    // The firmware reads this data from the sensor module at I²C address 0x36
-    // using SMBus Block Read, then transmits it unmodified via LoRaWAN.
 
-    // Byte 0: Module Address (0x36 = I²C address of poldermill sensor)
-    // Identifies which sensor sent this data (supports multi-sensor setups)
-    const moduleAddress = input.bytes[0];
-
-    // Byte 1: Module Type (0x01 = Poldermill sensor)
-    // Allows backend to apply sensor-specific decoding logic
-    const moduleType = input.bytes[1];
-
-    // Byte 2: Flags byte (operational status)
-    // Bit 0 (LSB): Spinning (1 = rotor rotating via wind power, 0 = idle)
-    // Bit 1:       Pumping (1 = water pumping active, 0 = not pumping)
-    // Bits 2-7:    Reserved (unused, set to 0)
-    const flags = input.bytes[2];
-
-    // Bytes 3-6: Revolution count (uint32 big-endian)
-    // IMPORTANT: This is a PERIOD count, NOT a cumulative total!
-    // The sensor counts revolutions during the measurement interval (e.g., 15 minutes),
-    // transmits the count, then RESETS to 0 for the next period.
-    // Example: Reading 1: 25 revs, Reading 2: 30 revs, Total: 25+30=55 revs
-    const revolutions = (input.bytes[3] << 24) |  // MSB (most significant byte)
-                       (input.bytes[4] << 16) |
-                       (input.bytes[5] << 8) |
-                       input.bytes[6];             // LSB (least significant byte)
-
-    return {
-      data: {
-        moduleAddress: moduleAddress,
-        moduleType: moduleType,
-        revolutions: revolutions,
-        spinning: (flags & 0x01) !== 0,  // Test bit 0 (LSB)
-        pumping: (flags & 0x02) !== 0    // Test bit 1
-      }
-    };
-  }
-
-  // FPort 2: Device version information (5 bytes)
-  // Sent automatically after device joins network (OTAA) or on explicit request
-  //
-  // PAYLOAD FORMAT: <CMD> <FW_MSB> <FW_LSB> <HW_MSB> <HW_LSB>
-  // CMD = 0x10: Version response indicator
-  if (input.fPort === 2 && input.bytes.length === 5 && input.bytes[0] === 0x10) {
-    // Bytes 1-2: Firmware version (uint16 big-endian, format: major.minor)
-    // Example: 0x0307 = v3.7
-    // Bytes 3-4: Hardware version (uint16 big-endian, format: major.minor)
-    // Example: 0x0208 = v2.8
-    return {
-      data: {
-        type: 'version',
-        firmware: input.bytes[1] + '.' + input.bytes[2],  // MSB.LSB
-        hardware: input.bytes[3] + '.' + input.bytes[4]   // MSB.LSB
-      }
-    };
-  }
-
-  // Unknown FPort or invalid payload
+function version(msb, lsb) {
+  let v = (msb << 8) | lsb;
   return {
-    errors: ["Unknown FPort or invalid payload length"]
+    proto: (v >> 15) & 0x01,
+    major: (v >> 10) & 0x1F,
+    minor: (v >> 5) & 0x1F,
+    patch: (v >> 0) & 0x1F
+  };
+}
+
+function bytesToFloat(bytes) {
+  // JavaScript bitwise operators yield a 32 bits integer, not a float.
+  // Assume LSB (least significant byte first).
+  var bits = bytes[3]<<24 | bytes[2]<<16 | bytes[1]<<8 | bytes[0];
+  var sign = (bits>>>31 === 0) ? 1.0 : -1.0;
+  var e = bits>>>23 & 0xff;
+  var m = (e === 0) ? (bits & 0x7fffff)<<1 : (bits & 0x7fffff) | 0x800000;
+  var f = sign * m * Math.pow(2, e - 150);
+  return f;
+}
+
+function decodeUplink(input) {
+  let b = input.bytes;
+  let data = {};
+
+  switch(input.fPort) {
+    case 1:
+      // Distance sensor payload
+      // Bytes 0-1: Distance in mm (uint16 little-endian)
+      // Bytes 2-5: Temperature as IEEE 754 float (little-endian)
+      data.distance = (b[1] << 8) | b[0];
+      data.temperature = bytesToFloat([b[2], b[3], b[4], b[5]]);
+      break;
+
+    case 2:
+      // Version information payload
+      // Bytes 1-2: Firmware version (packed format)
+      // Bytes 3-4: Hardware version (packed format)
+      fw = version(b[1], b[2]);
+      hw = version(b[3], b[4]);
+      data.fw_version = fw.major + "." + fw.minor + "." + fw.patch + (fw.proto ? "-proto" : "");
+      data.hw_version = hw.major + "." + hw.minor + "." + hw.patch + (hw.proto ? "-proto" : "");
+      break;
+
+    case 3:
+      // RPM measurement payload (1 byte)
+      // Byte 0: RPM as whole number (uint8, 0-255)
+      data.rpm = (b.length >= 1) ? b[0] : 0;
+      data.ind = (data.rpm > 0); // Derived: true if mill is rotating
+      break;
+  }
+
+  return {
+    data: data,
+    warnings: [],
+    errors: []
   };
 }
 ```
@@ -298,10 +286,10 @@ Click **"Save changes"**
 
 Use **"Test"** tab to verify:
 
-**Test Input (FPort 1 - Poldermill Sensor):**
+**Test Input (FPort 1 - Distance Sensor):**
 ```json
 {
-  "bytes": [54, 1, 1, 0, 0, 0, 25], // Hex: 36 01 01 00 00 00 19
+  "bytes": [232, 3, 0, 0, 200, 65], // Distance: 1000mm, Temperature: ~25°C
   "fPort": 1
 }
 ```
@@ -310,19 +298,18 @@ Use **"Test"** tab to verify:
 ```json
 {
   "data": {
-    "moduleAddress": 54,
-    "moduleType": 1,
-    "revolutions": 25,
-    "spinning": true,
-    "pumping": false
-  }
+    "distance": 1000,
+    "temperature": 25.0
+  },
+  "warnings": [],
+  "errors": []
 }
 ```
 
 **Test Input (FPort 2 - Version):**
 ```json
 {
-  "bytes": [16, 3, 7, 2, 8], // Hex: 10 03 07 02 08
+  "bytes": [16, 14, 224, 10, 64], // Firmware v3.7.0, Hardware v2.8.0
   "fPort": 2
 }
 ```
@@ -331,10 +318,31 @@ Use **"Test"** tab to verify:
 ```json
 {
   "data": {
-    "type": "version",
-    "firmware": "3.7",
-    "hardware": "2.8"
-  }
+    "fw_version": "3.7.0",
+    "hw_version": "2.8.0"
+  },
+  "warnings": [],
+  "errors": []
+}
+```
+
+**Test Input (FPort 3 - RPM):**
+```json
+{
+  "bytes": [12], // RPM: 12
+  "fPort": 3
+}
+```
+
+**Expected Output:**
+```json
+{
+  "data": {
+    "rpm": 12,
+    "ind": true
+  },
+  "warnings": [],
+  "errors": []
 }
 ```
 
