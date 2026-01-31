@@ -166,12 +166,18 @@ class KVDataStore {
       'devEui': reading.devEui,
       'timestamp': reading.timestamp,
       'ind': reading.ind ? '1' : '0',
-      'rpm': (reading.rpm ?? 0).toString(),
-      'rssi': (reading.rssi || 0).toString(),
-      'snr': (reading.snr || 0).toString()
   };
 
-  // Add optional fields if present
+  // Add optional fields if present (preserve undefined vs 0)
+  if (reading.rpm !== undefined) {
+      fields['rpm'] = reading.rpm.toString();
+  }
+  if (reading.rssi !== undefined) {
+      fields['rssi'] = reading.rssi.toString();
+  }
+  if (reading.snr !== undefined) {
+      fields['snr'] = reading.snr.toString();
+  }
   if (reading.distance !== undefined) {
       fields['distance'] = reading.distance.toString();
   }
@@ -262,11 +268,11 @@ class KVDataStore {
           devEui: data.devEui,
           timestamp: data.timestamp,
           ind: data.ind === 1 || data.ind === '1',
-          rpm: data.rpm ? parseFloat(data.rpm) : undefined,
-          distance: data.distance ? parseInt(data.distance) : undefined,
-          temperature: data.temperature ? parseFloat(data.temperature) : undefined,
-          rssi: data.rssi ? parseInt(data.rssi) : undefined,
-          snr: data.snr ? parseFloat(data.snr) : undefined,
+          rpm: data.rpm != null && data.rpm !== '' ? parseFloat(data.rpm) : undefined,
+          distance: data.distance != null && data.distance !== '' ? parseInt(data.distance) : undefined,
+          temperature: data.temperature != null && data.temperature !== '' ? parseFloat(data.temperature) : undefined,
+          rssi: data.rssi != null && data.rssi !== '' ? parseInt(data.rssi) : undefined,
+          snr: data.snr != null && data.snr !== '' ? parseFloat(data.snr) : undefined,
     });
       }
   }

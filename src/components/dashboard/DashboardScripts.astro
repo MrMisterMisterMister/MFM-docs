@@ -397,21 +397,27 @@ const { initialReadings, devices, selectedDeviceEui } = Astro.props;
       if (indCountEl) indCountEl.textContent = indCount;
     }
 
+    // Format RPM: show integers without decimals, floats with 2 decimals
+    function formatRpm(rpm) {
+      if (rpm === undefined || rpm === null) return '0';
+      return Number.isInteger(rpm) ? rpm.toString() : rpm.toFixed(2);
+    }
+
     // Update RPM display - show current pumping RPM from latest reading
     function updateRpm() {
       const rpmEl = document.getElementById('rpm');
 
       if (readings.length === 0) {
-        if (rpmEl) rpmEl.textContent = '0.0';
+        if (rpmEl) rpmEl.textContent = '0';
         return;
       }
 
       // Get latest reading (readings are sorted DESC, so [0] is newest)
       const latestReading = readings[0];
 
-      const rpm = latestReading.rpm || 0;
+      const rpm = latestReading.rpm ?? 0;
 
-      if (rpmEl) rpmEl.textContent = rpm.toFixed(2);
+      if (rpmEl) rpmEl.textContent = formatRpm(rpm);
     }
 
     // Update status indicators and RPM
@@ -597,7 +603,7 @@ const { initialReadings, devices, selectedDeviceEui } = Astro.props;
 
             addActivity(
               `New reading: In Bedrijf: ${data.reading.ind ? 'ON' : 'OFF'}, ` +
-              `RPM: ${(data.reading.rpm || 0).toFixed(2)}`
+              `RPM: ${formatRpm(data.reading.rpm ?? 0)}`
             );
           }
         }

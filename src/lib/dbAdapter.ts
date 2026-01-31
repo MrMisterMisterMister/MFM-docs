@@ -266,11 +266,11 @@ class SQLiteAdapter implements DatabaseInterface {
       reading.devEui,
       reading.timestamp,
       reading.ind ? 1 : 0,
-      reading.rpm || null,
-      reading.distance || null,
-      reading.temperature || null,
-      reading.rssi || null,
-      reading.snr || null
+      reading.rpm ?? null,
+      reading.distance ?? null,
+      reading.temperature ?? null,
+      reading.rssi ?? null,
+      reading.snr ?? null
   );
   }
 
@@ -281,11 +281,11 @@ class SQLiteAdapter implements DatabaseInterface {
       devEui: row.dev_eui,
       timestamp: row.timestamp,
       ind: row.ind === 1,
-      rpm: row.rpm || undefined,
-      distance: row.distance || undefined,
-      temperature: row.temperature || undefined,
-      rssi: row.rssi || undefined,
-      snr: row.snr || undefined,
+      rpm: row.rpm != null ? row.rpm : undefined,
+      distance: row.distance != null ? row.distance : undefined,
+      temperature: row.temperature != null ? row.temperature : undefined,
+      rssi: row.rssi != null ? row.rssi : undefined,
+      snr: row.snr != null ? row.snr : undefined,
   }));
   }
 
@@ -296,11 +296,11 @@ class SQLiteAdapter implements DatabaseInterface {
       devEui: row.dev_eui,
       timestamp: row.timestamp,
       ind: row.ind === 1,
-      rpm: row.rpm || undefined,
-      distance: row.distance || undefined,
-      temperature: row.temperature || undefined,
-      rssi: row.rssi || undefined,
-      snr: row.snr || undefined,
+      rpm: row.rpm != null ? row.rpm : undefined,
+      distance: row.distance != null ? row.distance : undefined,
+      temperature: row.temperature != null ? row.temperature : undefined,
+      rssi: row.rssi != null ? row.rssi : undefined,
+      snr: row.snr != null ? row.snr : undefined,
   }));
   }
 
