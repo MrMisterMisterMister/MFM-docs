@@ -152,15 +152,19 @@ class DataStore {
   // FPort 1: Distance and temperature
   // FPort 3: RPM and ind (in_bedrijf) status
 
+  // Support both standard field names and TTN decoder field names
+  const ind = decoded.ind ?? decoded['inb(in_bedrijf)'];
+  const rpm = decoded.rpm ?? decoded['rpm(toeren_per_minuut)'];
+
   const hasDistanceTemp = decoded.distance !== undefined || decoded.temperature !== undefined;
-  const hasRpmData = decoded.rpm !== undefined || decoded.ind !== undefined;
+  const hasRpmData = rpm !== undefined || ind !== undefined;
 
   if (hasDistanceTemp || hasRpmData) {
       const reading: SensorReading = {
 	devEui,
 	timestamp: receivedAt,
-	ind: decoded.ind ?? false,
-	rpm: decoded.rpm,
+	ind: ind ?? false,
+	rpm: rpm,
 	distance: decoded.distance,
 	temperature: decoded.temperature,
 	rssi,
@@ -187,7 +191,7 @@ class DataStore {
       }
 
       if (hasRpmData) {
-	logMessage += `RPM: ${(decoded.rpm ?? 0).toFixed(2)} | ` +
+	logMessage += `RPM: ${(rpm ?? 0)} | ` +
                          `In Bedrijf: ${reading.ind} | `;
       }
 
