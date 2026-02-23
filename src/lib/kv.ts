@@ -268,7 +268,7 @@ class KVDataStore {
           devEui: data.devEui,
           timestamp: data.timestamp,
           ind: data.ind === 1 || data.ind === '1',
-          rpm: data.rpm != null && data.rpm !== '' ? parseFloat(data.rpm) : undefined,
+          rpm: data.rpm != null && data.rpm !== '' ? Math.round(parseFloat(data.rpm)) : undefined,
           distance: data.distance != null && data.distance !== '' ? parseInt(data.distance) : undefined,
           temperature: data.temperature != null && data.temperature !== '' ? parseFloat(data.temperature) : undefined,
           rssi: data.rssi != null && data.rssi !== '' ? parseInt(data.rssi) : undefined,

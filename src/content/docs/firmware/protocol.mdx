@@ -1,0 +1,202 @@
+---
+title: LoRaWAN Protocol
+description: Uplink and downlink message formats for Multiflexmeter
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+The Multiflexmeter communicates over LoRaWAN using OTAA (Over-The-Air Activation) on the EU868 frequency band.
+
+## Network Configuration
+
+| Parameter | Value |
+|-----------|-------|
+| **Activation** | OTAA |
+| **Region** | EU868 |
+| **LoRaWAN Version** | 1.0.x |
+| **ADR** | Enabled |
+| **Default TX Power** | 14 dBm |
+
+## Uplink Messages
+
+### FPort 1: Measurement Data
+
+General-purpose measurement results from the sensor module.
+
+**Format:**
+```
+<Module Address> <Module Type> <Data Blob>
+```
+
+| Field | Size | Description |
+|-------|------|-------------|
+| Module Address | 1 byte | I2C address (typically 0x36) |
+| Module Type | 1 byte | Sensor type identifier |
+| Data Blob | Variable | Module-specific data |
+
+The data format depends on the sensor module. See [Data Formats](/firmware/data-formats/) for specific module payloads.
+
+### FPort 2: Version Ping
+
+Sent after successful join to report device identity.
+
+**Format:**
+```
+0x10 <FW_HI> <FW_LO> <HW_HI> <HW_LO>
+```
+
+| Byte | Description |
+|------|-------------|
+| 0 | Command byte (0x10) |
+| 1 | Firmware version high byte |
+| 2 | Firmware version low byte |
+| 3 | Hardware version high byte |
+| 4 | Hardware version low byte |
+
+**Version Encoding (16-bit):**
+```
+Bit 15:     Protocol (0=dev, 1=release)
+Bits 14-10: Major version (0-31)
+Bits 9-5:   Minor version (0-31)
+Bits 4-0:   Patch version (0-31)
+```
+
+**Example:**
+- Version `v3.7.0` release = `0x8E00`
+  - Bit 15 = 1 (release)
+  - Major = 3 → bits 14-10
+  - Minor = 7 → bits 9-5
+  - Patch = 0 → bits 4-0
+
+### FPort 3: RPM Data (Legacy)
+
+Single-byte RPM measurement (0-255 range).
+
+<Aside type="note">
+  FPort 3 is used for legacy RPM-only mode. Current firmware versions use FPort 1 with the sensor passthrough architecture.
+</Aside>
+
+## Downlink Commands
+
+All downlink commands can be sent on any FPort.
+
+### Set Measurement Interval (0x10)
+
+Change the measurement and transmission interval.
+
+**Format:**
+```
+0x10 <Interval_HI> <Interval_LO>
+```
+
+| Byte | Description |
+|------|-------------|
+| 0 | Command byte (0x10) |
+| 1 | Interval high byte |
+| 2 | Interval low byte |
+
+**Parameters:**
+- Interval: 16-bit big-endian value in seconds
+- Minimum: 20 seconds
+- Maximum: 4270 seconds (~71 minutes)
+
+**Example:** Set interval to 300 seconds (5 minutes):
+```
+0x10 0x01 0x2C
+```
+
+### Forward Module Command (0x11)
+
+Send a command to an I2C sensor module.
+
+**Format:**
+```
+0x11 <Address> <Command> [Parameters...]
+```
+
+| Byte | Description |
+|------|-------------|
+| 0 | Command byte (0x11) |
+| 1 | Module I2C address |
+| 2 | Command to send |
+| 3+ | Optional parameters |
+
+**Example:** Send command 0x05 to module at 0x36:
+```
+0x11 0x36 0x05
+```
+
+### Set Wheel Teeth Count (0x12)
+
+Configure the wheel teeth count for RPM calculation.
+
+**Format:**
+```
+0x12 <Count>
+```
+
+| Byte | Description |
+|------|-------------|
+| 0 | Command byte (0x12) |
+| 1 | Teeth count (1-255) |
+
+**Example:** Set 91 teeth:
+```
+0x12 0x5B
+```
+
+### Force Rejoin (0xDEAD)
+
+Force the device to reset and rejoin the network.
+
+**Format:**
+```
+0xDE 0xAD
+```
+
+The device will rejoin after approximately 5 seconds.
+
+<Aside type="caution" title="Use Sparingly">
+  Force rejoin causes a network reset. Use only when necessary, as frequent rejoins consume airtime and network resources.
+</Aside>
+
+## TTN Fair Use Policy
+
+The firmware enforces TTN's fair use policy:
+- Maximum 30 seconds of airtime per day
+- Automatic interval adjustment if exceeded
+- Configurable via EEPROM (`USE_TTN_FAIR_USE_POLICY`)
+
+## Payload Formatter Example
+
+TTN payload formatter (JavaScript) for FPort 1:
+
+```javascript
+function decodeUplink(input) {
+  var bytes = input.bytes;
+  var port = input.fPort;
+
+  if (port === 1 && bytes.length >= 3) {
+    var moduleAddr = bytes[0];
+    var moduleType = bytes[1];
+
+    if (moduleType === 0x01) {
+      // Poldermill sensor
+      var flags = bytes[2];
+      var revolutions = (bytes[3] << 24) | (bytes[4] << 16) |
+                        (bytes[5] << 8) | bytes[6];
+      return {
+        data: {
+          module_address: moduleAddr,
+          module_type: moduleType,
+          spinning: (flags & 0x01) !== 0,
+          pumping: (flags & 0x02) !== 0,
+          revolutions: revolutions
+        }
+      };
+    }
+  }
+
+  return { data: {} };
+}
+```

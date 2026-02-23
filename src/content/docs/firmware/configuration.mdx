@@ -1,0 +1,217 @@
+---
+title: EEPROM Configuration
+description: Persistent configuration storage for Multiflexmeter
+---
+
+import { Aside, Code } from '@astrojs/starlight/components';
+
+The Multiflexmeter stores its configuration in the ATmega1284P's EEPROM. This includes LoRaWAN credentials and operational settings.
+
+## EEPROM Structure
+
+Configuration starts at address **0x00** and occupies **42 bytes**.
+
+```cpp
+struct __attribute__((packed)) rom_conf_t {
+  uint8_t MAGIC[4];                // "MFM\0" (validation)
+  struct {
+    uint8_t MSB;
+    uint8_t LSB;
+  } HW_VERSION;                    // Hardware version
+  uint8_t APP_EUI[8];              // Application EUI (LSB first)
+  uint8_t DEV_EUI[8];              // Device EUI (LSB first)
+  uint8_t APP_KEY[16];             // Application Key (MSB first)
+  uint16_t MEASUREMENT_INTERVAL;   // Interval in seconds
+  uint8_t USE_TTN_FAIR_USE_POLICY; // 0 or 1
+  uint8_t WHEEL_TEETH_COUNT;       // For RPM calculation
+};
+```
+
+## Memory Map
+
+| Offset | Size | Field | Default |
+|--------|------|-------|---------|
+| 0x00 | 4 | Magic bytes | "MFM\0" |
+| 0x04 | 2 | Hardware version | - |
+| 0x06 | 8 | APP_EUI | - |
+| 0x0E | 8 | DEV_EUI | - |
+| 0x16 | 16 | APP_KEY | - |
+| 0x26 | 2 | Measurement interval | 300 (5 min) |
+| 0x28 | 1 | TTN Fair Use Policy | 1 (enabled) |
+| 0x29 | 1 | Wheel teeth count | 91 |
+
+Total: **42 bytes** (0x2A)
+
+## Field Details
+
+### Magic Bytes
+
+The magic bytes `"MFM\0"` validate the EEPROM contents. If magic doesn't match, the firmware uses default values.
+
+### Hardware Version
+
+16-bit encoded version number:
+```
+Bit 15:     Protocol (0=dev, 1=release)
+Bits 14-10: Major (0-31)
+Bits 9-5:   Minor (0-31)
+Bits 4-0:   Patch (0-31)
+```
+
+### LoRaWAN Credentials
+
+<Aside type="caution" title="Byte Order">
+  - **APP_EUI** and **DEV_EUI**: LSB-first (reversed from TTN Console display)
+  - **APP_KEY**: MSB-first (same as TTN Console display)
+</Aside>
+
+**TTN Console shows:**
+```
+AppEUI:  70B3D57ED0000001
+DevEUI:  0004A30B001C1234
+AppKey:  2B7E151628AED2A6ABF7158809CF4F3C
+```
+
+**EEPROM storage:**
+```cpp
+const uint8_t APP_EUI[8] = { 0x01, 0x00, 0x00, 0xD0, 0x7E, 0xD5, 0xB3, 0x70 }; // LSB
+const uint8_t DEV_EUI[8] = { 0x34, 0x12, 0x1C, 0x00, 0x0B, 0xA3, 0x04, 0x00 }; // LSB
+const uint8_t APP_KEY[16] = { 0x2B, 0x7E, 0x15, 0x16, 0x28, 0xAE, 0xD2, 0xA6,
+                              0xAB, 0xF7, 0x15, 0x88, 0x09, 0xCF, 0x4F, 0x3C }; // MSB
+```
+
+### Measurement Interval
+
+- **Range**: 20 - 4270 seconds
+- **Default**: 300 seconds (5 minutes)
+- **Format**: 16-bit big-endian
+
+Can be changed via downlink command `0x10`.
+
+### TTN Fair Use Policy
+
+- **0**: Disabled
+- **1**: Enabled (default)
+
+When enabled, the firmware tracks daily airtime usage and adjusts transmission frequency to stay within TTN's 30-second/day limit.
+
+### Wheel Teeth Count
+
+Number of teeth on the mill wheel. Used for RPM calculation.
+- **Default**: 91
+
+Can be changed via downlink command `0x12`.
+
+## Programming EEPROM
+
+### Using Arduino Sketch
+
+Create a separate sketch to program EEPROM:
+
+```cpp
+#include <EEPROM.h>
+
+// Replace with your TTN credentials (see byte order notes above)
+const uint8_t APP_EUI[8] = { /* LSB first */ };
+const uint8_t DEV_EUI[8] = { /* LSB first */ };
+const uint8_t APP_KEY[16] = { /* MSB first */ };
+
+void setup() {
+  int addr = 0;
+
+  // Magic
+  EEPROM.write(addr++, 'M');
+  EEPROM.write(addr++, 'F');
+  EEPROM.write(addr++, 'M');
+  EEPROM.write(addr++, 0);
+
+  // HW Version (example: 1.0.0 release)
+  EEPROM.write(addr++, 0x90);  // MSB: proto=1, major=1
+  EEPROM.write(addr++, 0x00);  // LSB: minor=0, patch=0
+
+  // APP_EUI
+  for (int i = 0; i < 8; i++) {
+    EEPROM.write(addr++, APP_EUI[i]);
+  }
+
+  // DEV_EUI
+  for (int i = 0; i < 8; i++) {
+    EEPROM.write(addr++, DEV_EUI[i]);
+  }
+
+  // APP_KEY
+  for (int i = 0; i < 16; i++) {
+    EEPROM.write(addr++, APP_KEY[i]);
+  }
+
+  // Measurement interval: 300 seconds (0x012C)
+  EEPROM.write(addr++, 0x01);
+  EEPROM.write(addr++, 0x2C);
+
+  // TTN Fair Use: enabled
+  EEPROM.write(addr++, 1);
+
+  // Wheel teeth: 91
+  EEPROM.write(addr++, 91);
+
+  Serial.begin(115200);
+  Serial.println("EEPROM programmed!");
+}
+
+void loop() {}
+```
+
+### Using AVRDUDE
+
+Read current EEPROM:
+```bash
+avrdude -c usbasp -p m1284p -U eeprom:r:eeprom_backup.bin:r
+```
+
+Write EEPROM from file:
+```bash
+avrdude -c usbasp -p m1284p -U eeprom:w:eeprom_data.bin:r
+```
+
+## Runtime Configuration API
+
+The firmware provides functions to access configuration:
+
+```cpp
+// Load configuration from EEPROM
+bool conf_load(void);
+
+// Save configuration to EEPROM
+void conf_save(void);
+
+// Get LoRaWAN credentials
+void conf_getAppEui(uint8_t *buf);
+void conf_getDevEui(uint8_t *buf);
+void conf_getAppKey(uint8_t *buf);
+
+// Measurement interval
+uint16_t conf_getMeasurementInterval();
+void conf_setMeasurementInterval(uint16_t interval);
+
+// Wheel teeth
+uint8_t conf_getWheelTeethCount();
+void conf_setWheelTeethCount(uint8_t count);
+
+// Version info
+version conf_getHardwareVersion(void);
+version conf_getFirmwareVersion(void);
+
+// Fair use policy
+uint8_t conf_getUseTTNFairUsePolicy(void);
+```
+
+## OTA Configuration Updates
+
+Some settings can be changed via LoRaWAN downlinks:
+
+| Setting | Command | Persistent |
+|---------|---------|------------|
+| Measurement interval | `0x10 <HI> <LO>` | Yes |
+| Wheel teeth count | `0x12 <count>` | Yes |
+
+Changes are saved to EEPROM and persist across power cycles.

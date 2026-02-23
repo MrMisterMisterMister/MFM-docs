@@ -1,0 +1,212 @@
+---
+title: Development Guide
+description: Build, modify, and extend the Multiflexmeter firmware
+---
+
+import { Steps, Tabs, TabItem, Aside, Code } from '@astrojs/starlight/components';
+
+## Development Environment
+
+### Required Tools
+
+- **PlatformIO**: Build system and toolchain manager
+- **VS Code**: Recommended IDE with PlatformIO extension
+- **Git**: Version control
+
+### Installation
+
+<Steps>
+
+1. Install [VS Code](https://code.visualstudio.com/)
+
+2. Install the PlatformIO extension from the VS Code marketplace
+
+3. Clone the repository:
+   ```bash
+   git clone https://github.com/your-org/Multiflexmeter.git
+   cd Multiflexmeter
+   ```
+
+4. Initialize submodules:
+   ```bash
+   git submodule update --init
+   ```
+
+</Steps>
+
+## Build Commands
+
+| Command | Description |
+|---------|-------------|
+| `pio run` | Build firmware |
+| `pio run -t upload` | Build and flash via USBasp |
+| `pio device monitor` | Open serial monitor (115200 baud) |
+| `pio run -t clean` | Clean build artifacts |
+
+## Project Structure
+
+```
+Multiflexmeter/
+├── src/                        # Source files
+│   ├── main.cpp                # Main application logic
+│   ├── sensors.cpp             # Sensor module interface
+│   ├── smbus.cpp               # I2C/SMBus driver
+│   ├── rom_conf.cpp            # EEPROM configuration
+│   ├── rpm_calculation.cpp     # RPM conversion
+│   ├── wdt.cpp                 # Watchdog handling
+│   └── boards/                 # Board-specific code
+├── include/                    # Header files
+│   ├── config.h                # Global configuration
+│   ├── main.h                  # Main declarations
+│   ├── rom_conf.h              # EEPROM structure
+│   ├── sensors.h               # Sensor API
+│   ├── smbus.h                 # SMBus API
+│   └── board_config/           # Board pin definitions
+├── lib/
+│   └── arduino-lmic/           # LoRaWAN stack (submodule)
+├── boards/
+│   └── mfm_v3_m1284p.json      # PlatformIO board definition
+├── hardware/                   # KiCad design files
+└── platformio.ini              # Build configuration
+```
+
+## Configuration Options
+
+### config.h
+
+Edit `include/config.h` to modify compile-time settings:
+
+```cpp
+// Enable debug output to serial
+#define DEBUG
+
+// Print build date/time on startup
+#define PRINT_BUILD_DATE_TIME
+
+// Lowest data rate (highest spreading factor)
+#define MIN_LORA_DR 0
+
+// Sensor measurement timeout (ms)
+#define SENSOR_JSN_TIMEOUT 200
+
+// Interval limits (seconds)
+#define MIN_INTERVAL 20    // Minimum: 20 seconds
+#define MAX_INTERVAL 4270  // Maximum: ~71 minutes
+```
+
+### Build Flags
+
+The `platformio.ini` sets these LMIC flags:
+
+| Flag | Purpose |
+|------|---------|
+| `ARDUINO_LMIC_PROJECT_CONFIG_H_SUPPRESS` | Use custom LMIC config |
+| `DISABLE_BEACONS` | Reduce code size |
+| `DISABLE_PING` | Disable Class B ping |
+| `LMIC_PRINTF_TO=Serial` | Debug output target |
+| `LMIC_DEBUG_LEVEL=2` | LMIC verbosity level |
+
+## Adding New Features
+
+### Adding a Downlink Command
+
+<Steps>
+
+1. Define the command byte in `main.cpp`:
+   ```cpp
+   #define CMD_MY_COMMAND 0x13
+   ```
+
+2. Add handler in `processDownlink()`:
+   ```cpp
+   case CMD_MY_COMMAND:
+     if (len >= 2) {
+       uint8_t param = payload[1];
+       // Handle command
+     }
+     break;
+   ```
+
+3. Test by sending a downlink from TTN console
+
+</Steps>
+
+### Adding a Sensor Type
+
+The firmware uses a passthrough architecture. To add a new sensor:
+
+<Steps>
+
+1. Connect sensor module to I2C bus at address 0x36
+
+2. Ensure module responds to:
+   - `CMD_PERFORM (0x10)` - Start measurement
+   - `CMD_READ (0x11)` - Read result (block read)
+
+3. Implement data decoder in TTN payload formatter
+
+</Steps>
+
+## Debugging
+
+### Serial Output
+
+Enable debug output:
+```cpp
+// In include/config.h
+#define DEBUG
+```
+
+Connect FTDI adapter and monitor:
+```bash
+pio device monitor
+```
+
+Output includes:
+- Build date/time on startup
+- LMIC state transitions
+- Join attempts and results
+- TX/RX events
+
+### Common Debug Messages
+
+| Message | Meaning |
+|---------|---------|
+| `EV_JOINING` | Attempting to join network |
+| `EV_JOINED` | Successfully joined |
+| `EV_JOIN_FAILED` | Join rejected (check credentials) |
+| `EV_TXCOMPLETE` | Uplink transmission complete |
+| `EV_RXCOMPLETE` | Downlink received |
+
+## CI/CD Pipeline
+
+GitHub Actions automatically builds on:
+- Push to `main` or `v3` branches
+- Version tags (`v*.*.*`)
+
+### Version Numbering
+
+Firmware version is encoded in 16 bits:
+```
+Bit 15:     Protocol (0=dev, 1=release)
+Bits 14-10: Major version (0-31)
+Bits 9-5:   Minor version (0-31)
+Bits 4-0:   Patch version (0-31)
+```
+
+Tagged builds set version via build flags:
+- `-DFW_VERSION_MAJOR=X`
+- `-DFW_VERSION_MINOR=Y`
+- `-DFW_VERSION_PATCH=Z`
+
+## Code Style
+
+- Use C++ with Arduino framework patterns
+- Follow existing naming conventions
+- Keep functions focused and small
+- Document non-obvious logic with comments
+- Test changes before committing
+
+<Aside type="tip" title="No Blocking Code">
+  Never use `delay()` or blocking I/O in the main loop. Schedule operations as LMIC jobs using `os_setTimedCallback()`.
+</Aside>

@@ -1,0 +1,132 @@
+---
+title: Hardware Specifications
+description: Multiflexmeter V3 hardware details and pin mappings
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Microcontroller
+
+| Specification | Value |
+|---------------|-------|
+| **MCU** | ATmega1284P |
+| **Clock** | 8 MHz (external crystal) |
+| **Flash** | 128 KB |
+| **SRAM** | 16 KB |
+| **EEPROM** | 4 KB |
+| **Core** | AVR 8-bit |
+
+## Radio Module
+
+| Specification | Value |
+|---------------|-------|
+| **Module** | RFM95 |
+| **Chipset** | Semtech SX1276 |
+| **Frequency** | 868 MHz (EU868) |
+| **Modulation** | LoRa spread spectrum |
+| **TX Power** | Up to 14 dBm |
+| **Interface** | SPI |
+
+## Pin Mappings
+
+### LoRa Radio (SPI)
+
+| Function | Arduino Pin | ATmega1284P Port |
+|----------|-------------|------------------|
+| NSS (Chip Select) | 24 | PB0 |
+| RST (Reset) | 25 | PB1 |
+| DIO0 | 2 | PD2 |
+| DIO1 | 3 | PD3 |
+| DIO2 | 4 | PD4 |
+| DIO3 | 0 | PD0 |
+| DIO4 | 1 | PD1 |
+| DIO5 | 26 | PB2 |
+| MOSI | - | PB5 (hardware SPI) |
+| MISO | - | PB6 (hardware SPI) |
+| SCK | - | PB7 (hardware SPI) |
+
+### Peripherals
+
+| Function | Arduino Pin | Description |
+|----------|-------------|-------------|
+| PERIF_PWR | 20 | Peripheral power control |
+| BUZZER | 17 | Buzzer output (analog pin 3) |
+| JSN_TX | 10 | JSN sensor TX |
+| JSN_RX | 11 | JSN sensor RX |
+| ONE_WIRE | 12 | OneWire bus |
+
+### I2C / SMBus
+
+The I2C bus uses the hardware TWI interface:
+- **SDA**: PC1 (hardware)
+- **SCL**: PC0 (hardware)
+- **Bus Speed**: 80 kHz
+
+The sensor module is expected at address **0x36**.
+
+### Debug Interface
+
+| Function | Description |
+|----------|-------------|
+| UART TX | Debug output at 115200 baud |
+| UART RX | Serial input |
+
+An FTDI-compatible 6-pin header provides debug access.
+
+## Fuse Settings
+
+| Fuse | Value | Description |
+|------|-------|-------------|
+| **lfuse** | 0xFF | External crystal, full swing oscillator |
+| **hfuse** | 0xD1 | JTAG disabled, SPI enabled, BOD @ 2.7V |
+| **efuse** | 0xFF | Brown-out detection |
+
+<Aside type="caution" title="Fuse Programming">
+  Incorrect fuse settings can brick the device. Only modify fuses if you understand the implications.
+</Aside>
+
+## Power
+
+- **Operating Voltage**: 3.3V
+- **Brown-out Detection**: 2.7V threshold
+- **Power Control**: Pin 20 controls peripheral power
+
+## Programming Interface
+
+| Method | Tool | Speed |
+|--------|------|-------|
+| ISP | USBasp | 0.25 MHz |
+| ISP | Atmel ICE | Default |
+
+Upload command:
+```bash
+pio run -t upload
+```
+
+Upload flags used:
+- `-e` : Chip erase before programming
+- `-B0.25` : Slow ISP clock (0.25 MHz)
+
+## Board Definition
+
+The PlatformIO board definition is located at `boards/mfm_v3_m1284p.json`:
+
+```json
+{
+  "build": {
+    "mcu": "atmega1284p",
+    "f_cpu": "8000000L"
+  },
+  "frameworks": ["arduino"],
+  "platform": "atmelavr"
+}
+```
+
+## Hardware Design Files
+
+KiCad design files are available in the `hardware/` directory:
+- `mfm-v3-smd.kicad_sch` - Schematic
+- `mfm-v3-smd.kicad_pcb` - PCB layout
+- `mfm-v3-smd.kicad_pro` - Project file
+
+Requires KiCad 6.0 or later.

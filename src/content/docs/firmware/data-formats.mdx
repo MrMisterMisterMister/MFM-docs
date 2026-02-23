@@ -1,0 +1,192 @@
+---
+title: Data Formats
+description: Sensor module payload formats for Multiflexmeter
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+The Multiflexmeter uses a **sensor passthrough architecture**. The firmware transmits raw sensor data without interpretation. This page documents the data formats used by different sensor modules.
+
+## Passthrough Architecture
+
+```
+Sensor Module                    MFM Firmware                    Application
+    │                                │                               │
+    │ ◄─── CMD_PERFORM (0x10) ───────│                               │
+    │                                │                               │
+    │ ───── CMD_READ (0x11) ────────►│                               │
+    │ ◄──── SMBus Block Read ────────│                               │
+    │                                │                               │
+    │       Raw bytes (max 32)       │ ───── LoRaWAN FPort 1 ───────►│
+    │                                │                               │
+    │                                │                    TTN Decoder │
+    │                                │                     + Backend │
+```
+
+- Sensor module encodes data in its own format
+- Firmware reads up to 32 bytes via SMBus Block Read
+- Raw bytes are transmitted on FPort 1
+- Application layer (TTN decoder + backend) interprets the data
+
+## Common Payload Structure
+
+All sensor modules follow this base structure:
+
+| Byte | Field | Description |
+|------|-------|-------------|
+| 0 | Module Address | I2C address (e.g., 0x36) |
+| 1 | Module Type | Identifies the sensor type |
+| 2+ | Module Data | Type-specific payload |
+
+## Poldermill Sensor (Type 0x01)
+
+Used for monitoring poldermill rotation.
+
+### Payload Format
+
+| Byte | Field | Description |
+|------|-------|-------------|
+| 0 | Module Address | 0x36 |
+| 1 | Module Type | 0x01 |
+| 2 | Flags | Status flags |
+| 3-6 | Revolutions | uint32 big-endian |
+
+### Flags Byte
+
+| Bit | Name | Description |
+|-----|------|-------------|
+| 0 | Spinning | 1 = Mill is rotating |
+| 1 | Pumping | 1 = Mill is pumping water |
+| 2-7 | Reserved | Future use |
+
+### Example Payload
+
+```
+36 01 03 00 00 02 5B
+```
+
+Decoded:
+- Module Address: 0x36
+- Module Type: 0x01 (Poldermill)
+- Flags: 0x03 (spinning=1, pumping=1)
+- Revolutions: 603 (0x0000025B)
+
+### TTN Decoder
+
+```javascript
+function decodePoldermill(bytes) {
+  if (bytes.length < 7) return null;
+
+  var flags = bytes[2];
+  var revolutions = (bytes[3] << 24) | (bytes[4] << 16) |
+                    (bytes[5] << 8) | bytes[6];
+
+  return {
+    module_address: bytes[0],
+    module_type: bytes[1],
+    spinning: (flags & 0x01) !== 0,
+    pumping: (flags & 0x02) !== 0,
+    revolutions: revolutions
+  };
+}
+```
+
+## Distance Sensor (Type 0x02)
+
+Used for water level or distance measurements.
+
+### Payload Format
+
+| Byte | Field | Description |
+|------|-------|-------------|
+| 0 | Module Address | 0x36 |
+| 1 | Module Type | 0x02 |
+| 2-3 | Distance | uint16 big-endian (mm) |
+| 4-5 | Temperature | int16 big-endian (0.1°C) |
+
+### Example Payload
+
+```
+36 02 03 E8 00 FA
+```
+
+Decoded:
+- Module Address: 0x36
+- Module Type: 0x02 (Distance)
+- Distance: 1000 mm (0x03E8)
+- Temperature: 25.0°C (0x00FA = 250 × 0.1°C)
+
+### TTN Decoder
+
+```javascript
+function decodeDistance(bytes) {
+  if (bytes.length < 6) return null;
+
+  var distance = (bytes[2] << 8) | bytes[3];
+  var tempRaw = (bytes[4] << 8) | bytes[5];
+  // Handle signed value
+  if (tempRaw > 32767) tempRaw -= 65536;
+
+  return {
+    module_address: bytes[0],
+    module_type: bytes[1],
+    distance_mm: distance,
+    temperature_c: tempRaw / 10.0
+  };
+}
+```
+
+## Generic Module Format
+
+For custom sensor modules, follow this pattern:
+
+| Byte | Field | Description |
+|------|-------|-------------|
+| 0 | Module Address | I2C address |
+| 1 | Module Type | Unique type ID |
+| 2+ | Data | Module-specific |
+
+<Aside type="tip" title="Type Registration">
+  When creating a new sensor module, choose a unique Module Type ID not already in use. Document the payload format for backend developers.
+</Aside>
+
+## Version Information (FPort 2)
+
+The version ping message uses a special format:
+
+| Byte | Field | Description |
+|------|-------|-------------|
+| 0 | Command | 0x10 |
+| 1-2 | Firmware Version | 16-bit encoded |
+| 3-4 | Hardware Version | 16-bit encoded |
+
+### Version Encoding
+
+```
+Bit 15:     Protocol (0=development, 1=release)
+Bits 14-10: Major version (0-31)
+Bits 9-5:   Minor version (0-31)
+Bits 4-0:   Patch version (0-31)
+```
+
+### Decoding Example
+
+```javascript
+function decodeVersion(uint16) {
+  return {
+    protocol: (uint16 >> 15) & 0x01,
+    major: (uint16 >> 10) & 0x1F,
+    minor: (uint16 >> 5) & 0x1F,
+    patch: uint16 & 0x1F
+  };
+}
+```
+
+## Maximum Payload Size
+
+- SMBus Block Read maximum: **32 bytes**
+- LoRaWAN maximum varies by data rate
+- SF12: ~51 bytes
+- SF7: ~222 bytes
+
+The firmware reads up to 32 bytes from the sensor module. Larger payloads require multiple transmissions.

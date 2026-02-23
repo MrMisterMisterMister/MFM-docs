@@ -4,10 +4,10 @@
  */
 
 /**
- * Format RPM: show integers without decimals, floats with 2 decimals
+ * Format RPM as integer
  */
 function formatRpm(rpm: number): string {
-  return Number.isInteger(rpm) ? rpm.toString() : rpm.toFixed(2);
+  return Math.round(rpm).toString();
 }
 
 export function renderActivityStatus(reading: any): string {

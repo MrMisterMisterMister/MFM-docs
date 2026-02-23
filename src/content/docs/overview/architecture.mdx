@@ -1,0 +1,137 @@
+---
+title: Architecture Overview
+description: System architecture of the Multiflexmeter platform
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+The Multiflexmeter (MFM) is an IoT sensor platform built around the ATmega1284P microcontroller. It uses LoRaWAN for long-range communication to The Things Network (TTN).
+
+## System Overview
+
+```
+┌─────────────────────┐     I2C/SMBus      ┌─────────────────────┐
+│   Sensor Module     │◄──────────────────►│   ATmega1284P MCU   │
+│   (Address 0x36)    │                    │                     │
+└─────────────────────┘                    │  ┌───────────────┐  │
+                                           │  │  LMIC Stack   │  │
+                                           │  └───────┬───────┘  │
+                                           └──────────┼──────────┘
+                                                      │ SPI
+                                                      ▼
+                                           ┌──────────────────────┐
+                                           │   RFM95 LoRa Radio   │
+                                           │      (868 MHz)       │
+                                           └──────────┬───────────┘
+                                                      │ RF
+                                                      ▼
+                                           ┌──────────────────────┐
+                                           │   LoRaWAN Gateway    │
+                                           └──────────┬───────────┘
+                                                      │ IP
+                                                      ▼
+                                           ┌──────────────────────┐
+                                           │  The Things Network  │
+                                           └──────────────────────┘
+```
+
+## Core Components
+
+<CardGrid>
+  <Card title="ATmega1284P MCU" icon="seti:c">
+    The main microcontroller running the firmware. Features 128KB Flash, 16KB SRAM, and 4KB EEPROM.
+  </Card>
+  <Card title="RFM95 Radio" icon="rocket">
+    LoRa transceiver module operating at 868 MHz (EU868) using the SX1276 chipset.
+  </Card>
+  <Card title="Sensor Module" icon="puzzle">
+    External I2C/SMBus sensor module at address 0x36 providing measurement data.
+  </Card>
+  <Card title="LMIC Stack" icon="setting">
+    IBM LoRaWAN-in-C library handling LoRaWAN protocol, join procedures, and TX/RX scheduling.
+  </Card>
+</CardGrid>
+
+## Firmware Architecture
+
+The firmware uses a **cooperative job scheduling** model provided by the LMIC library. There are no interrupts for application logic; all operations are scheduled as jobs.
+
+### Execution Flow
+
+```
+setup()
+  ├─ Board initialization
+  ├─ Sensor I2C init
+  ├─ LMIC stack setup
+  ├─ EEPROM config load
+  └─ LMIC_startJoining() → EV_JOINING event
+
+loop()
+  └─ os_runloop_once()  ← Processes scheduled jobs
+```
+
+### Event-Driven State Machine
+
+```
+EV_JOINING
+  │
+  ▼
+EV_JOINED
+  │
+  ├─► job_pingVersion()
+  │     └─ Sends HW/FW version on FPort 2
+  │
+  └─► (45s delay)
+        │
+        ▼
+      job_performMeasurements()
+        └─ Triggers sensor via I2C CMD 0x10
+              │
+              └─► (10s delay)
+                    │
+                    ▼
+                  job_fetchAndSend()
+                    ├─ Reads sensor via I2C CMD 0x11
+                    ├─ Transmits data on FPort 1
+                    └─ scheduleNextMeasurement()
+                          │
+                          └─► (interval delay) → job_performMeasurements()
+```
+
+## Module Structure
+
+| Module | File | Purpose |
+|--------|------|---------|
+| **Main** | `src/main.cpp` | LMIC event handling, job scheduling, downlink processing |
+| **Sensors** | `src/sensors.cpp` | Sensor module interface wrapper |
+| **SMBus** | `src/smbus.cpp` | Low-level I2C/TWI protocol (80 kHz) |
+| **Config** | `src/rom_conf.cpp` | EEPROM configuration storage |
+| **RPM** | `src/rpm_calculation.cpp` | Pulse count to RPM conversion |
+| **Board** | `src/boards/mfm_v3_m1284p.cpp` | Board-specific initialization |
+| **Watchdog** | `src/wdt.cpp` | MCU reset mechanism |
+
+## Design Principles
+
+### Sensor Passthrough Architecture
+
+The firmware operates as a **passthrough system**:
+- Raw sensor data is transmitted without firmware-level interpretation
+- The sensor module at address 0x36 encodes data in its own format
+- Data decoding happens in the application layer (TTN decoder + backend)
+
+This design minimizes firmware complexity and allows flexible sensor integration.
+
+### Cooperative Multitasking
+
+All operations use LMIC's job scheduler:
+- No blocking code in the main loop
+- Jobs are scheduled with delays using `os_setTimedCallback()`
+- The watchdog ensures recovery from hangs
+
+### Configuration Abstraction
+
+All runtime configuration is stored in EEPROM:
+- LoRaWAN credentials (AppEUI, DevEUI, AppKey)
+- Measurement interval
+- Sensor-specific settings (wheel teeth count)
+- Configuration can be modified via OTA downlinks

@@ -1,0 +1,158 @@
+---
+title: Quick Start Guide
+description: Get your Multiflexmeter device operational
+---
+
+import { Steps, Aside, Code, Tabs, TabItem } from '@astrojs/starlight/components';
+
+This guide walks you through setting up a Multiflexmeter device from scratch.
+
+## Prerequisites
+
+### Hardware
+- Multiflexmeter V3 board (ATmega1284P)
+- USBasp ISP programmer
+- FTDI USB-to-Serial adapter (for debugging)
+- Sensor module (I2C address 0x36)
+
+### Software
+- [PlatformIO](https://platformio.org/) (VS Code extension recommended)
+- [Git](https://git-scm.com/) (for cloning the repository)
+
+## Setup Steps
+
+<Steps>
+
+1. **Clone the Repository**
+
+   ```bash
+   git clone https://github.com/your-org/Multiflexmeter.git
+   cd Multiflexmeter
+   ```
+
+2. **Initialize Submodules**
+
+   The LMIC library is included as a Git submodule:
+
+   ```bash
+   git submodule update --init
+   ```
+
+3. **Build the Firmware**
+
+   ```bash
+   pio run
+   ```
+
+   This compiles the firmware for the `mfm_v3_m1284p` board target.
+
+4. **Program EEPROM Credentials**
+
+   Before flashing, you must program the EEPROM with LoRaWAN credentials. Create a programmer sketch:
+
+   ```cpp
+   #include <EEPROM.h>
+
+   // Get these from The Things Network console
+   const uint8_t APP_EUI[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }; // LSB first
+   const uint8_t DEV_EUI[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }; // LSB first
+   const uint8_t APP_KEY[16] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }; // MSB first
+
+   void setup() {
+     // Magic bytes
+     EEPROM.write(0, 'M');
+     EEPROM.write(1, 'F');
+     EEPROM.write(2, 'M');
+     EEPROM.write(3, 0);
+
+     // HW Version (1.0)
+     EEPROM.write(4, 0x10);  // MSB: major=1, proto=0
+     EEPROM.write(5, 0x00);  // LSB: minor=0, patch=0
+
+     // APP_EUI (8 bytes at offset 6)
+     for (int i = 0; i < 8; i++) EEPROM.write(6 + i, APP_EUI[i]);
+
+     // DEV_EUI (8 bytes at offset 14)
+     for (int i = 0; i < 8; i++) EEPROM.write(14 + i, DEV_EUI[i]);
+
+     // APP_KEY (16 bytes at offset 22)
+     for (int i = 0; i < 16; i++) EEPROM.write(22 + i, APP_KEY[i]);
+
+     // Measurement interval: 300 seconds (0x012C)
+     EEPROM.write(38, 0x01);  // High byte
+     EEPROM.write(39, 0x2C);  // Low byte
+
+     // TTN Fair Use Policy: enabled
+     EEPROM.write(40, 1);
+
+     // Wheel teeth count: 91
+     EEPROM.write(41, 91);
+   }
+
+   void loop() {}
+   ```
+
+5. **Flash the Firmware**
+
+   Connect the USBasp programmer and flash:
+
+   ```bash
+   pio run -t upload
+   ```
+
+6. **Verify Operation**
+
+   Connect the FTDI adapter and monitor serial output:
+
+   ```bash
+   pio device monitor
+   ```
+
+   You should see:
+   - Build date/time on startup
+   - LMIC initialization messages
+   - Join request attempts
+   - "EV_JOINED" when successfully connected to TTN
+
+</Steps>
+
+## Register Device on TTN
+
+<Steps>
+
+1. Log in to [The Things Network Console](https://console.thethingsnetwork.org/)
+
+2. Create or select an application
+
+3. Register a new device with:
+   - **Activation mode**: OTAA
+   - **LoRaWAN version**: 1.0.x
+   - **Regional Parameters**: EU868
+
+4. Copy the credentials:
+   - **AppEUI**: Use LSB format (reversed byte order)
+   - **DevEUI**: Use LSB format (reversed byte order)
+   - **AppKey**: Use MSB format (same as shown)
+
+</Steps>
+
+<Aside type="caution" title="Byte Order">
+  The AppEUI and DevEUI must be stored in **LSB-first** order (reversed from TTN display).
+  The AppKey uses **MSB-first** order (same as TTN display).
+</Aside>
+
+## Troubleshooting
+
+| Issue | Possible Cause | Solution |
+|-------|----------------|----------|
+| No serial output | Debug disabled | Enable `#define DEBUG` in `include/config.h` |
+| "EV_JOIN_FAILED" | Wrong credentials | Verify EEPROM contents match TTN registration |
+| No join attempts | Radio not responding | Check SPI connections to RFM95 |
+| Immediate reset | Watchdog timeout | Check power supply, verify LMIC init |
+
+## Next Steps
+
+- [Hardware Specifications](/hardware/specifications/) - Pin mappings and board details
+- [Protocol Reference](/firmware/protocol/) - Understand uplink/downlink messages
+- [Development Guide](/development/development-guide/) - Modify and extend the firmware

@@ -181,7 +181,7 @@ const { initialReadings, devices, selectedDeviceEui } = Astro.props;
                   if (label) {
                     label += ': ';
                   }
-                  label += context.parsed.y.toFixed(2) + ' RPM';
+                  label += Math.round(context.parsed.y) + ' RPM';
                   return label;
                 }
               }
@@ -397,10 +397,10 @@ const { initialReadings, devices, selectedDeviceEui } = Astro.props;
       if (indCountEl) indCountEl.textContent = indCount;
     }
 
-    // Format RPM: show integers without decimals, floats with 2 decimals
+    // Format RPM as integer
     function formatRpm(rpm) {
       if (rpm === undefined || rpm === null) return '0';
-      return Number.isInteger(rpm) ? rpm.toString() : rpm.toFixed(2);
+      return Math.round(rpm).toString();
     }
 
     // Update RPM display - show current pumping RPM from latest reading
